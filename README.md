@@ -8,9 +8,9 @@ Go 학습 목적을 겸한 Chat application toy project입니다.
 
 ## 프로젝트 구조
 
-백엔드: Go
-프론트엔드: 미정
-배포: Microsoft Azure
+- 백엔드: Go
+- 프론트엔드: 미정
+- 배포: Microsoft Azure
 
 ## 백엔드 서버 구조
 
