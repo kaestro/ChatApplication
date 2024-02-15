@@ -1,13 +1,14 @@
 version: '3'
 services:
-  mysql:
-    image: mysql:latest
+  postgresql:
+    image: postgres:latest
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=rootpassword
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgresql_data:/var/lib/postgresql/data
 
   redis:
     image: redis:latest
@@ -22,5 +23,5 @@ services:
       - mongodb_data:/data/db
 
 volumes:
-  mysql_data:
+  postgresql_data:
   mongodb_data:

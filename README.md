@@ -16,7 +16,7 @@ Go 학습 목적을 겸한 Chat application toy project입니다.
 
 - 서버: Go
 - 데이터베이스: 
-    - 사용자 정보: MySQL
+    - 사용자 정보: PostgreSQL(mysql이 한글 쓰기 불편해서)
     - 채팅 메시지 저장 및 조회: MongoDB
     - 채팅 메시지 전달: Redis
 
