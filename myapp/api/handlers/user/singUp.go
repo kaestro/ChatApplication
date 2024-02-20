@@ -3,9 +3,10 @@
 package user
 
 import (
-	"encoding/json"
 	"myapp/api/models"
 	"myapp/internal/db"
+
+	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
