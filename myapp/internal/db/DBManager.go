@@ -1,27 +1,24 @@
+// db/DBManager.go
+
 package db
 
 import (
-	"database/sql"
 	"sync"
 
-	_ "github.com/lib/pq"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 var (
 	once sync.Once
 
-	db *sql.DB
+	db *gorm.DB
 )
 
-func GetDB() *sql.DB {
+func GetDB() *gorm.DB {
 	once.Do(func() {
 		var err error
-		db, err = sql.Open("postgres", "postgres://postgres:rootpassword@localhost:5432/postgres?sslmode=disable")
-		if err != nil {
-			panic(err)
-		}
-
-		err = db.Ping()
+		db, err = gorm.Open("postgres", "postgres://postgres:rootpassword@localhost:5432/postgres?sslmode=disable")
 		if err != nil {
 			panic(err)
 		}
