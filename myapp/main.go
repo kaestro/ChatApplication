@@ -23,4 +23,5 @@ func main() {
 	r.POST("/signup", user.SignUp)
 
 	r.Run()
+
 }

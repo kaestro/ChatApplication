@@ -12,6 +12,7 @@ services:
 
   redis:
     image: redis:latest
+    command: redis-server --requirepass redisPassword
     ports:
       - "6379:6379"
 
