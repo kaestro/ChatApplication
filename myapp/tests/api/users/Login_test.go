@@ -27,14 +27,14 @@ func TestLogIn(t *testing.T) {
 	db.GetDBManager().Create(&sampleUser)
 
 	// 잘못된 비밀번호로 로그인을 시도합니다.
-	loginInfo := struct {
+	wrongLoginInfo := struct {
 		EmailAddress string `json:"emailAddress"`
 		Password     string `json:"password"`
 	}{
 		EmailAddress: "test@example.com",
 		Password:     "wrongpassword",
 	}
-	body, _ := json.Marshal(loginInfo)
+	body, _ := json.Marshal(wrongLoginInfo)
 	httpRequest, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(body))
 	responseRecorder := httptest.NewRecorder()
 
@@ -51,8 +51,9 @@ func TestLogIn(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, responseRecorder.Code)
 
 	// 올바른 비밀번호로 로그인을 시도합니다.
-	loginInfo.Password = "password"
-	body, _ = json.Marshal(loginInfo)
+	correctLogininfo := wrongLoginInfo
+	correctLogininfo.Password = "password"
+	body, _ = json.Marshal(correctLogininfo)
 	httpRequest, _ = http.NewRequest("POST", "/login", bytes.NewBuffer(body))
 	responseRecorder = httptest.NewRecorder()
 
