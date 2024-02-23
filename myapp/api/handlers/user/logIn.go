@@ -3,17 +3,13 @@ package user
 
 import (
 	"encoding/json"
-	"myapp/api/models"
+	"myapp/api/service/user"
 	"myapp/internal/db"
-	"myapp/internal/password"
 	"myapp/internal/session"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
-
-// TODO
-// Login 성공시에 session key를 생성하고, 이를 반환하도록 수정하세요.
 
 // LogIn 함수는 사용자가 제공한 이메일 주소와 비밀번호를 검증하여 로그인합니다.
 func LogIn(ginContext *gin.Context) {
@@ -31,39 +27,22 @@ func LogIn(ginContext *gin.Context) {
 		return
 	}
 
+	// 세션 키를 요청 헤더에서 읽어옵니다.
+	userSessionKey := ginContext.GetHeader("Session-Key")
+
 	// 데이터베이스 연결을 가져옵니다.
 	dbManager := db.GetDBManager()
 
-	// 사용자 정보를 담을 User 구조체를 선언합니다.
-	var user models.User
-
-	// 사용자가 제공한 이메일 주소로 데이터베이스에서 사용자를 찾습니다.
-	// 사용자를 찾는 도중 오류가 발생하면 500 에러를 반환합니다.
-	err = dbManager.Read(&user, "email_address", loginInfo.EmailAddress)
-	if err != nil {
-		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find user"})
-		return
-	}
-
-	// 사용자가 제공한 비밀번호와 데이터베이스에 저장된 해시된 비밀번호를 비교합니다.
-	// 비밀번호가 일치하지 않으면 401 에러를 반환합니다.
-	if !password.CheckPasswordHash(loginInfo.Password, user.Password) {
-		ginContext.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
-		return
-	}
-
-	// 세션 키를 생성합니다.
-	sessionKey, err := session.GenerateRandomSessionKey()
-	if err != nil {
-		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate session key"})
-		return
-	}
-
-	// 세션 키를 캐시에 저장합니다.
+	// 세션 매니저를 가져옵니다.
 	sessionManager := session.GetSessionManager()
-	err = sessionManager.SetSession(sessionKey, user.EmailAddress)
+
+	// LoginService를 생성합니다.
+	loginService := user.NewLoginService(dbManager, sessionManager)
+
+	// LoginService의 LogIn 메서드를 호출합니다.
+	sessionKey, err := loginService.LogIn(loginInfo.EmailAddress, loginInfo.Password, userSessionKey)
 	if err != nil {
-		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save session key"})
+		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

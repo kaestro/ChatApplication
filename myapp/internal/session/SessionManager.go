@@ -61,3 +61,12 @@ func GetSessionManager() *SessionManager {
 
 	return manager
 }
+
+func (manager *SessionManager) IsSessionValid(key string, emailAddress string) bool {
+	val, err := manager.GetSession(key)
+	if err != nil {
+		return false
+	}
+
+	return val == emailAddress
+}
