@@ -1,5 +1,4 @@
-// db/DBManager.go
-
+// myapp/internal/db/DBManager.go
 package db
 
 import (
@@ -9,22 +8,48 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-// 초기화를 한 번만 실행해고 나서 연결을 저장해두기 위해
-// db를 전역 변수로 선언한다.
+type DBManager struct {
+	db *gorm.DB
+}
+
 var (
 	once sync.Once
 
-	db *gorm.DB
+	manager *DBManager
 )
 
-func GetDB() *gorm.DB {
+func GetDBManager() *DBManager {
 	once.Do(func() {
 		var err error
-		db, err = gorm.Open("postgres", "postgres://postgres:rootpassword@localhost:5432/postgres?sslmode=disable")
+		db, err := gorm.Open("postgres", "postgres://postgres:rootpassword@localhost:5432/postgres?sslmode=disable")
 		if err != nil {
 			panic(err)
 		}
+
+		manager = &DBManager{
+			db: db,
+		}
 	})
 
-	return db
+	return manager
+}
+
+func (m *DBManager) Create(value interface{}) error {
+	return m.db.Create(value).Error
+}
+
+func (m *DBManager) ReadAll(out interface{}) error {
+	return m.db.Find(out).Error
+}
+
+func (m *DBManager) Read(out interface{}, field string, value interface{}) error {
+	return m.db.Where(field+" = ?", value).First(out).Error
+}
+
+func (m *DBManager) Update(value interface{}, attrs ...interface{}) error {
+	return m.db.Model(value).Update(attrs...).Error
+}
+
+func (m *DBManager) Delete(value interface{}) error {
+	return m.db.Delete(value).Error
 }
