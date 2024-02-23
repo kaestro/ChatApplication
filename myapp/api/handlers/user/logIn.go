@@ -31,14 +31,14 @@ func LogIn(c *gin.Context) {
 	}
 
 	// 데이터베이스 연결을 가져옵니다.
-	dbInstance := db.GetDB()
+	dbManager := db.GetDBManager()
 
 	// 사용자 정보를 담을 User 구조체를 선언합니다.
 	var user models.User
 
 	// 사용자가 제공한 이메일 주소로 데이터베이스에서 사용자를 찾습니다.
 	// 사용자를 찾는 도중 오류가 발생하면 500 에러를 반환합니다.
-	err = dbInstance.Where("email_address = ?", loginInfo.EmailAddress).First(&user).Error
+	err = dbManager.Read(&user, "email_address", loginInfo.EmailAddress)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find user"})
 		return
