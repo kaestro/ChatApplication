@@ -19,11 +19,12 @@ import (
 func TestLogIn(t *testing.T) {
 	// 테스트를 위한 사용자 정보를 생성합니다.
 	hashedPassword, _ := password.HashPassword("password")
-	user := models.User{
+	sampleUser := models.User{
+		UserName:     "testuser",
 		EmailAddress: "test@example.com",
 		Password:     hashedPassword,
 	}
-	db.GetDBManager().Create(&user)
+	db.GetDBManager().Create(&sampleUser)
 
 	// 잘못된 비밀번호로 로그인을 시도합니다.
 	loginInfo := struct {
@@ -44,6 +45,8 @@ func TestLogIn(t *testing.T) {
 	// HTTP 요청을 처리합니다.
 	ginEngine.ServeHTTP(responseRecorder, httpRequest)
 
+	t.Log(responseRecorder.Body.String())
+
 	// 응답 상태 코드가 401인지 확인합니다.
 	assert.Equal(t, http.StatusUnauthorized, responseRecorder.Code)
 
@@ -62,5 +65,5 @@ func TestLogIn(t *testing.T) {
 	}
 
 	// 해당 계정을 삭제합니다.
-	db.GetDBManager().Delete(&user)
+	db.GetDBManager().Delete(&sampleUser)
 }

@@ -11,6 +11,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// handleLoginError 함수는 로그인 과정에서 발생한 오류를 처리합니다.
+// 오류 유형에 따라 적절한 HTTP 상태 코드를 반환합니다.
+func handleLoginError(ginContext *gin.Context, err error) {
+	switch err {
+	case user.ErrAlreadyLoggedIn:
+		ginContext.JSON(http.StatusConflict, gin.H{"error": "User is already logged in"})
+	case user.ErrUserNotFound:
+		ginContext.JSON(http.StatusNotFound, gin.H{"error": "Failed to find user"})
+	case user.ErrInvalidPassword:
+		ginContext.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+	case user.ErrFailedToGenerateSessionKey, user.ErrFailedToSaveSessionKey:
+		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process session key"})
+	default:
+		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+	}
+}
+
 // LogIn 함수는 사용자가 제공한 이메일 주소와 비밀번호를 검증하여 로그인합니다.
 func LogIn(ginContext *gin.Context) {
 	// 사용자가 제공한 로그인 정보를 담을 LoginInfo 구조체를 선언합니다.
@@ -42,7 +59,7 @@ func LogIn(ginContext *gin.Context) {
 	// LoginService의 LogIn 메서드를 호출합니다.
 	sessionKey, err := loginService.LogIn(loginInfo.EmailAddress, loginInfo.Password, userSessionKey)
 	if err != nil {
-		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		handleLoginError(ginContext, err)
 		return
 	}
 
