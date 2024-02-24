@@ -22,6 +22,8 @@ func main() {
 
 	r.POST("/signup", user.SignUp)
 	r.POST("/login", user.LogIn)
+	r.POST("/logout", user.LogOut)
+	r.POST("/deleteAccount", user.DeleteAccount)
 
 	r.Run()
 
