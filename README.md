@@ -1,4 +1,6 @@
 Go 학습 목적을 겸한 Chat application toy project입니다.
+주요 진행 과정및 상세 내용은 블로그에 포스팅하고 있으며, 링크는 아래와 같습니다.
+[Kaestro's Blog](https://kaestro.github.io/)
 
 ## 프로젝트 개요
 
