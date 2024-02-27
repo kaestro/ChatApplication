@@ -26,3 +26,8 @@ Go 학습 목적을 겸한 Chat application toy project입니다.
 
 1. 로그인 관련 API 테스트: postman
 2. 채팅 메시지 전달 관련 테스트: websocket king(https://websocketking.com/)
+
+## Container build 방법
+
+1. myapp에서 docker build -t main_server:latest . 실행
+2. ChatApplication 폴더에서 docker-compose up -d 실행
