@@ -21,7 +21,7 @@ var (
 func GetDBManager() *DBManager {
 	once.Do(func() {
 		var err error
-		db, err := gorm.Open("postgres", "postgres://postgres:rootpassword@localhost:5432/postgres?sslmode=disable")
+		db, err := gorm.Open("postgres", "postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable")
 		if err != nil {
 			panic(err)
 		}
