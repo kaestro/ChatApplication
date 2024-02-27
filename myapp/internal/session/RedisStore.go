@@ -15,7 +15,7 @@ type RedisStore struct {
 func NewRedisStore() Store {
 	return &RedisStore{
 		client: redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379",
+			Addr:     "redis:6379",
 			Password: "redisPassword", // no password set
 			DB:       0,               // use default DB
 		}),
