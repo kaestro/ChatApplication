@@ -31,6 +31,9 @@ services:
       - postgresql
       - redis
       - mongodb
+    environment:
+      - REDIS_ADDR=redis:6379
+      - DB_URL=postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable
 
 volumes:
   postgresql_data:

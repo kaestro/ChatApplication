@@ -3,6 +3,7 @@ package session
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"github.com/go-redis/redis/v8"
@@ -13,9 +14,14 @@ type RedisStore struct {
 }
 
 func NewRedisStore() Store {
+	redisAddr := os.Getenv("REDIS_ADDR")
+	if redisAddr == "" {
+		redisAddr = "localhost:6379" // default value
+	}
+
 	return &RedisStore{
 		client: redis.NewClient(&redis.Options{
-			Addr:     "redis:6379",
+			Addr:     redisAddr,
 			Password: "redisPassword", // no password set
 			DB:       0,               // use default DB
 		}),

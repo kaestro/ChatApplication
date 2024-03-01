@@ -25,8 +25,12 @@ WORKDIR /myapp
 # 필요한 파일들을 실행 환경으로 복사
 COPY --from=builder /myapp/main /myapp/main
 
+# 환경 변수 설정
+ENV REDIS_ADDR=redis:6379
+
 # 컨테이너가 열어야 하는 포트 지정
 EXPOSE 8080
+ENV DB_URL=postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable
 
 # 컨테이너 실행 시 실행할 명령
 CMD ["/myapp/main"]

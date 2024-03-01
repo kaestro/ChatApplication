@@ -2,6 +2,7 @@
 package db
 
 import (
+	"os"
 	"sync"
 
 	"github.com/jinzhu/gorm"
@@ -21,7 +22,11 @@ var (
 func GetDBManager() *DBManager {
 	once.Do(func() {
 		var err error
-		db, err := gorm.Open("postgres", "postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable")
+		dbURL := os.Getenv("DB_URL")
+		if dbURL == "" {
+			dbURL = "postgres://postgres:rootpassword@localhost:5432/postgres?sslmode=disable" // default value
+		}
+		db, err := gorm.Open("postgres", dbURL)
 		if err != nil {
 			panic(err)
 		}
