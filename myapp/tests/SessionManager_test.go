@@ -9,7 +9,7 @@ import (
 )
 
 func TestSessionManager(t *testing.T) {
-	manager := session.GetSessionManager()
+	manager := session.GetLoginSessionManager()
 
 	// Test SetSession
 	err := manager.SetSession("testKey", "testValue")

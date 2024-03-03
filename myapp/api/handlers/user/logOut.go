@@ -14,7 +14,7 @@ func LogOut(ginContext *gin.Context) {
 	userSessionKey := ginContext.GetHeader("Session-Key")
 
 	// 세션 매니저를 가져옵니다.
-	sessionManager := session.GetSessionManager()
+	sessionManager := session.GetLoginSessionManager()
 
 	// 세션 매니저의 DeleteSession 메서드를 호출하여 세션 키를 삭제합니다.
 	err := sessionManager.DeleteSession(userSessionKey)

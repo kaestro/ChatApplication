@@ -19,10 +19,10 @@ var (
 
 type LoginService struct {
 	dbManager      *db.DBManager
-	sessionManager *session.SessionManager
+	sessionManager *session.LoginSessionManager
 }
 
-func NewLoginService(dbManager *db.DBManager, sessionManager *session.SessionManager) *LoginService {
+func NewLoginService(dbManager *db.DBManager, sessionManager *session.LoginSessionManager) *LoginService {
 	return &LoginService{
 		dbManager:      dbManager,
 		sessionManager: sessionManager,

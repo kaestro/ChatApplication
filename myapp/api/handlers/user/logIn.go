@@ -51,7 +51,7 @@ func LogIn(ginContext *gin.Context) {
 	dbManager := db.GetDBManager()
 
 	// 세션 매니저를 가져옵니다.
-	sessionManager := session.GetSessionManager()
+	sessionManager := session.GetLoginSessionManager()
 
 	// LoginService를 생성합니다.
 	loginService := user.NewLoginService(dbManager, sessionManager)

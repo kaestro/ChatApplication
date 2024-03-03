@@ -17,7 +17,7 @@ func DeleteAccount(ginContext *gin.Context) {
 	userSessionKey := ginContext.GetHeader("Session-Key")
 
 	// db, 세션 매니저를 가져옵니다.
-	sessionManager := session.GetSessionManager()
+	sessionManager := session.GetLoginSessionManager()
 	dbManager := db.GetDBManager()
 
 	emailAddress, err := sessionManager.GetSession(userSessionKey)
