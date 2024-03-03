@@ -1,4 +1,4 @@
-package tests
+package db_test
 
 import (
 	"testing"
