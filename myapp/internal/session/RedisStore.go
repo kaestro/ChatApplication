@@ -13,19 +13,32 @@ type RedisStore struct {
 	client *redis.Client
 }
 
-func NewRedisStore() Store {
-	redisAddr := os.Getenv("REDIS_ADDR")
-	if redisAddr == "" {
-		redisAddr = "localhost:6379" // default value
-	}
+type RedisStoreFactory struct{}
 
-	return &RedisStore{
-		client: redis.NewClient(&redis.Options{
-			Addr:     redisAddr,
-			Password: "redisPassword", // no password set
-			DB:       0,               // use default DB
-		}),
+func (factory *RedisStoreFactory) Create(sessionTypeNum SessionType) SessionStore {
+	var store SessionStore
+	if sessionTypeNum == LoginSession {
+		redisAddr := os.Getenv("REDIS_ADDR")
+		if redisAddr == "" {
+			redisAddr = "localhost:6379" // default value
+		}
+
+		store = &RedisStore{
+			client: redis.NewClient(&redis.Options{
+				Addr:     redisAddr,
+				Password: "redisPassword", // no password set
+				DB:       0,               // use default DB
+			}),
+		}
+	} else if sessionTypeNum == OtherSession {
+		panic("Unauthorized session type number given to RedisStoreFactory.")
 	}
+	return store
+}
+
+func NewRedisStore(sessionTypeNum SessionType) SessionStore {
+	factory := &RedisStoreFactory{}
+	return factory.Create(sessionTypeNum)
 }
 
 func (store *RedisStore) GetSession(key string) (string, error) {

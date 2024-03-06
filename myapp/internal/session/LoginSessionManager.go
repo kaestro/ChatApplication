@@ -6,7 +6,7 @@ import (
 )
 
 type LoginSessionManager struct {
-	store Store
+	store SessionStore
 }
 
 func (manager *LoginSessionManager) GetSession(key string) (string, error) {
@@ -29,7 +29,7 @@ var (
 func GetLoginSessionManager() *LoginSessionManager {
 	once.Do(func() {
 		manager = &LoginSessionManager{
-			store: NewRedisStore(),
+			store: NewRedisStore(LoginSession),
 		}
 	})
 
