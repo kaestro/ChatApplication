@@ -98,8 +98,21 @@ GitHub Copilot: 이 프로젝트에 채팅 기능을 추가하려면, 다음과 
 
 ## TODO
 
+### mongoDB 관련
+
 mongodb부터 작성중.
 
 mongodb의 상세 인터페이스 설계 필요.
 
 mongodb에서 사용하는 model의 위치를 api에 두는 것이 맞는지에 대한 고려 필요.
+
+---
+
+### 채팅방 목록 관련
+
+1. 데이터 모델링 => user, chatroom
+2. api 설계 => chatroom list, chatroom create, chatroom delete
+3. 세션 관리 => chatroom에 참가한 사용자 관리
+4. 채팅 메시지 저장 => mongodb에 저장
+5. 채팅 메시지 캐싱 => redis에 저장
+6. 채팅 메시지 전송 => WebSocket을 통해 전송
