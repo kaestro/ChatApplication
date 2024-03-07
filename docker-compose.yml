@@ -15,6 +15,12 @@ services:
     command: redis-server --requirepass redisPassword
     ports:
       - "6379:6379"
+  
+  chatroom_list:
+    image: redis:latest
+    command: redis-server --requirepass redisPassword
+    ports:
+      - "6380:6380"
 
   mongodb:
     image: mongo:latest
