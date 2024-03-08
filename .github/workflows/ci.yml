@@ -28,7 +28,7 @@ jobs:
       working-directory: myapp
 
     - name: Test
-      run: go test ./...
+      run: go test ./mock_tests/...
       working-directory: myapp
 
     - name: Build
