@@ -27,8 +27,8 @@ jobs:
       run: docker-compose up -d
       working-directory: myapp
 
-    - name: Test
-      run: go test ./mock_tests/...
+    - name: Mock_Test
+      run: go test ./tests/mock_tests/...
       working-directory: myapp
 
     - name: Build
