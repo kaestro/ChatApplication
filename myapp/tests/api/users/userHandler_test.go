@@ -40,6 +40,8 @@ func TestUserHandler(t *testing.T) {
 	// 응답 상태 코드가 201인지 확인합니다.
 	if assert.Equal(t, http.StatusCreated, responseRecorder.Code) {
 		t.Log("SignUp 테스트 통과")
+	} else {
+		t.Log("SignUp 테스트 실패")
 	}
 
 	// login HTTP 요청을 처리합니다.
@@ -58,6 +60,8 @@ func TestUserHandler(t *testing.T) {
 	// 응답 상태 코드가 200인지 확인합니다.
 	if assert.Equal(t, http.StatusOK, responseRecorder.Code) {
 		t.Log("LogIn 테스트 통과")
+	} else {
+		t.Log("LogIn 테스트 실패")
 	}
 
 	// logout HTTP 요청을 처리합니다.
@@ -69,6 +73,8 @@ func TestUserHandler(t *testing.T) {
 	// 응답 상태 코드가 200인지 확인합니다.
 	if assert.Equal(t, http.StatusOK, responseRecorder.Code) {
 		t.Log("LogOut 테스트 통과")
+	} else {
+		t.Log("LogOut 테스트 실패")
 	}
 
 	// deleteAccount HTTP 요청을 처리합니다.
@@ -80,6 +86,8 @@ func TestUserHandler(t *testing.T) {
 	// 응답 상태 코드가 200인지 확인합니다.
 	if assert.Equal(t, http.StatusOK, responseRecorder.Code) {
 		t.Log("deleteAccount 전 LogIn 테스트 통과")
+	} else {
+		t.Log("deleteAccount 전 LogIn 테스트 실패")
 	}
 
 	t.Log("Session-Key:" + responseRecorder.Body.String())
@@ -95,5 +103,7 @@ func TestUserHandler(t *testing.T) {
 	// 응답 상태 코드가 200인지 확인합니다.
 	if assert.Equal(t, http.StatusOK, responseRecorder.Code) {
 		t.Log("deleteAccount 테스트 통과")
+	} else {
+		t.Log("deleteAccount 테스트 실패")
 	}
 }
