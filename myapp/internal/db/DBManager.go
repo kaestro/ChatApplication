@@ -16,10 +16,10 @@ type DBManager struct {
 var (
 	once sync.Once
 
-	manager *DBManager
+	manager DBManagerInterface
 )
 
-func GetDBManager() *DBManager {
+func GetDBManager() DBManagerInterface {
 	once.Do(func() {
 		var err error
 		dbURL := os.Getenv("DB_URL")
