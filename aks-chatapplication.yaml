@@ -1,0 +1,188 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres:latest
+        env:
+        - name: POSTGRES_DB
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "rootpassword"
+        ports:
+        - containerPort: 5432
+      imagePullSecrets:
+      - name: acr-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-service
+spec:
+  selector:
+    app: postgresql
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:latest
+        command: ["redis-server", "--requirepass", "redisPassword"]
+        ports:
+        - containerPort: 6379
+      imagePullSecrets:
+      - name: acr-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chatroom-list-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chatroom-list
+  template:
+    metadata:
+      labels:
+        app: chatroom-list
+    spec:
+      containers:
+      - name: chatroom-list
+        image: redis:latest
+        command: ["redis-server", "--requirepass", "redisPassword"]
+        ports:
+        - containerPort: 6380
+      imagePullSecrets:
+      - name: acr-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatroom-list-service
+spec:
+  selector:
+    app: chatroom-list
+  ports:
+    - protocol: TCP
+      port: 6380
+      targetPort: 6380
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+      imagePullSecrets:
+      - name: acr-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb-service
+spec:
+  selector:
+    app: mongodb
+  ports:
+    - protocol: TCP
+      port: 27017
+      targetPort: 27017
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main-server-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: main-server
+  template:
+    metadata:
+      labels:
+        app: main-server
+    spec:
+      containers:
+      - name: main-server
+        image: purmir.azurecr.io/main_server:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: REDIS_ADDR
+          value: "redis:6379"
+        - name: DB_URL
+          value: "postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable"
+        - name: MONGO_URL
+          value: "mongodb://mongodb:27017"
+      imagePullSecrets:
+      - name: acr-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: main-server-service
+spec:
+  selector:
+    app: main-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
