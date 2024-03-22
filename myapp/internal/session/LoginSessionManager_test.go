@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type LoginSessionManagerSuite struct{
+type LoginSessionManagerSuite struct {
 	suite.Suite
-	redisClient *redis.Client
+	redisClient  *redis.Client
 	loginSession SessionStore
 }
 
@@ -30,8 +30,8 @@ func (s *LoginSessionManagerSuite) SetupSuite() {
 
 	ctx := context.Background()
 
-	_,err := s.redisClient.Ping(ctx).Result()
-	if err != nil{
+	_, err := s.redisClient.Ping(ctx).Result()
+	if err != nil {
 		s.T().Fatal(fmt.Errorf("failed to ping redis: %v", err))
 	}
 
@@ -48,47 +48,47 @@ func (s *LoginSessionManagerSuite) SetupSuite() {
 }
 
 func (s *LoginSessionManagerSuite) TestGetSession() {
-		t := s.T()
-		
-		// 세션 키가 없는 상황을 테스트합니다.
-		t.Run("조회시 key 가 없는 경우 테스트", func(t *testing.T) {		
-			key := "no_existing_key"
+	t := s.T()
 
-			result, err := s.loginSession.GetSession(key)
+	// 세션 키가 없는 상황을 테스트합니다.
+	t.Run("조회시 key 가 없는 경우 테스트", func(t *testing.T) {
+		key := "no_existing_key"
 
-			assert.EqualError(t, err, "redis: nil")
-			assert.Empty(t, result, "result should be empty")
-		})
+		result, err := s.loginSession.GetSession(key)
 
-		// 세션 키가 있는 상황을 테스트합니다.
-		t.Run("조회시 key 가 있는 경우", func(t *testing.T) {
-			key := "existing_key"
-			value := "existing_value"
+		assert.EqualError(t, err, "redis: nil")
+		assert.Empty(t, result, "result should be empty")
+	})
 
-			err := s.loginSession.SetSession(key, value)
+	// 세션 키가 있는 상황을 테스트합니다.
+	t.Run("조회시 key 가 있는 경우", func(t *testing.T) {
+		key := "existing_key"
+		value := "existing_value"
 
-			assert.Nil(t, err) 
+		err := s.loginSession.SetSession(key, value)
 
-			result, err := s.loginSession.GetSession("existing_key")
+		assert.Nil(t, err)
 
-			assert.Nil(t, err)
-			assert.Equal(t, "existing_value", result)
-		})
+		result, err := s.loginSession.GetSession("existing_key")
+
+		assert.Nil(t, err)
+		assert.Equal(t, "existing_value", result)
+	})
 }
 
 func (s *LoginSessionManagerSuite) TestSetSession() {
 	t := s.T()
 
-	t.Run("데이터 저장 테스트",func(t *testing.T) {
+	t.Run("데이터 저장 테스트", func(t *testing.T) {
 		key := "insert_key"
 		value := "insert_test_value"
 
 		err := s.loginSession.SetSession(key, value)
 
-		assert.Nil(t,err)
+		assert.Nil(t, err)
 	})
 
-	t.Run("데이터 저장후 조회 테스트",func(t *testing.T) {
+	t.Run("데이터 저장후 조회 테스트", func(t *testing.T) {
 		key := "insert_key"
 
 		result, err := s.loginSession.GetSession(key)
@@ -101,22 +101,22 @@ func (s *LoginSessionManagerSuite) TestSetSession() {
 func (s *LoginSessionManagerSuite) TestDeleteSession() {
 	t := s.T()
 
-	t.Run("삭제시 key 가 없는 경우 테스트",func(t *testing.T) {
+	t.Run("삭제시 key 가 없는 경우 테스트", func(t *testing.T) {
 		key := "no_existing_key"
 
 		err := s.loginSession.DeleteSession(key)
 		assert.Nil(t, err, "error deleting session")
 	})
 
-	t.Run("삭제시 key 가 있는 경우 테스트",func(t *testing.T) {
-			key := "existing_key"
-			value := "existing_value"
+	t.Run("삭제시 key 가 있는 경우 테스트", func(t *testing.T) {
+		key := "existing_key"
+		value := "existing_value"
 
-			err := s.loginSession.SetSession(key, value)
-			assert.Nil(t, err, "error setting session") 
+		err := s.loginSession.SetSession(key, value)
+		assert.Nil(t, err, "error setting session")
 
-			err = s.loginSession.DeleteSession(key)
-			assert.Nil(t, err, "error deleting session")
+		err = s.loginSession.DeleteSession(key)
+		assert.Nil(t, err, "error deleting session")
 	})
 }
 
