@@ -10,9 +10,8 @@ var (
 	manager DBManagerInterface
 )
 
-func GetDBManager() DBManagerInterface {
+func GetDBManagerWithFactory(factory *DBManagerFactory) DBManagerInterface {
 	once.Do(func() {
-		factory := &DBManagerFactory{}
 		var err error
 		manager, err = factory.CreateDBManager(Postgres)
 		if err != nil {
@@ -21,4 +20,8 @@ func GetDBManager() DBManagerInterface {
 	})
 
 	return manager
+}
+
+func GetDBManager() DBManagerInterface {
+	return GetDBManagerWithFactory(&DBManagerFactory{})
 }
