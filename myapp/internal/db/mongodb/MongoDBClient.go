@@ -3,6 +3,7 @@ package mongodb
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"myapp/api/models"
@@ -13,7 +14,6 @@ import (
 )
 
 const (
-	dbURI               = "mongodb://localhost:27017"
 	dbName              = "test"
 	chatroomsCollection = "chatrooms"
 	messagesCollection  = "messages"
@@ -24,6 +24,7 @@ type MongoDBClient struct {
 }
 
 func NewMongoDBClient() (*MongoDBClient, error) {
+	dbURI := os.Getenv("MONGO_URL")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
