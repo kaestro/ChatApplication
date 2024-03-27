@@ -1,9 +1,8 @@
-package tests
+package user
 
 import (
 	"bytes"
 	"encoding/json"
-	"myapp/api/handlers/user"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,7 +19,7 @@ func TestLogIn(t *testing.T) {
 
 		router := gin.Default()
 
-		router.POST("/login", user.LogIn)
+		router.POST("/login", LogIn)
 
 		requestBody := bytes.NewBufferString(`{invalid json}`)
 		req, _ := http.NewRequest(http.MethodPost, "/login", requestBody)
@@ -37,7 +36,7 @@ func TestLogIn_UserNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 
 	router := gin.Default()
-	router.POST("/login", user.LogIn)
+	router.POST("/login", LogIn)
 
 	requestBody, _ := json.Marshal(map[string]string{
 		"emailAddress": "nonexistent@example.com",

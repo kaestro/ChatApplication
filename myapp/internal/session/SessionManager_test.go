@@ -1,5 +1,5 @@
 // myapp/tests/SessionManager_test.go
-package tests
+package session
 
 import (
 	"testing"

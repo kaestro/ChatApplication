@@ -1,5 +1,5 @@
 // tests/api/users/Login_test.go
-package tests
+package user
 
 import (
 	"testing"

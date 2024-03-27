@@ -1,7 +1,6 @@
-package tests
+package user
 
 import (
-	"myapp/api/handlers/user"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,7 +12,7 @@ import (
 func TestDeleteAccountSuccess(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
-	r.DELETE("/user/deleteAccount", user.DeleteAccount)
+	r.DELETE("/user/deleteAccount", DeleteAccount)
 
 	req, _ := http.NewRequest("DELETE", "/user/deleteAccount", nil)
 	req.Header.Add("Session-Key", "valid_session_key")

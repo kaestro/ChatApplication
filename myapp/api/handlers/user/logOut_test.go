@@ -1,7 +1,6 @@
-package tests
+package user
 
 import (
-	"myapp/api/handlers/user"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,7 +15,7 @@ func TestLogOut(t *testing.T) {
 	t.Run("LogoutSuccess", func(t *testing.T) {
 		router := gin.Default()
 
-		router.GET("/logout", user.LogOut)
+		router.GET("/logout", LogOut)
 
 		req, _ := http.NewRequest("GET", "/logout", nil)
 		req.Header.Add("Session-Key", "existingSessionKey")
