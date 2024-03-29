@@ -14,6 +14,7 @@
 * MVP(Mininum Viable Product)
 * 기술 스택
 * 확장 계획
+* 인프라 AS-IS 및 TO-BE
 
 ---
 
@@ -72,6 +73,37 @@
 2. load balancer
 3. nosql
 4. 부하 테스트
+```
+
+이 외에 유틸적인 측면 등에서 추가할 예정인 기능들은 다음 [문서](https://github.com/kaestro/ChatApplication/wiki/%EC%B6%94%ED%9B%84-%EC%B6%94%EA%B0%80-%EA%B0%80%EB%8A%A5%ED%95%9C-%EB%B6%80%EB%B6%84%EB%93%A4)를 참고해 주세요.
+
+---
+
+## 인프라 현상황 및 확장 계획
+
+현재 진행 중인 프로젝트의 인프라 구성 및 [설계도](https://github.com/kaestro/ChatApplication/wiki/%EC%8B%9C%EC%8A%A4%ED%85%9C-%EC%84%A4%EA%B3%84%EB%8F%84)는 다음과 같습니다.
+
+![image](https://drive.google.com/uc?export=download&id=1vH5W8z8Mc3vJbb8NVku8OpOhpIhnbYGz)
+
+```md
+1. github actions
+2. docker
+3. 개인 서버
+4. go web server
+5. postgresql
+6. redis
+```
+
+확장 계획이 완성된 이후의 인프라 구성 및 설계도는 다음과 같습니다.
+
+![image](https://github.com/kaestro/ChatApplication/assets/32026095/5d97f107-028d-476d-803e-e64a1f86e078)
+
+```md
+1. load balancer
+2. message queue
+3. nosql
+4. 부하 테스트
+5. cloud server
 ```
 
 ---
