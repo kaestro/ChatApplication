@@ -22,6 +22,7 @@ type Connection struct {
 	send chan []byte
 }
 
+// Question: Do Client Connection actually need conn object?
 func (c *Client) enterRoom(room *Room) {
 	// Check if the client is already in the room
 	// if already in, return
