@@ -3,34 +3,7 @@ package chat
 
 import (
 	"fmt"
-
-	"github.com/gorilla/websocket"
 )
-
-// TODO
-// Client랑 Room 작성할만큼 해 둔 다음에, 두개 분리된 go파일로 만드는게 맞을지 고민
-// 근데 그냥 하는게 맞긴 할 것 같은듯?
-// Client는 괜찮은데 Room은 더 일반적인 명사를 통해 추상화된 객체 이름으로 작성하는게 나을수도 있을듯?
-
-type Client struct {
-	// 웹소켓 커넥션
-	conn *websocket.Conn
-
-	// 어느 user인지 구분할 방법. 세션id?
-	sessionID string
-
-	// Buffered channel of outbound messages.
-	// 어느 방에서 보내는지에 따라 메시지가 따로 가야하는데 이건 어떻게 해야하는가?
-	send chan []byte
-
-	// client가 속한 방들
-	// rooms를 pointer로 만들어야하는가?
-	rooms []Room
-}
-
-func (c *Client) enterRoom(room *Room) {
-	c.rooms = append(c.rooms, *room)
-}
 
 type Room struct {
 	// Registered clients.
@@ -61,6 +34,9 @@ func NewRoom() *Room {
 }
 
 // client가 room에서 메시지를 읽고 쓰는 전반적인 동작을 수행한다.
+// TODO: After implementing Client Object, call the chan returning method from here
+// Problem: It seems too much of responsibility on Client Object. That is, it might be better for
+// the Room object to have structured data of clients and websocket connections
 func (r *Room) run() {
 	for {
 		select {
