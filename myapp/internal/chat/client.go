@@ -18,13 +18,3 @@ type Connection struct {
 	room *Room
 	send chan []byte
 }
-
-// Question: Do Client Connection actually need conn object?
-func (c *Client) enterRoom(room *Room) {
-	// Check if the client is already in the room
-	// if already in, return
-
-	// if not, add another Connection object to the client
-	// Question: How to generate a unique id for the connection?
-	// Assuming that each clients won't be having many connections, simple slice can be used
-}
