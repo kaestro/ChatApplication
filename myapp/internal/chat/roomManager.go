@@ -11,6 +11,11 @@ var (
 	roomManager *RoomManager
 )
 
+// Question: Do we Actually need map for rooms?
+// Can we just use slice for rooms?
+// -> answer: using slice would make algorithm harder to implement
+// considering the fact that removing a room from the slice would require
+// But still using integer instead of string for roomID might be better?
 type RoomManager struct {
 	rooms map[string]*Room
 }
@@ -53,4 +58,13 @@ func (rm *RoomManager) RemoveRoom(roomID string) {
 		return
 	}
 	delete(rm.rooms, roomID)
+}
+
+// Question: wouldn't it be better to just return room pointers?
+func (rm *RoomManager) GetRoomIDs() []string {
+	roomIDs := make([]string, 0, len(rm.rooms))
+	for roomID := range rm.rooms {
+		roomIDs = append(roomIDs, roomID)
+	}
+	return roomIDs
 }

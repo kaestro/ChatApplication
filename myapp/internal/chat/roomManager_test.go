@@ -49,3 +49,28 @@ func TestRoomManagerCapacity(t *testing.T) {
 		}
 	}
 }
+
+func TestRoomManagerGetRoomIDs(t *testing.T) {
+	rm := GetRoomManager()
+
+	// Test AddRoom
+	for i := 0; i < maxRooms; i++ {
+		room := &Room{roomID: string(rune(i))}
+		rm.AddRoom(room)
+	}
+
+	// Test GetRoomIDs
+	roomIDs := rm.GetRoomIDs()
+	if len(roomIDs) != maxRooms {
+		t.Errorf("GetRoomIDs failed, expected %d roomIDs, got %d", maxRooms, len(roomIDs))
+		return
+	}
+
+	for _, roomID := range roomIDs {
+		if !rm.CheckRoom(roomID) {
+			t.Errorf("GetRoomIDs failed, expected roomID %s to exist", roomID)
+		}
+	}
+
+	t.Logf("GetRoomIDs passed, expected %d roomIDs", maxRooms)
+}
