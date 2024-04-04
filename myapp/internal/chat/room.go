@@ -22,7 +22,7 @@ type ClientConn struct {
 	conn   *websocket.Conn
 }
 
-// 새로운 room을 생성한다.
+// TODO: RoomManager와 상호작용 통해 새로운 RoomID의 Room을 생성하도록 변경
 func NewRoom() *Room {
 	room := &Room{
 		client_chan: make(map[*Client]*websocket.Conn),
