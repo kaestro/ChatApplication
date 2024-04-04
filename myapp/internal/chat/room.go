@@ -6,6 +6,7 @@ import (
 )
 
 type Room struct {
+	roomID string
 	// Registered map of clients to their websocket connections
 	client_chan map[*Client]*websocket.Conn
 
