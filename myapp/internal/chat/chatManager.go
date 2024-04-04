@@ -1,9 +1,4 @@
-// myapp/internal/chat/socket.go
-// Question:
-// 이거 이름 근데 socket이 맞을까? 이거는 client랑 room을 연결하는 역할을 하는데
-// 맞는 이름 고민해 봐야 할듯?
-// 따로 socket class만들고 class method로 만드는게 낫지 않을까?
-// 그러면 socket이라는 이름 보다는 connection과 같은 이름이 더 적절할 수도 있을듯
+// myapp/internal/chat/chatManager.go
 package chat
 
 import (
