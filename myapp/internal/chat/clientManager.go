@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	once          sync.Once
+	clientOnce    sync.Once
 	clientManager *ClientManager
 )
 
@@ -24,7 +24,7 @@ type ClientManager struct {
 }
 
 func GetClientManager() *ClientManager {
-	once.Do(func() {
+	clientOnce.Do(func() {
 		clientManager = &ClientManager{
 			clients: make(map[string]*Client),
 		}

@@ -5,9 +5,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// TODO
-// Client는 괜찮은데 Room은 더 일반적인 명사를 통해 추상화된 객체 이름으로 작성하는게 나을수도 있을듯?
-
 type Client struct {
 	// 어느 user인지 구분할 방법
 	sessionID string
