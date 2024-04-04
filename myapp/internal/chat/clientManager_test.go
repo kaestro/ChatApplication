@@ -6,31 +6,32 @@ import (
 )
 
 var (
-	maxClients = 10000
+	maxClients      = 10000
+	sampleSessionID = "123"
+	sampleClient    = &Client{sessionID: sampleSessionID}
 )
 
 func TestClientManager(t *testing.T) {
 	cm := GetClientManager()
 
 	// Test AddClient
-	client := &Client{sessionID: "123"}
-	cm.AddClient(client)
-	if !cm.CheckClient("123") {
+	cm.AddClient(sampleClient)
+	if !cm.CheckClient(sampleSessionID) {
 		t.Errorf("AddClient failed, expected sessionID 123 to exist")
 		return
 	}
 
 	// Test GetClient
-	gotClient := cm.GetClient("123")
-	if gotClient != client {
-		t.Errorf("GetClient failed, expected %v, got %v", client, gotClient)
+	gotClient := cm.GetClient(sampleSessionID)
+	if gotClient != sampleClient {
+		t.Errorf("GetClient failed, expected %v, got %v", sampleClient, gotClient)
 		return
 	}
 
 	// Test RemoveClient
-	cm.RemoveClient("123")
-	if cm.CheckClient("123") {
-		t.Errorf("RemoveClient failed, expected sessionID 123 to not exist")
+	cm.RemoveClient(sampleSessionID)
+	if cm.CheckClient(sampleSessionID) {
+		t.Errorf("RemoveClient failed, expected sessionID %s to be removed", sampleSessionID)
 		return
 	}
 
