@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	once        sync.Once
+	roomOnce    sync.Once
 	roomManager *RoomManager
 )
 
@@ -16,7 +16,7 @@ type RoomManager struct {
 }
 
 func GetRoomManager() *RoomManager {
-	once.Do(func() {
+	roomOnce.Do(func() {
 		roomManager = &RoomManager{
 			rooms: make(map[string]*Room),
 		}
