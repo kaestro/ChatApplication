@@ -18,3 +18,12 @@ type Connection struct {
 	room *Room
 	send chan []byte
 }
+
+func (c *Client) AddConnection(conn *websocket.Conn, room *Room) {
+	c.conn = append(c.conn, &Connection{
+		id:   len(c.conn),
+		conn: conn,
+		room: room,
+		send: make(chan []byte),
+	})
+}
