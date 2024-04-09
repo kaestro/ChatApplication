@@ -11,16 +11,10 @@ var (
 	clientManager *ClientManager
 )
 
-// key: sessionID, value: Client object
-// Question: How can I make sure that ClientManager won't be calling
-// garbage collection on the Client object?
-// Or should I assure it?
-// Should I limit the number of clients?
-// How does garbage collection work in Go?
-// It would be taking care of the memory management, which I'm not sure of
-// Question: Is making ClientManager a singleton a good idea?
+// 모든 클라이언트를 관리하는 singleton 객체
+// TODO: 갯수 제한 및 지속 시간 제한을 둘 수 있도록 변경
 type ClientManager struct {
-	clients map[string]*Client
+	clients map[string]*Client // key: sessionID, value: Client object
 }
 
 func GetClientManager() *ClientManager {
@@ -38,6 +32,7 @@ func (cm *ClientManager) CheckClient(sessionID string) bool {
 	return ok
 }
 
+// TODO: fmt 대신 별개의 로거를 사용하도록 변경
 func (cm *ClientManager) GetClient(sessionID string) *Client {
 	if !cm.CheckClient(sessionID) {
 		fmt.Println("Client with sessionID", sessionID, "does not exist")
@@ -61,4 +56,14 @@ func (cm *ClientManager) RemoveClient(sessionID string) {
 		return
 	}
 	delete(cm.clients, sessionID)
+}
+
+func (cm *ClientManager) UpdateClientID(client *Client, loginSessionID string) {
+	for savedID, savedClient := range cm.clients {
+		if savedClient == client {
+			cm.clients[loginSessionID] = client
+			delete(cm.clients, savedID)
+			break
+		}
+	}
 }
