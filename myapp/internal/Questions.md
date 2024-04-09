@@ -13,3 +13,6 @@
     - Should I limit the number of clients to be stored inside clientManager?
     - How does garbage collection work in Go?
     - Is making ClientManager a singleton a good idea?
+
+- room.go
+  - 현재 room.go의 AddClient는 객체를 (Client*, websocket.conn)을 받고 이를 통해 roomclienthandler를 생성하는데, 이를 roomclienthandler에서 먼저 처리하도록 해야하는가?
