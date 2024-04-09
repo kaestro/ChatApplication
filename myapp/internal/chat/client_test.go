@@ -44,7 +44,7 @@ func TestClientAddClientSession(t *testing.T) {
 		return
 	}
 
-	if client.clientSessions[0].socketConn != socketConn || client.clientSessions[0].room != room {
+	if client.clientSessions[0].socketConnection != socketConn || client.clientSessions[0].room != room {
 		t.Errorf("AddClientSession failed, expected socketConn and room to match")
 		return
 	}
