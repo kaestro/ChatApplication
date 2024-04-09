@@ -6,9 +6,10 @@ import (
 )
 
 var (
-	maxRooms     = 100
-	sampleRoomID = "123"
-	sampleRoom   = NewRoom(sampleRoomID)
+	maxRooms      = 100
+	sampleRoomID  = "123"
+	sampleRoom    = NewRoom(sampleRoomID)
+	sampleMessage = "test message"
 )
 
 func TestRoomManagerCycle(t *testing.T) {

@@ -2,12 +2,25 @@
 package chat
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 )
+
+type MockConn struct {
+	LastMessageType int
+	LastData        []byte
+}
+
+func (mc *MockConn) WriteMessage(messageType int, data []byte) error {
+	mc.LastMessageType = messageType
+	mc.LastData = make([]byte, len(data))
+	copy(mc.LastData, data)
+	return nil
+}
 
 func TestNewRoom(t *testing.T) {
 	room := NewRoom(sampleRoomID)
@@ -55,4 +68,26 @@ func TestCloseRoom(t *testing.T) {
 
 	// If room is closed, client should not be added
 	assert.False(t, room.IsClientInsideRoom(sampleLoginSessionID))
+}
+
+func TestReceiveMessageFromClient(t *testing.T) {
+	room := NewRoom(sampleRoomID)
+
+	for i := 0; i < 3; i++ {
+		client := NewClient(strconv.Itoa(i))
+		conn := &MockConn{}
+		room.AddClient(client, conn)
+	}
+
+	message := []byte(sampleMessage)
+	room.ReceiveMessageFromClient("0", message)
+	time.Sleep(time.Millisecond * 100)
+
+	for loginSessionID, handler := range room.sessionIDToHandler {
+		if !assert.Equal(t, message, handler.conn.(*MockConn).LastData) {
+			t.Errorf("TestReceiveMessageFromClient %s failed", loginSessionID)
+		} else {
+			t.Logf("TestReceiveMessageFromClient %s passed", loginSessionID)
+		}
+	}
 }

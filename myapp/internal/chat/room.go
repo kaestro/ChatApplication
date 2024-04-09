@@ -3,8 +3,6 @@ package chat
 
 import (
 	"fmt"
-
-	"github.com/gorilla/websocket"
 )
 
 type Room struct {
@@ -47,7 +45,7 @@ func (r *Room) closeRoom() {
 }
 
 // TODO: client가 있을 경우 충돌 처리
-func (r *Room) AddClient(client *Client, conn *websocket.Conn) {
+func (r *Room) AddClient(client *Client, conn Conn) {
 	loginSessionID := client.GetLoginSessionID()
 	if r.IsClientInsideRoom(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
@@ -70,6 +68,15 @@ func (r *Room) RemoveClient(loginSessionID string) {
 	}
 
 	r.unregister <- r.sessionIDToHandler[loginSessionID]
+}
+
+func (r *Room) ReceiveMessageFromClient(loginSessionID string, message []byte) {
+	if !r.IsClientInsideRoom(loginSessionID) {
+		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
+		return
+	}
+
+	r.broadcast <- message
 }
 
 // client가 room에서 메시지를 읽고 쓰는 전반적인 동작을 수행한다.

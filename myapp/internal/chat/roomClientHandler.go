@@ -7,14 +7,18 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type Conn interface {
+	WriteMessage(messageType int, data []byte) error
+}
+
 type RoomClientHandler struct {
 	client  *Client
-	conn    *websocket.Conn
+	conn    Conn
 	receive chan []byte
 	done    chan struct{}
 }
 
-func NewRoomClientHandler(client *Client, conn *websocket.Conn) *RoomClientHandler {
+func NewRoomClientHandler(client *Client, conn Conn) *RoomClientHandler {
 	roomClientHandler := &RoomClientHandler{
 		client:  client,
 		conn:    conn,

@@ -16,3 +16,4 @@
 
 - room.go
   - 현재 room.go의 AddClient는 객체를 (Client*, websocket.conn)을 받고 이를 통해 roomclienthandler를 생성하는데, 이를 roomclienthandler에서 먼저 처리하도록 해야하는가?
+  - 이미 close된 room에 대한 요청이 들어올 때, 이를 모든 method에서 확인하는 코드를 반복해서 작성하는 것은 문제가 있다. 이를 해결하기 위한 방법은?
