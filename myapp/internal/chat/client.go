@@ -20,6 +20,7 @@ type ClientSession struct {
 func NewClient(loginSessionID string) *Client {
 	return &Client{
 		loginSessionID: loginSessionID,
+		clientSessions: make([]*ClientSession, 0),
 	}
 }
 

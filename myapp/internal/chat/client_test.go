@@ -14,10 +14,10 @@ const (
 )
 
 func TestIsSameClient(t *testing.T) {
-	client := NewClient(sampleSessionID)
+	client := NewClient(sampleLoginSessionID)
 
 	// Test isSameClient with the same session ID
-	if !client.isSameClient(sampleSessionID) {
+	if !client.isSameClient(sampleLoginSessionID) {
 		t.Errorf("isSameClient failed, expected true, got false")
 		return
 	}
@@ -32,12 +32,12 @@ func TestIsSameClient(t *testing.T) {
 }
 
 func TestClientAddClientSession(t *testing.T) {
-	client := NewClient(sampleSessionID)
+	client := NewClient(sampleLoginSessionID)
 
 	// Test AddClientSession
 	socketConn := &websocket.Conn{}
 	room := NewRoom(sampleRoomID)
-	client.AddClientSession(socketConn, room, sampleSessionID)
+	client.AddClientSession(socketConn, room, sampleLoginSessionID)
 
 	if len(client.clientSessions) != ExpectedClientSessionLength {
 		t.Errorf("AddClientSession failed, expected length %d, got %v", ExpectedClientSessionLength, len(client.clientSessions))
@@ -53,13 +53,13 @@ func TestClientAddClientSession(t *testing.T) {
 }
 
 func TestClientRemoveClientSession(t *testing.T) {
-	client := NewClient(sampleSessionID)
+	client := NewClient(sampleLoginSessionID)
 
 	// Test RemoveClientSession
 	socketConn := &websocket.Conn{}
 	room := NewRoom(sampleRoomID)
-	client.AddClientSession(socketConn, room, sampleSessionID)
-	client.RemoveClientSession(0, sampleSessionID)
+	client.AddClientSession(socketConn, room, sampleLoginSessionID)
+	client.RemoveClientSession(0, sampleLoginSessionID)
 
 	if len(client.clientSessions) != 0 {
 		t.Errorf("RemoveClientSession failed, expected length 0, got %v", len(client.clientSessions))
@@ -70,12 +70,12 @@ func TestClientRemoveClientSession(t *testing.T) {
 }
 
 func TestClientSendMessageToClientSession(t *testing.T) {
-	client := NewClient(sampleSessionID)
+	client := NewClient(sampleLoginSessionID)
 
 	// Test SendMessageToClientSession
 	socketConn := &websocket.Conn{}
 	room := NewRoom(sampleRoomID)
-	client.AddClientSession(socketConn, room, sampleSessionID)
+	client.AddClientSession(socketConn, room, sampleLoginSessionID)
 	message := []byte(testMessage)
 
 	// Start a goroutine to read from the send channel
@@ -90,16 +90,16 @@ func TestClientSendMessageToClientSession(t *testing.T) {
 		}
 	}()
 
-	client.SendMessageToClientSession(0, message, sampleSessionID)
+	client.SendMessageToClientSession(0, message, sampleLoginSessionID)
 
 	t.Logf("SendMessageToClientSession passed")
 }
 
 func TestGetClientGetLoginSessionID(t *testing.T) {
-	client := NewClient(sampleSessionID)
+	client := NewClient(sampleLoginSessionID)
 
-	if client.GetLoginSessionID() != sampleSessionID {
-		t.Errorf("GetLoginSessionID failed, expected %s, got %s", sampleSessionID, client.GetLoginSessionID())
+	if client.GetLoginSessionID() != sampleLoginSessionID {
+		t.Errorf("GetLoginSessionID failed, expected %s, got %s", sampleLoginSessionID, client.GetLoginSessionID())
 	}
 
 	t.Logf("GetLoginSessionID passed")

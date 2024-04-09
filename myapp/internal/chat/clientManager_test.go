@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	maxClients      = 10000
-	sampleSessionID = "123"
-	sampleUpdateID  = "456"
-	sampleClient    = &Client{loginSessionID: sampleSessionID}
+	maxClients           = 10000
+	sampleLoginSessionID = "123"
+	sampleUpdateID       = "456"
+	sampleClient         = NewClient(sampleLoginSessionID)
 )
 
 func TestClientManager(t *testing.T) {
@@ -17,22 +17,22 @@ func TestClientManager(t *testing.T) {
 
 	// Test AddClient
 	cm.AddClient(sampleClient)
-	if !cm.CheckClient(sampleSessionID) {
+	if !cm.CheckClient(sampleLoginSessionID) {
 		t.Errorf("AddClient failed, expected sessionID 123 to exist")
 		return
 	}
 
 	// Test GetClient
-	gotClient := cm.GetClient(sampleSessionID)
+	gotClient := cm.GetClient(sampleLoginSessionID)
 	if gotClient != sampleClient {
 		t.Errorf("GetClient failed, expected %v, got %v", sampleClient, gotClient)
 		return
 	}
 
 	// Test RemoveClient
-	cm.RemoveClient(sampleSessionID)
-	if cm.CheckClient(sampleSessionID) {
-		t.Errorf("RemoveClient failed, expected sessionID %s to be removed", sampleSessionID)
+	cm.RemoveClient(sampleLoginSessionID)
+	if cm.CheckClient(sampleLoginSessionID) {
+		t.Errorf("RemoveClient failed, expected sessionID %s to be removed", sampleLoginSessionID)
 		return
 	}
 
@@ -63,16 +63,16 @@ func TestClientManagerUpdateClientID(t *testing.T) {
 	cm := GetClientManager()
 
 	cm.AddClient(sampleClient)
-	if !cm.CheckClient(sampleSessionID) {
-		t.Errorf("AddClient failed, expected sessionID %s to exist", sampleSessionID)
+	if !cm.CheckClient(sampleLoginSessionID) {
+		t.Errorf("AddClient failed, expected sessionID %s to exist", sampleLoginSessionID)
 		return
 	}
 
 	cm.UpdateClientID(sampleClient, sampleUpdateID)
 
 	// Check if the old sessionID no longer exists
-	if cm.CheckClient(sampleSessionID) {
-		t.Errorf("UpdateClient failed, expected old sessionID %s to be removed", sampleSessionID)
+	if cm.CheckClient(sampleLoginSessionID) {
+		t.Errorf("UpdateClient failed, expected old sessionID %s to be removed", sampleLoginSessionID)
 		return
 	}
 

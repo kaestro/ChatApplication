@@ -2,34 +2,34 @@
 package chat
 
 import (
+	"fmt"
+
 	"github.com/gorilla/websocket"
 )
 
 type Room struct {
 	roomID string
 	// Registered map of clients to their websocket connections
-	client_chan map[*Client]*websocket.Conn
+	sessionIDToHandler map[string]*RoomClientHandler
 
 	// Inbound messages from the clients.
 	broadcast chan []byte
 
-	register   chan *ClientConn
-	unregister chan *ClientConn
-}
+	register   chan *RoomClientHandler
+	unregister chan *RoomClientHandler
 
-type ClientConn struct {
-	client *Client
-	conn   *websocket.Conn
+	done chan struct{}
 }
 
 // TODO: RoomManager와 상호작용 통해 새로운 RoomID의 Room을 생성하도록 변경
 func NewRoom(roomId string) *Room {
 	room := &Room{
-		roomID:      roomId,
-		client_chan: make(map[*Client]*websocket.Conn),
-		broadcast:   make(chan []byte),
-		register:    make(chan *ClientConn),
-		unregister:  make(chan *ClientConn),
+		roomID:             roomId,
+		sessionIDToHandler: make(map[string]*RoomClientHandler),
+		broadcast:          make(chan []byte),
+		register:           make(chan *RoomClientHandler),
+		unregister:         make(chan *RoomClientHandler),
+		done:               make(chan struct{}),
 	}
 
 	go room.run()
@@ -37,8 +37,39 @@ func NewRoom(roomId string) *Room {
 	return room
 }
 
+func (r *Room) IsClientInsideRoom(loginSessionID string) bool {
+	_, ok := r.sessionIDToHandler[loginSessionID]
+	return ok
+}
+
+func (r *Room) closeRoom() {
+	close(r.done)
+}
+
+// TODO: client가 있을 경우 충돌 처리
 func (r *Room) AddClient(client *Client, conn *websocket.Conn) {
-	r.register <- &ClientConn{client: client, conn: conn}
+	loginSessionID := client.GetLoginSessionID()
+	if r.IsClientInsideRoom(loginSessionID) {
+		fmt.Println("Client with sessionID", loginSessionID, "already exists")
+		return
+	}
+
+	select {
+	case <-r.done:
+		fmt.Println("Room is closed, can't add client")
+		return
+	default:
+		r.register <- NewRoomClientHandler(client, conn)
+	}
+}
+
+func (r *Room) RemoveClient(loginSessionID string) {
+	if !r.IsClientInsideRoom(loginSessionID) {
+		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
+		return
+	}
+
+	r.unregister <- r.sessionIDToHandler[loginSessionID]
 }
 
 // client가 room에서 메시지를 읽고 쓰는 전반적인 동작을 수행한다.
@@ -46,30 +77,31 @@ func (r *Room) AddClient(client *Client, conn *websocket.Conn) {
 // Problem: It seems too much of responsibility on Client Object. That is, it might be better for
 // the Room object to have structured data of clients and websocket connections
 func (r *Room) run() {
-	/*
-		for {
-			select {
-			case client := <-r.register:
-				r.clients[client] = true
-			case client := <-r.unregister:
-				if _, ok := r.clients[client]; ok {
-					delete(r.clients, client)
-					close(client.send)
-				}
-			case message := <-r.broadcast:
-				for client := range r.clients {
-					for i := 0; i < 3; i++ { // 재전송을 최대 3번 시도
-						select {
-						case client.send <- message:
-							break // 메시지 전송 성공, 재전송 시도 중단
-						default:
-							if i == 2 { // 재전송 횟수 초과, 로그 출력
-								fmt.Println("Message delivery failed after 3 attempts")
-							}
-						}
-					}
-				}
-			}
+	for {
+		select {
+		case clientHandler := <-r.register:
+			r.registerClientHandler(clientHandler)
+		case clientHandler := <-r.unregister:
+			r.unregisterClientHandler(clientHandler)
+		case message := <-r.broadcast:
+			r.broadcastMessage(message)
+		case <-r.done:
+			return
 		}
-	*/
+	}
+}
+
+func (r *Room) registerClientHandler(clientHandler *RoomClientHandler) {
+	r.sessionIDToHandler[clientHandler.getLoginSessionID()] = clientHandler
+}
+
+func (r *Room) unregisterClientHandler(clientHandler *RoomClientHandler) {
+	clientHandler.close()
+	delete(r.sessionIDToHandler, clientHandler.getLoginSessionID())
+}
+
+func (r *Room) broadcastMessage(message []byte) {
+	for _, clientHandler := range r.sessionIDToHandler {
+		clientHandler.receiveMessageFromRoom(message)
+	}
 }

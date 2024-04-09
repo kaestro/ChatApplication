@@ -8,10 +8,10 @@ import (
 var (
 	maxRooms     = 100
 	sampleRoomID = "123"
-	sampleRoom   = &Room{roomID: sampleRoomID}
+	sampleRoom   = NewRoom(sampleRoomID)
 )
 
-func TestRoomManager(t *testing.T) {
+func TestRoomManagerCycle(t *testing.T) {
 	rm := GetRoomManager()
 
 	// Test AddRoom

@@ -14,7 +14,7 @@ var (
 // 모든 클라이언트를 관리하는 singleton 객체
 // TODO: 갯수 제한 및 지속 시간 제한을 둘 수 있도록 변경
 type ClientManager struct {
-	clients map[string]*Client // key: sessionID, value: Client object
+	clients map[string]*Client // key: loginSessionID, value: Client object
 }
 
 func GetClientManager() *ClientManager {
@@ -27,19 +27,19 @@ func GetClientManager() *ClientManager {
 	return clientManager
 }
 
-func (cm *ClientManager) CheckClient(sessionID string) bool {
-	_, ok := cm.clients[sessionID]
+func (cm *ClientManager) CheckClient(loginSessionID string) bool {
+	_, ok := cm.clients[loginSessionID]
 	return ok
 }
 
 // TODO: fmt 대신 별개의 로거를 사용하도록 변경
-func (cm *ClientManager) GetClient(sessionID string) *Client {
-	if !cm.CheckClient(sessionID) {
-		fmt.Println("Client with sessionID", sessionID, "does not exist")
+func (cm *ClientManager) GetClient(loginSessionID string) *Client {
+	if !cm.CheckClient(loginSessionID) {
+		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return nil
 	}
 
-	return cm.clients[sessionID]
+	return cm.clients[loginSessionID]
 }
 
 func (cm *ClientManager) AddClient(client *Client) {
