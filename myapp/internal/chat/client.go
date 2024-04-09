@@ -67,3 +67,7 @@ func (c *Client) SendMessageToClientSession(clientSessionID int, message []byte,
 		}
 	}
 }
+
+func (c *Client) GetLoginSessionID() string {
+	return c.loginSessionID
+}

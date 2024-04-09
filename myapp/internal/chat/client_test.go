@@ -94,3 +94,13 @@ func TestClientSendMessageToClientSession(t *testing.T) {
 
 	t.Logf("SendMessageToClientSession passed")
 }
+
+func TestGetClientGetLoginSessionID(t *testing.T) {
+	client := NewClient(sampleSessionID)
+
+	if client.GetLoginSessionID() != sampleSessionID {
+		t.Errorf("GetLoginSessionID failed, expected %s, got %s", sampleSessionID, client.GetLoginSessionID())
+	}
+
+	t.Logf("GetLoginSessionID passed")
+}
