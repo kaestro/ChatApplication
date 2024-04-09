@@ -23,8 +23,9 @@ type ClientConn struct {
 }
 
 // TODO: RoomManager와 상호작용 통해 새로운 RoomID의 Room을 생성하도록 변경
-func NewRoom() *Room {
+func NewRoom(roomId string) *Room {
 	room := &Room{
+		roomID:      roomId,
 		client_chan: make(map[*Client]*websocket.Conn),
 		broadcast:   make(chan []byte),
 		register:    make(chan *ClientConn),

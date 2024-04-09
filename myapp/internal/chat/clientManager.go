@@ -48,11 +48,11 @@ func (cm *ClientManager) GetClient(sessionID string) *Client {
 }
 
 func (cm *ClientManager) AddClient(client *Client) {
-	if cm.CheckClient(client.sessionID) {
-		fmt.Println("Client with sessionID", client.sessionID, "already exists")
+	if cm.CheckClient(client.loginSessionID) {
+		fmt.Println("Client with sessionID", client.loginSessionID, "already exists")
 		return
 	}
-	cm.clients[client.sessionID] = client
+	cm.clients[client.loginSessionID] = client
 }
 
 func (cm *ClientManager) RemoveClient(sessionID string) {

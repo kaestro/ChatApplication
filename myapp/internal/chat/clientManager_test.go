@@ -8,7 +8,7 @@ import (
 var (
 	maxClients      = 10000
 	sampleSessionID = "123"
-	sampleClient    = &Client{sessionID: sampleSessionID}
+	sampleClient    = &Client{loginSessionID: sampleSessionID}
 )
 
 func TestClientManager(t *testing.T) {
@@ -43,7 +43,7 @@ func TestClientManagerCapacity(t *testing.T) {
 
 	// Test AddClient
 	for i := 0; i < maxClients; i++ {
-		client := &Client{sessionID: string(rune(i))}
+		client := &Client{loginSessionID: string(rune(i))}
 		cm.AddClient(client)
 	}
 
