@@ -67,23 +67,23 @@ func (cm *ClientManager) updateClientID(client *Client, loginSessionID string) {
 	}
 }
 
-func (cm *ClientManager) createClient(loginSessionID string) *Client {
+func (cm *ClientManager) createClient(loginSessionID string, conn Conn) *Client {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
 		return nil
 	}
 
-	client := NewClient(loginSessionID)
+	client := NewClient(loginSessionID, conn)
 	return client
 }
 
-func (cm *ClientManager) registerNewClient(loginSessionID string) *Client {
+func (cm *ClientManager) registerNewClient(loginSessionID string, conn Conn) *Client {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
 		return nil
 	}
 
-	client := cm.createClient(loginSessionID)
+	client := cm.createClient(loginSessionID, conn)
 	if client == nil {
 		fmt.Println("Failed to create client with sessionID", loginSessionID)
 		return nil

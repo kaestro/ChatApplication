@@ -16,10 +16,10 @@ type RoomClientHandler struct {
 	done    chan struct{}
 }
 
-func NewRoomClientHandler(client *Client, conn Conn) *RoomClientHandler {
+func NewRoomClientHandler(client *Client) *RoomClientHandler {
 	roomClientHandler := &RoomClientHandler{
 		client:  client,
-		conn:    conn,
+		conn:    client.conn,
 		receive: make(chan []byte),
 		done:    make(chan struct{}),
 	}

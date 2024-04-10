@@ -2,11 +2,15 @@
 package chat
 
 import (
+	"encoding/json"
+	"reflect"
 	"testing"
+	"time"
 )
 
 func TestIsSameClient(t *testing.T) {
-	client := NewClient(sampleLoginSessionID)
+	conn := &MockConn{}
+	client := NewClient(sampleLoginSessionID, conn)
 
 	// Test isSameClient with the same session ID
 	if !client.isSameClient(sampleLoginSessionID) {
@@ -24,20 +28,20 @@ func TestIsSameClient(t *testing.T) {
 }
 
 func TestClientAddClientSession(t *testing.T) {
-	client := NewClient(sampleLoginSessionID)
+	conn := &MockConn{}
+	client := NewClient(sampleLoginSessionID, conn)
 
 	// Test AddClientSession
-	socketConn := &MockConn{}
 	room := NewRoom(sampleRoomID)
-	client.AddClientSession(socketConn, room, sampleLoginSessionID)
+	client.AddClientSession(room, sampleLoginSessionID)
 
 	if len(client.clientSessions) != ExpectedClientSessionLength {
 		t.Errorf("AddClientSession failed, expected length %d, got %v", ExpectedClientSessionLength, len(client.clientSessions))
 		return
 	}
 
-	if client.clientSessions[0].socketConnection != socketConn || client.clientSessions[0].room != room {
-		t.Errorf("AddClientSession failed, expected socketConn and room to match")
+	if client.clientSessions[0].id != len(client.clientSessions)-1 {
+		t.Errorf("AddClientSession failed, expected id 0, got %v", client.clientSessions[0].id)
 		return
 	}
 
@@ -45,12 +49,11 @@ func TestClientAddClientSession(t *testing.T) {
 }
 
 func TestClientRemoveClientSession(t *testing.T) {
-	client := NewClient(sampleLoginSessionID)
+	client := NewClient(sampleLoginSessionID, &MockConn{})
 
 	// Test RemoveClientSession
-	socketConn := &MockConn{}
 	room := NewRoom(sampleRoomID)
-	client.AddClientSession(socketConn, room, sampleLoginSessionID)
+	client.AddClientSession(room, sampleLoginSessionID)
 	client.RemoveClientSession(0, sampleLoginSessionID)
 
 	if len(client.clientSessions) != 0 {
@@ -62,11 +65,72 @@ func TestClientRemoveClientSession(t *testing.T) {
 }
 
 func TestGetClientGetLoginSessionID(t *testing.T) {
-	client := NewClient(sampleLoginSessionID)
+	client := NewClient(sampleLoginSessionID, &MockConn{})
 
 	if client.GetLoginSessionID() != sampleLoginSessionID {
 		t.Errorf("GetLoginSessionID failed, expected %s, got %s", sampleLoginSessionID, client.GetLoginSessionID())
 	}
 
 	t.Logf("GetLoginSessionID passed")
+}
+
+func TestListen(t *testing.T) {
+	conn := &MockConn{}
+	client := &Client{
+		loginSessionID: sampleLoginSessionID,
+		clientSessions: make([]*ClientSession, 0),
+		conn:           conn,
+	}
+
+	go client.listen()
+
+	// Wait for listen to process the message
+	time.Sleep(time.Second)
+
+	conn.WriteMessage(0, sampleMessageBytes)
+
+	var sentMessage, receivedMessage ChatMessage
+	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal sent message: %v", err)
+	}
+
+	err = json.Unmarshal(conn.LastData, &receivedMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal received message: %v", err)
+	}
+
+	if !reflect.DeepEqual(sentMessage, receivedMessage) {
+		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
+	}
+}
+
+func TestSendMessageToRoom(t *testing.T) {
+	conn := &MockConn{}
+	conn.WriteMessage(0, sampleMessageBytes)
+	client := NewClient(sampleLoginSessionID, conn)
+
+	// Add a client session with a room
+	room := NewRoom(sampleRoomID)
+	client.AddClientSession(room, sampleLoginSessionID)
+
+	// Send a message to the room
+	client.sendMessageToRoom(sampleMessageBytes, sampleRoomID)
+
+	time.Sleep(100 * time.Millisecond)
+
+	var sentMessage, receivedMessage ChatMessage
+	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal sent message: %v", err)
+	}
+
+	err = json.Unmarshal(conn.LastData, &receivedMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal received message: %v", err)
+	}
+
+	if !reflect.DeepEqual(sentMessage, receivedMessage) {
+		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
+	}
 }
