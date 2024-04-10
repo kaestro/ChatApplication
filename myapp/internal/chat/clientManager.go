@@ -11,8 +11,8 @@ var (
 	clientManager *ClientManager
 )
 
-// 모든 클라이언트를 관리하는 singleton 객체
-// TODO: 갯수 제한 및 지속 시간 제한을 둘 수 있도록 변경
+// Client에 대한 CRUD를 담당하는 ClientManager
+// Singleton 객체로 구현되어 있다.
 type ClientManager struct {
 	clients map[string]*Client // key: loginSessionID, value: Client object
 }

@@ -1,6 +1,7 @@
 // myapp/internal/chat/models.go
 package chat
 
+// client는 채팅 서버에 접속한 클라이언트(user)를 나타낸다.
 type Client struct {
 	loginSessionID string           // 어느 user인지 구분하는 id
 	clientSessions []*ClientSession // room, socket, send channel을 가지고 있는 session slice

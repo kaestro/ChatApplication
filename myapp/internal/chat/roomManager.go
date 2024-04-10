@@ -11,11 +11,8 @@ var (
 	roomManager *RoomManager
 )
 
-// Question: Do we Actually need map for rooms?
-// Can we just use slice for rooms?
-// -> answer: using slice would make algorithm harder to implement
-// considering the fact that removing a room from the slice would require
-// But still using integer instead of string for roomID might be better?
+// RoomManager는 방의 유무를 확인, 생성, 제거, 조회를 담당한다.
+// Singleton 객체로 구현되어 있다.
 type RoomManager struct {
 	rooms map[string]*Room
 }
