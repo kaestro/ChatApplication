@@ -12,19 +12,24 @@
 
 ## 목차
 
-* 팀원 구성 및 협업 방식
-* MVP(Mininum Viable Product)
-* 기술 스택
-* 확장 계획
-* 인프라 AS-IS 및 TO-BE
-
----
-
-## 팀원 구성 및 협업 방식
-
-총 3명의 팀원([TLOWAC](https://github.com/TLOWAC), [neuma](https://github.com/neuma573), [kaestro](https://github.com/kaestro))으로 구성되어 있으며, 원활한 협업을 위해 노력하고 있습니다.
-
-이를 위해 **[notion](https://www.notion.so/lthek55/Golang-Chat-Backend-f308886d9d834d1a9059d42545066c46), github actions, trunk based development** 등을 통해 생산성과 협업능력을 향상하고 있습니다. 세부적으로는 매 주 1회 **회의**를 통해 진행 상황 공유 및 방향성을 정하였으며, **unit test**를 포함해서 직접적인 **push가 불가능**한 **main branch**에 merge하기 전에는 **code review**를 거치도록 하였습니다.
+- [Chat Application](#chat-application)
+  - [개요](#개요)
+  - [목차](#목차)
+  - [MVP(Mininum Viable Product)](#mvpmininum-viable-product)
+  - [기술 스택](#기술-스택)
+  - [구조](#구조)
+    - [chat](#chat)
+    - [api](#api)
+    - [db/session](#dbsession)
+  - [프로젝트 규칙](#프로젝트-규칙)
+    - [코드 컨벤션](#코드-컨벤션)
+    - [git branch 전략](#git-branch-전략)
+    - [test](#test)
+    - [github actions](#github-actions)
+  - [확장 계획](#확장-계획)
+    - [1차 목표](#1차-목표)
+    - [2차 목표](#2차-목표)
+  - [인프라 현상황 및 확장 계획](#인프라-현상황-및-확장-계획)
 
 ---
 
@@ -36,7 +41,6 @@
 1. 로그인 및 회원가입
 2. 채팅방 생성 및 입장
 3. 채팅 메시지 전송 및 수신
-4. 채팅 기록 저장
 ```
 
 ---
@@ -45,21 +49,132 @@
 
 현재 진행 중인 프로젝트의 기술 스택은 다음과 같습니다.
 
-* 웹서버
-  * goLang
-  * gin
-* 데이터베이스
-  * postgresql
-* 세션 관리
-  * redis
-* 컨테이너
-  * docker
+- 웹서버
+  - goLang
+  - gin framework
+- 데이터베이스
+  - postgresql
+- 세션 관리
+  - redis
+- CI/CD
+  - github actions
+- 형상관리
+  - git
+- 컨테이너
+  - docker
 
-이와 관련해서 선택한 이유는 [다음](https://kaestro.github.io/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80/2024/03/19/Chat-Application-5%EC%A3%BC%EC%B0%A8-review.html)에서 확인하실 수 있습니다.
+다중 접속자 간의 실시간 통신은 동시에 여러 사용자가 상호작용하는 웹서버를 구축해야하고, 이를 위해 동시성 처리에 유리한 goLang을 선택했습니다. gin framework는 goLang의 웹 프레임워크 중 하나로, 빠른 개발을 위해 선택했으며, 그 밖의 기술들은 기존에 제가 사용해 본 적이 있는 것들이거나 배우는 데에 많은 부하가 걸리지 않는 것들 위주로 선택했습니다.
+
+이들을 선택한 자세한 이유는 [다음](https://kaestro.github.io/%EA%B0%9C%EB%B0%9C%EC%9D%BC%EC%A7%80/2024/03/19/Chat-Application-5%EC%A3%BC%EC%B0%A8-review.html)에서 확인하실 수 있습니다.
+
+---
+
+## 구조
+
+진행 중인 프로젝트의 구조는 크게 api, db/session, chat 3가지로 나누어져 있습니다.
+
+```md
+myapp
+├── api
+│   ├── handler
+│   ├── model
+│   └── service
+├── internal
+│   ├── db
+│   ├── chat
+│   └── session
+├── main.go
+└── go.mod
+```
+
+### chat
+
+chat 모듈은 사용자의 실시간 통신을 위한 내부 로직을 처리하는 중추적인 역할을 합니다. 사용자의 메시지 전송 및 수신, 채팅방의 생성 및 입장 등의 기능을 처리합니다. 구조는 다음과 같습니다.
+
+```md
+chat
+├── chatManager.go
+├── roomManager.go
+├── clientManager.go
+├── room.go
+├── roomClientHandler.go
+├── client.go
+└── clientSession.go
+```
+
+chatManager는 chat 모듈 외부에서 chat 모듈을 사용하기 위한 인터페이스를 제공합니다. 이 때 room과 관련된 요청은 roomManager에게, client와 관련된 요청은 clientManager에게 전달합니다.
+
+room은 채팅방을 나타내는 구조체로, 채팅방의 정보와 채팅방에 속한 클라이언트들을 관리합니다. 이 때 roomClientHandler를 통해 클라이언트와의 상호작용을 처리합니다.
+
+client는 사용자를 나타내는 구조체로, 사용자의 정보와 사용자의 세션을 관리합니다. 이 때 clientSession을 통해 room과의 상호작용을 처리합니다.
+
+### api
+
+api는 사용자의 요청을 받아 처리하는 역할을 합니다. 사용자의 요청을 받아 처리하는 handler, 데이터베이스와 통신하는 model, 비즈니스 로직을 처리하는 service로 나누어져 있습니다.
+
+작성하게 될 api의 종류에는 user의 인증, 채팅방의 생성 및 입장, 채팅 메시지의 전송 및 수신 등이 있습니다.
+
+주로 사용하는 기술 스택은 goLang과 gin framework입니다.
+
+### db/session
+
+db와 session은 데이터베이스와 세션을 관리하는 역할을 합니다. 데이터베이스는 사용자의 정보, 채팅방의 정보, 채팅 메시지 등을 저장하고, 세션은 사용자의 로그인 상태를 관리합니다.
+
+데이터베이스는 postgresql을 사용하고, 세션은 redis를 사용합니다.
+
+---
+
+## 프로젝트 규칙
+
+프로젝트를 진행하면서 지키고자 하는 규칙은 다음과 같습니다.
+
+### 코드 컨벤션
+
+- goLang의 gofmt 규칙을 따른다
+- single responsibility principle을 따른다
+- 변수명이 하는 역할을 명확하게 반영하도록 한다
+
+### git branch 전략
+
+- main branch는 배포 가능한 상태를 유지한다
+- develop branch는 feature를 병합해서 테스트하는 최신 상태를 유지한다.
+- feature branch는 기능별로 나누어 작성한다
+
+### test
+
+- 모든 코드는 unit test를 작성한다
+- 소스 코드의 test코드는 _test.go로 작성한다
+  - ex) chat.go -> chat_test.go
+- 모든 코드는 테스트 가능한 상태를 유지한다
+
+### github actions
+
+- develop/main branch에 대해 pull request가 올라오면 자동으로 [다음의 테스트](https://github.com/kaestro/ChatApplication/blob/main/.github/workflows/ci.yml)를 진행한다
+  - 웹서버 빌드
+  - docker 빌드
+  - go test
 
 ---
 
 ## 확장 계획
+
+### 1차 목표
+
+최소한의 채팅 기능이 구현된 이후에는 채팅 기능은 아니지만, 부가적인 기능들과 최소 기능을 구현하는 과정에서 생긴 의문점과 TODO로 작성하고 넘어간 부분들을 해소하는 것을 목표로 하고 있습니다.
+
+- 부가적인 기능의 예시
+  - 내부 로직 처리의 로그 기능 추가
+  - 로그 기능의 debugging, running mode 추가
+  - 미들웨어를 통한 반복적인 검증 로직 추가
+- [의문점 예시](https://github.com/kaestro/ChatApplication/blob/main/myapp/internal/Questions.md)
+  - clientManager/roomManager는 얼마나 오랫동안, 얼마나 많은 client/room를 관리할 수 있는가?
+  - garbage collection을 통해 client/room을 어떻게 관리할 것인가?
+  - key의 충돌 등이 일어나는 예외 사항에 대한 처리는 어떻게 할 것인가?
+- [TODO](https://github.com/kaestro/ChatApplication/blob/main/myapp/internal/TODO.md)
+
+### 2차 목표
+
+1차 목표를 달성한 이후에는 **대규모 인원과 트래픽을 처리**할 수 있는 서버를 구축하는 것을 목표로 하고 있습니다.
 
 **목표**로하고 있는 대규모 인원과 트래픽은 다음과 같이 **정의**했습니다.
 
@@ -85,7 +200,7 @@
 
 현재 진행 중인 프로젝트의 인프라 구성 및 [설계도](https://github.com/kaestro/ChatApplication/wiki/%EC%8B%9C%EC%8A%A4%ED%85%9C-%EC%84%A4%EA%B3%84%EB%8F%84)는 다음과 같습니다.
 
-![image](https://drive.google.com/uc?export=download&id=1vH5W8z8Mc3vJbb8NVku8OpOhpIhnbYGz)
+![image](https://camo.githubusercontent.com/b0ca2b60dbacab06d3aa600efaec77524fd96b74f9b7059b74288cac6c9ab486/68747470733a2f2f64726976652e676f6f676c652e636f6d2f75633f6578706f72743d646f776e6c6f61642669643d3176483557387a384d6333764a6262384e566b75384f704f687049686e6259477a)
 
 ```md
 1. github actions
