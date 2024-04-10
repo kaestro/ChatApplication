@@ -10,46 +10,24 @@ import (
 )
 
 func TestRoomClientHandler_sendMessageToClient(t *testing.T) {
-	conn := &MockConn{}
-	client := NewClient(sampleLoginSessionID, conn)
-	roomClientHandler := NewRoomClientHandler(client)
+	conn, roomClientHandler := setConnClientHandler()
 
-	roomClientHandler.receive <- sampleMessageBytes
+	roomClientHandler.sendMessageToClient(sampleMessageBytes)
 
 	// Wait for a short period of time to ensure that the listen goroutine has started
 	time.Sleep(100 * time.Millisecond)
 
-	var sentMessage, receivedMessage ChatMessage
-	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal sent message: %v", err)
-	}
-	fmt.Println("sentMessage: ", sentMessage)
-
-	err = json.Unmarshal(conn.LastData, &receivedMessage)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal received message: %v", err)
-	}
-
-	if !reflect.DeepEqual(sentMessage, receivedMessage) {
-		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
-	}
+	compareMessages(t, conn)
 }
 
-func TestRoomClientHandler_listen(t *testing.T) {
-	/*
-		mockConn := &MockConn{}
-		roomClientHandler := NewRoomClientHandler(sampleClient)
+func TestRoomClientHandler_receiveMessageFromRoom(t *testing.T) {
+	conn, roomClientHandler := setConnClientHandler()
 
-		roomClientHandler.receiveMessageFromRoom([]byte(sampleMessage))
+	roomClientHandler.receiveMessageFromRoom(sampleMessageBytes)
 
-		// Wait for a short period of time to ensure that the listen goroutine has started
-		time.Sleep(100 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
-		if string(mockConn.LastData) != sampleMessage {
-			t.Errorf("Expected message '%s', but got '%s'", sampleMessage, string(mockConn.LastData))
-		}
-	*/
+	compareMessages(t, conn)
 }
 
 func TestRoomClientHandler_close(t *testing.T) {
@@ -65,5 +43,30 @@ func TestRoomClientHandler_close(t *testing.T) {
 		// The done channel is closed, which is expected
 	default:
 		t.Errorf("Expected roomClientHandler.done to be closed, but it's not")
+	}
+}
+
+func setConnClientHandler() (*MockConn, *RoomClientHandler) {
+	conn := &MockConn{}
+	client := NewClient(sampleLoginSessionID, conn)
+	roomClientHandler := NewRoomClientHandler(client)
+	return conn, roomClientHandler
+}
+
+func compareMessages(t *testing.T, conn *MockConn) {
+	var sentMessage, receivedMessage ChatMessage
+	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal sent message: %v", err)
+	}
+	fmt.Println("sentMessage: ", sentMessage)
+
+	err = json.Unmarshal(conn.LastData, &receivedMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal received message: %v", err)
+	}
+
+	if !reflect.DeepEqual(sentMessage, receivedMessage) {
+		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
 	}
 }
