@@ -6,6 +6,10 @@
   - client의 sessionID를 계속해서 검증하는 작업이 반복되는 중
     - 중복되는 코드를 줄이기 위해 middleware로 분리하는 방법의 검토
 
+- clientSession.go
+  - 현재 모든 client - room 간의 session이 go를 통해 관리 되고 있다.
+  - 이것이 대용량에 대해서도 문제가 없는지, 어느 정도의 규모까지 성능이 유지되는지 확인 필요
+
 - clientManager.go
   - Question
     - How can I make sure that ClientManager won't be calling garbage collection on the Client object?

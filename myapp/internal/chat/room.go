@@ -70,9 +70,11 @@ func (r *Room) RemoveClient(loginSessionID string) {
 	r.unregister <- r.sessionIDToHandler[loginSessionID]
 }
 
+// TODO: Set debugging messages to be printed only when debugging is enabled
 func (r *Room) ReceiveMessageFromClient(loginSessionID string, message []byte) {
 	if !r.IsClientInsideRoom(loginSessionID) {
-		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
+		// Debugging message
+		// fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return
 	}
 

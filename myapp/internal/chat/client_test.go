@@ -3,13 +3,6 @@ package chat
 
 import (
 	"testing"
-
-	"github.com/gorilla/websocket"
-)
-
-const (
-	ExpectedClientSessionLength = 1
-	testMessage                 = "test message"
 )
 
 func TestIsSameClient(t *testing.T) {
@@ -34,7 +27,7 @@ func TestClientAddClientSession(t *testing.T) {
 	client := NewClient(sampleLoginSessionID)
 
 	// Test AddClientSession
-	socketConn := &websocket.Conn{}
+	socketConn := &MockConn{}
 	room := NewRoom(sampleRoomID)
 	client.AddClientSession(socketConn, room, sampleLoginSessionID)
 
@@ -55,7 +48,7 @@ func TestClientRemoveClientSession(t *testing.T) {
 	client := NewClient(sampleLoginSessionID)
 
 	// Test RemoveClientSession
-	socketConn := &websocket.Conn{}
+	socketConn := &MockConn{}
 	room := NewRoom(sampleRoomID)
 	client.AddClientSession(socketConn, room, sampleLoginSessionID)
 	client.RemoveClientSession(0, sampleLoginSessionID)

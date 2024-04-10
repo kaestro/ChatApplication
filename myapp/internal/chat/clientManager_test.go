@@ -5,13 +5,6 @@ import (
 	"testing"
 )
 
-var (
-	maxClients           = 10000
-	sampleLoginSessionID = "123"
-	sampleUpdateID       = "456"
-	sampleClient         = NewClient(sampleLoginSessionID)
-)
-
 func TestClientManager(t *testing.T) {
 	cm := GetClientManager()
 
