@@ -1,24 +1,21 @@
 // myapp/internal/chat/clientSession.go
 package chat
 
-import (
-	"log"
-	"strconv"
-)
-
 // ClientSession은 방과 클라이언트의 중개자 역할을 한다.
 // 클라이언트와 방 사이의 연결을 유지하고, 클라이언트의 메시지를 받아 해당 방으로 전달한다.
 type ClientSession struct {
-	id               int
-	socketConnection Conn
-	room             *Room
+	id   int
+	room *Room
+	send chan []byte
+	done chan struct{}
 }
 
-func NewClientSession(id int, conn Conn, room *Room) *ClientSession {
+func NewClientSession(id int, room *Room) *ClientSession {
 	clientSession := &ClientSession{
-		id:               id,
-		socketConnection: conn,
-		room:             room,
+		id:   id,
+		room: room,
+		send: make(chan []byte),
+		done: make(chan struct{}),
 	}
 
 	go clientSession.listen()
@@ -26,14 +23,17 @@ func NewClientSession(id int, conn Conn, room *Room) *ClientSession {
 	return clientSession
 }
 
+func (cs *ClientSession) sendMessage(message []byte) {
+	cs.send <- message
+}
+
 func (cs *ClientSession) listen() {
 	for {
-		_, message, err := cs.socketConnection.ReadMessage()
-		if err != nil {
-			log.Printf("error occurred while reading message: %v", err)
-			break
+		select {
+		case message := <-cs.send:
+			cs.room.broadcast <- message
+		case <-cs.done:
+			return
 		}
-
-		cs.room.ReceiveMessageFromClient(strconv.Itoa(cs.id), message)
 	}
 }
