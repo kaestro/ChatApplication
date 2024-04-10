@@ -22,6 +22,10 @@ func (mc *MockConn) WriteMessage(messageType int, data []byte) error {
 	return nil
 }
 
+func (mc *MockConn) ReadMessage() (messageType int, p []byte, err error) {
+	return 0, nil, nil
+}
+
 func TestNewRoom(t *testing.T) {
 	room := NewRoom(sampleRoomID)
 

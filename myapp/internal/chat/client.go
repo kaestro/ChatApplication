@@ -6,13 +6,6 @@ type Client struct {
 	clientSessions []*ClientSession // room, socket, send channel을 가지고 있는 session slice
 }
 
-type ClientSession struct {
-	id               int
-	socketConnection Conn
-	room             *Room
-	send             chan []byte // 메시지를 보내는 채널. 동시에 여러 클라이언트에서 메시지를 보낼 수 있도록 하기 위해 사용
-}
-
 func NewClient(loginSessionID string) *Client {
 	return &Client{
 		loginSessionID: loginSessionID,
@@ -31,12 +24,7 @@ func (c *Client) AddClientSession(conn Conn, room *Room, loginSessionID string) 
 		return
 	}
 
-	c.clientSessions = append(c.clientSessions, &ClientSession{
-		id:               len(c.clientSessions),
-		socketConnection: conn,
-		room:             room,
-		send:             make(chan []byte),
-	})
+	c.clientSessions = append(c.clientSessions, NewClientSession(len(c.clientSessions), conn, room))
 }
 
 func (c *Client) RemoveClientSession(clientSessionID int, loginSessionID string) {
@@ -47,19 +35,6 @@ func (c *Client) RemoveClientSession(clientSessionID int, loginSessionID string)
 	for i, clientSession := range c.clientSessions {
 		if clientSession.id == clientSessionID {
 			c.clientSessions = append(c.clientSessions[:i], c.clientSessions[i+1:]...)
-			break
-		}
-	}
-}
-
-func (c *Client) SendMessageToClientSession(clientSessionID int, message []byte, loginSessionID string) {
-	if !c.isSameClient(loginSessionID) {
-		return
-	}
-
-	for _, clientSession := range c.clientSessions {
-		if clientSession.id == clientSessionID {
-			clientSession.send <- message
 			break
 		}
 	}
