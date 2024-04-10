@@ -17,7 +17,7 @@ type ClientManager struct {
 	clients map[string]*Client // key: loginSessionID, value: Client object
 }
 
-func GetClientManager() *ClientManager {
+func getClientManager() *ClientManager {
 	clientOnce.Do(func() {
 		clientManager = &ClientManager{
 			clients: make(map[string]*Client),
@@ -27,14 +27,13 @@ func GetClientManager() *ClientManager {
 	return clientManager
 }
 
-func (cm *ClientManager) CheckClient(loginSessionID string) bool {
+func (cm *ClientManager) isClientRegistered(loginSessionID string) bool {
 	_, ok := cm.clients[loginSessionID]
 	return ok
 }
 
-// TODO: fmt 대신 별개의 로거를 사용하도록 변경
-func (cm *ClientManager) GetClient(loginSessionID string) *Client {
-	if !cm.CheckClient(loginSessionID) {
+func (cm *ClientManager) getClient(loginSessionID string) *Client {
+	if !cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return nil
 	}
@@ -42,23 +41,23 @@ func (cm *ClientManager) GetClient(loginSessionID string) *Client {
 	return cm.clients[loginSessionID]
 }
 
-func (cm *ClientManager) AddClient(client *Client) {
-	if cm.CheckClient(client.loginSessionID) {
+func (cm *ClientManager) registerClient(client *Client) {
+	if cm.isClientRegistered(client.loginSessionID) {
 		fmt.Println("Client with sessionID", client.loginSessionID, "already exists")
 		return
 	}
 	cm.clients[client.loginSessionID] = client
 }
 
-func (cm *ClientManager) RemoveClient(sessionID string) {
-	if !cm.CheckClient(sessionID) {
+func (cm *ClientManager) unRegisterClient(sessionID string) {
+	if !cm.isClientRegistered(sessionID) {
 		fmt.Println("Client with sessionID", sessionID, "does not exist")
 		return
 	}
 	delete(cm.clients, sessionID)
 }
 
-func (cm *ClientManager) UpdateClientID(client *Client, loginSessionID string) {
+func (cm *ClientManager) updateClientID(client *Client, loginSessionID string) {
 	for savedID, savedClient := range cm.clients {
 		if savedClient == client {
 			cm.clients[loginSessionID] = client
@@ -66,4 +65,31 @@ func (cm *ClientManager) UpdateClientID(client *Client, loginSessionID string) {
 			break
 		}
 	}
+}
+
+func (cm *ClientManager) createClient(loginSessionID string) *Client {
+	if cm.isClientRegistered(loginSessionID) {
+		fmt.Println("Client with sessionID", loginSessionID, "already exists")
+		return nil
+	}
+
+	client := NewClient(loginSessionID)
+	return client
+}
+
+func (cm *ClientManager) registerNewClient(loginSessionID string) *Client {
+	if cm.isClientRegistered(loginSessionID) {
+		fmt.Println("Client with sessionID", loginSessionID, "already exists")
+		return nil
+	}
+
+	client := cm.createClient(loginSessionID)
+	if client == nil {
+		fmt.Println("Failed to create client with sessionID", loginSessionID)
+		return nil
+	}
+
+	cm.registerClient(client)
+
+	return client
 }
