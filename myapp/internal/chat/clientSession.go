@@ -31,7 +31,7 @@ func (cs *ClientSession) listen() {
 	for {
 		select {
 		case message := <-cs.send:
-			cs.room.broadcast <- message
+			cs.room.broadcastMessage(message)
 		case <-cs.done:
 			return
 		}

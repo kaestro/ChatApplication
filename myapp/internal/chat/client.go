@@ -2,8 +2,7 @@
 package chat
 
 import (
-	"encoding/json"
-	"log"
+	"fmt"
 )
 
 // client는 채팅 서버에 접속한 클라이언트(user)를 나타낸다.
@@ -14,11 +13,15 @@ type Client struct {
 }
 
 func NewClient(loginSessionID string, conn Conn) *Client {
-	return &Client{
+	client := &Client{
 		loginSessionID: loginSessionID,
 		clientSessions: make([]*ClientSession, 0),
 		conn:           conn,
 	}
+
+	go client.listen()
+
+	return client
 }
 
 // TODO
@@ -52,34 +55,40 @@ func (c *Client) GetLoginSessionID() string {
 	return c.loginSessionID
 }
 
+// TODO: error 발생시 처리
 func (c *Client) listen() {
 	for {
-		message := receiveMessageFromClient(c)
-		if message != nil {
-			c.sendMessageToRoom(message)
+		err := receiveMessageFromClient(c)
+		if err != nil {
+			return
 		}
 	}
 }
 
-func receiveMessageFromClient(c *Client) []byte {
+func receiveMessageFromClient(c *Client) error {
 	_, message, err := c.conn.ReadMessage()
 	if err != nil {
-		log.Printf("error occurred while reading message: %v", err)
-		return nil
+		fmt.Printf("error occurred while reading message: %v", err)
+		return err
 	}
 
-	var msg ChatMessage
-	err = json.Unmarshal(message, &msg)
+	chatMessage, err := NewChatMessageFromBytes(message)
 	if err != nil {
-		log.Printf("error occurred while unmarshalling message: %v", err)
-		return nil
+		fmt.Printf("error occurred while unmarshalling message: %v", err)
+		return err
 	}
 
-	return message
+	c.sendMessageToRoom(message, chatMessage.RoomID)
+
+	return nil
 }
 
-func (c *Client) sendMessageToRoom(message []byte) {
+// TODO: roomID가 없을 경우 처리
+func (c *Client) sendMessageToRoom(message []byte, roomID string) {
 	for _, clientSession := range c.clientSessions {
-		clientSession.sendMessage(message)
+		if clientSession.room.roomID == roomID {
+			clientSession.sendMessage(message)
+			break
+		}
 	}
 }
