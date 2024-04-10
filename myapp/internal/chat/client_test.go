@@ -2,7 +2,10 @@
 package chat
 
 import (
+	"encoding/json"
+	"reflect"
 	"testing"
+	"time"
 )
 
 func TestIsSameClient(t *testing.T) {
@@ -69,4 +72,65 @@ func TestGetClientGetLoginSessionID(t *testing.T) {
 	}
 
 	t.Logf("GetLoginSessionID passed")
+}
+
+func TestListen(t *testing.T) {
+	conn := &MockConn{}
+	client := &Client{
+		loginSessionID: sampleLoginSessionID,
+		clientSessions: make([]*ClientSession, 0),
+		conn:           conn,
+	}
+
+	go client.listen()
+
+	// Wait for listen to process the message
+	time.Sleep(time.Second)
+
+	conn.WriteMessage(0, sampleMessageBytes)
+
+	var sentMessage, receivedMessage ChatMessage
+	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal sent message: %v", err)
+	}
+
+	err = json.Unmarshal(conn.LastData, &receivedMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal received message: %v", err)
+	}
+
+	if !reflect.DeepEqual(sentMessage, receivedMessage) {
+		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
+	}
+}
+
+func TestSendMessageToRoom(t *testing.T) {
+	conn := &MockConn{}
+	conn.WriteMessage(0, sampleMessageBytes)
+	client := NewClient(sampleLoginSessionID, conn)
+
+	// Add a client session with a room
+	room := NewRoom(sampleRoomID)
+	client.AddClientSession(room, sampleLoginSessionID)
+
+	// Send a message to the room
+	client.sendMessageToRoom(sampleMessageBytes, sampleRoomID)
+
+	time.Sleep(100 * time.Millisecond)
+
+	var sentMessage, receivedMessage ChatMessage
+	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal sent message: %v", err)
+	}
+
+	err = json.Unmarshal(conn.LastData, &receivedMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal received message: %v", err)
+	}
+
+	if !reflect.DeepEqual(sentMessage, receivedMessage) {
+		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
+	}
 }

@@ -1,7 +1,9 @@
 // myapp/internal/chat/testResources.go
 package chat
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 var (
 	maxClients                  = 10000
@@ -20,6 +22,7 @@ type MockConn struct {
 	LastMessageType    int
 	LastData           []byte
 	WriteMessageCalled bool
+	message            []byte
 }
 
 func (mc *MockConn) WriteMessage(messageType int, data []byte) error {
@@ -30,10 +33,6 @@ func (mc *MockConn) WriteMessage(messageType int, data []byte) error {
 	return nil
 }
 
-func (mc *MockConn) GetLastData() []byte {
-	return mc.LastData
-}
-
 func (mc *MockConn) ReadMessage() (messageType int, p []byte, err error) {
-	return 0, nil, nil
+	return 0, mc.message, nil
 }

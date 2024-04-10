@@ -3,7 +3,6 @@ package chat
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -17,7 +16,20 @@ func TestRoomClientHandler_sendMessageToClient(t *testing.T) {
 	// Wait for a short period of time to ensure that the listen goroutine has started
 	time.Sleep(100 * time.Millisecond)
 
-	compareMessages(t, conn)
+	var sentMessage, receivedMessage ChatMessage
+	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal sent message: %v", err)
+	}
+
+	err = json.Unmarshal(conn.LastData, &receivedMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal received message: %v", err)
+	}
+
+	if !reflect.DeepEqual(sentMessage, receivedMessage) {
+		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
+	}
 }
 
 func TestRoomClientHandler_receiveMessageFromRoom(t *testing.T) {
@@ -27,7 +39,20 @@ func TestRoomClientHandler_receiveMessageFromRoom(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	compareMessages(t, conn)
+	var sentMessage, receivedMessage ChatMessage
+	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal sent message: %v", err)
+	}
+
+	err = json.Unmarshal(conn.LastData, &receivedMessage)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal received message: %v", err)
+	}
+
+	if !reflect.DeepEqual(sentMessage, receivedMessage) {
+		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
+	}
 }
 
 func TestRoomClientHandler_close(t *testing.T) {
@@ -51,22 +76,4 @@ func setConnClientHandler() (*MockConn, *RoomClientHandler) {
 	client := NewClient(sampleLoginSessionID, conn)
 	roomClientHandler := NewRoomClientHandler(client)
 	return conn, roomClientHandler
-}
-
-func compareMessages(t *testing.T, conn *MockConn) {
-	var sentMessage, receivedMessage ChatMessage
-	err := json.Unmarshal(sampleMessageBytes, &sentMessage)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal sent message: %v", err)
-	}
-	fmt.Println("sentMessage: ", sentMessage)
-
-	err = json.Unmarshal(conn.LastData, &receivedMessage)
-	if err != nil {
-		t.Fatalf("Failed to unmarshal received message: %v", err)
-	}
-
-	if !reflect.DeepEqual(sentMessage, receivedMessage) {
-		t.Errorf("Expected message '%v', but got '%v'", sentMessage, receivedMessage)
-	}
 }
