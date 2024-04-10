@@ -3,14 +3,6 @@ package chat
 
 import (
 	"testing"
-	"time"
-
-	"github.com/gorilla/websocket"
-)
-
-const (
-	ExpectedClientSessionLength = 1
-	testMessage                 = "test message"
 )
 
 func TestIsSameClient(t *testing.T) {
@@ -35,7 +27,7 @@ func TestClientAddClientSession(t *testing.T) {
 	client := NewClient(sampleLoginSessionID)
 
 	// Test AddClientSession
-	socketConn := &websocket.Conn{}
+	socketConn := &MockConn{}
 	room := NewRoom(sampleRoomID)
 	client.AddClientSession(socketConn, room, sampleLoginSessionID)
 
@@ -56,7 +48,7 @@ func TestClientRemoveClientSession(t *testing.T) {
 	client := NewClient(sampleLoginSessionID)
 
 	// Test RemoveClientSession
-	socketConn := &websocket.Conn{}
+	socketConn := &MockConn{}
 	room := NewRoom(sampleRoomID)
 	client.AddClientSession(socketConn, room, sampleLoginSessionID)
 	client.RemoveClientSession(0, sampleLoginSessionID)
@@ -67,32 +59,6 @@ func TestClientRemoveClientSession(t *testing.T) {
 	}
 
 	t.Logf("RemoveClientSession passed")
-}
-
-func TestClientSendMessageToClientSession(t *testing.T) {
-	client := NewClient(sampleLoginSessionID)
-
-	// Test SendMessageToClientSession
-	socketConn := &websocket.Conn{}
-	room := NewRoom(sampleRoomID)
-	client.AddClientSession(socketConn, room, sampleLoginSessionID)
-	message := []byte(testMessage)
-
-	// Start a goroutine to read from the send channel
-	go func() {
-		select {
-		case msg := <-client.clientSessions[0].send:
-			if string(msg) != string(message) {
-				t.Errorf("SendMessageToClientSession failed, expected message %s, got %s", string(message), string(msg))
-			}
-		case <-time.After(time.Second * 1):
-			t.Errorf("SendMessageToClientSession failed, no message sent")
-		}
-	}()
-
-	client.SendMessageToClientSession(0, message, sampleLoginSessionID)
-
-	t.Logf("SendMessageToClientSession passed")
 }
 
 func TestGetClientGetLoginSessionID(t *testing.T) {

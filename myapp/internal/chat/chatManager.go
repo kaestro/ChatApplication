@@ -8,6 +8,8 @@ import (
 )
 
 // TODO: Design ChatManager
+// 채팅 서버의 전반적인 관리를 담당하는 ChatManager
+// 채팅과 관련한 모든 요청은 ChatManager를 통해 이루어진다.
 type ChatManager struct {
 }
 
