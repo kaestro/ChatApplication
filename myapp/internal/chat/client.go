@@ -1,10 +1,6 @@
 // myapp/internal/chat/models.go
 package chat
 
-import (
-	"github.com/gorilla/websocket"
-)
-
 type Client struct {
 	loginSessionID string           // 어느 user인지 구분하는 id
 	clientSessions []*ClientSession // room, socket, send channel을 가지고 있는 session slice
@@ -12,7 +8,7 @@ type Client struct {
 
 type ClientSession struct {
 	id               int
-	socketConnection *websocket.Conn
+	socketConnection Conn
 	room             *Room
 	send             chan []byte // 메시지를 보내는 채널. 동시에 여러 클라이언트에서 메시지를 보낼 수 있도록 하기 위해 사용
 }
@@ -30,7 +26,7 @@ func (c *Client) isSameClient(loginSessionID string) bool {
 	return c.loginSessionID == loginSessionID
 }
 
-func (c *Client) AddClientSession(conn *websocket.Conn, room *Room, loginSessionID string) {
+func (c *Client) AddClientSession(conn Conn, room *Room, loginSessionID string) {
 	if !c.isSameClient(loginSessionID) {
 		return
 	}
