@@ -11,16 +11,10 @@ var (
 	clientManager *ClientManager
 )
 
-// key: sessionID, value: Client object
-// Question: How can I make sure that ClientManager won't be calling
-// garbage collection on the Client object?
-// Or should I assure it?
-// Should I limit the number of clients?
-// How does garbage collection work in Go?
-// It would be taking care of the memory management, which I'm not sure of
-// Question: Is making ClientManager a singleton a good idea?
+// 모든 클라이언트를 관리하는 singleton 객체
+// TODO: 갯수 제한 및 지속 시간 제한을 둘 수 있도록 변경
 type ClientManager struct {
-	clients map[string]*Client
+	clients map[string]*Client // key: loginSessionID, value: Client object
 }
 
 func GetClientManager() *ClientManager {
@@ -33,26 +27,27 @@ func GetClientManager() *ClientManager {
 	return clientManager
 }
 
-func (cm *ClientManager) CheckClient(sessionID string) bool {
-	_, ok := cm.clients[sessionID]
+func (cm *ClientManager) CheckClient(loginSessionID string) bool {
+	_, ok := cm.clients[loginSessionID]
 	return ok
 }
 
-func (cm *ClientManager) GetClient(sessionID string) *Client {
-	if !cm.CheckClient(sessionID) {
-		fmt.Println("Client with sessionID", sessionID, "does not exist")
+// TODO: fmt 대신 별개의 로거를 사용하도록 변경
+func (cm *ClientManager) GetClient(loginSessionID string) *Client {
+	if !cm.CheckClient(loginSessionID) {
+		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return nil
 	}
 
-	return cm.clients[sessionID]
+	return cm.clients[loginSessionID]
 }
 
 func (cm *ClientManager) AddClient(client *Client) {
-	if cm.CheckClient(client.sessionID) {
-		fmt.Println("Client with sessionID", client.sessionID, "already exists")
+	if cm.CheckClient(client.loginSessionID) {
+		fmt.Println("Client with sessionID", client.loginSessionID, "already exists")
 		return
 	}
-	cm.clients[client.sessionID] = client
+	cm.clients[client.loginSessionID] = client
 }
 
 func (cm *ClientManager) RemoveClient(sessionID string) {
@@ -61,4 +56,14 @@ func (cm *ClientManager) RemoveClient(sessionID string) {
 		return
 	}
 	delete(cm.clients, sessionID)
+}
+
+func (cm *ClientManager) UpdateClientID(client *Client, loginSessionID string) {
+	for savedID, savedClient := range cm.clients {
+		if savedClient == client {
+			cm.clients[loginSessionID] = client
+			delete(cm.clients, savedID)
+			break
+		}
+	}
 }

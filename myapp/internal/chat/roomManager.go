@@ -44,9 +44,10 @@ func (rm *RoomManager) GetRoom(roomID string) *Room {
 	return rm.rooms[roomID]
 }
 
+// TODO: fmt 대신 별개의 로거를 사용하도록 변경
 func (rm *RoomManager) AddRoom(room *Room) {
 	if rm.CheckRoom(room.roomID) {
-		fmt.Println("Room with roomID", room.roomID, "already exists")
+		// fmt.Println("Room with roomID", room.roomID, "already exists")
 		return
 	}
 	rm.rooms[room.roomID] = room
@@ -57,6 +58,8 @@ func (rm *RoomManager) RemoveRoom(roomID string) {
 		fmt.Println("Room with roomID", roomID, "does not exist")
 		return
 	}
+
+	rm.rooms[roomID].closeRoom()
 	delete(rm.rooms, roomID)
 }
 
