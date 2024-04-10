@@ -2,6 +2,7 @@
 package chat
 
 import (
+	"strconv"
 	"testing"
 )
 
@@ -67,4 +68,37 @@ func TestRoomManagerGetRoomIDs(t *testing.T) {
 	}
 
 	t.Logf("GetRoomIDs passed, expected %d roomIDs", maxRooms)
+}
+
+func TestRoomManagerGetNewRoomID(t *testing.T) {
+	rm := GetRoomManager()
+	roomID := rm.getNewRoomID()
+
+	if strconv.Itoa(rm.lastRoomID) != roomID {
+		t.Errorf("getNewRoomID failed, expected roomID %s to exist", roomID)
+	}
+}
+
+func TestRoomManagerCreateRoom(t *testing.T) {
+	rm := GetRoomManager()
+	room := rm.createRoom()
+
+	if !rm.CheckRoom(room.roomID) {
+		t.Errorf("createRoom failed, expected roomID %s to exist", room.roomID)
+	}
+}
+
+func TestRoomManagerGetRoomCount(t *testing.T) {
+	rm := GetRoomManager()
+
+	// Test AddRoom
+	for i := 0; i < maxRooms; i++ {
+		room := &Room{roomID: string(rune(i))}
+		rm.AddRoom(room)
+	}
+
+	roomCount := rm.getRoomCount()
+	if roomCount != maxRooms {
+		t.Errorf("getRoomCount failed, expected %d rooms, got %d", maxRooms, roomCount)
+	}
 }
