@@ -7,10 +7,6 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Conn interface {
-	WriteMessage(messageType int, data []byte) error
-}
-
 type RoomClientHandler struct {
 	client  *Client
 	conn    Conn
