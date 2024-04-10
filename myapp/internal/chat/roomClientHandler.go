@@ -7,10 +7,8 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Conn interface {
-	WriteMessage(messageType int, data []byte) error
-}
-
+// RoomClientHandler는 Room과 Client 사이의 중개자 역할을 한다.
+// client와 연결을 유지하고, 방에서 메시지를 받아 해당 소켓으로 전달한다.
 type RoomClientHandler struct {
 	client  *Client
 	conn    Conn

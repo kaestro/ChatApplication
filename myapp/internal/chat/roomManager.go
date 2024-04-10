@@ -11,19 +11,18 @@ var (
 	roomManager *RoomManager
 )
 
-// Question: Do we Actually need map for rooms?
-// Can we just use slice for rooms?
-// -> answer: using slice would make algorithm harder to implement
-// considering the fact that removing a room from the slice would require
-// But still using integer instead of string for roomID might be better?
+// RoomManager는 방의 유무를 확인, 생성, 제거, 조회를 담당한다.
+// Singleton 객체로 구현되어 있다.
 type RoomManager struct {
-	rooms map[string]*Room
+	rooms      map[string]*Room
+	lastRoomID int
 }
 
 func GetRoomManager() *RoomManager {
 	roomOnce.Do(func() {
 		roomManager = &RoomManager{
-			rooms: make(map[string]*Room),
+			rooms:      make(map[string]*Room),
+			lastRoomID: 0,
 		}
 	})
 
@@ -70,4 +69,20 @@ func (rm *RoomManager) GetRoomIDs() []string {
 		roomIDs = append(roomIDs, roomID)
 	}
 	return roomIDs
+}
+
+func (rm *RoomManager) getNewRoomID() string {
+	rm.lastRoomID++
+	return fmt.Sprintf("%d", rm.lastRoomID)
+}
+
+func (rm *RoomManager) createRoom() *Room {
+	roomID := rm.getNewRoomID()
+	room := NewRoom(roomID)
+	rm.AddRoom(room)
+	return room
+}
+
+func (rm *RoomManager) getRoomCount() int {
+	return len(rm.rooms)
 }

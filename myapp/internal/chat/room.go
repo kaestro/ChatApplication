@@ -5,6 +5,8 @@ import (
 	"fmt"
 )
 
+// Room은 클라이언트들이 메시지를 주고받을 수 있는 공간을 나타낸다.
+// User가 방에 들어오고 나갈 수 있으며, 방에 있는 User들에게 메시지를 전달할 수 있다.
 type Room struct {
 	roomID string
 	// Registered map of clients to their websocket connections
@@ -70,9 +72,11 @@ func (r *Room) RemoveClient(loginSessionID string) {
 	r.unregister <- r.sessionIDToHandler[loginSessionID]
 }
 
+// TODO: Set debugging messages to be printed only when debugging is enabled
 func (r *Room) ReceiveMessageFromClient(loginSessionID string, message []byte) {
 	if !r.IsClientInsideRoom(loginSessionID) {
-		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
+		// Debugging message
+		// fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return
 	}
 

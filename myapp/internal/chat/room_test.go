@@ -10,18 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type MockConn struct {
-	LastMessageType int
-	LastData        []byte
-}
-
-func (mc *MockConn) WriteMessage(messageType int, data []byte) error {
-	mc.LastMessageType = messageType
-	mc.LastData = make([]byte, len(data))
-	copy(mc.LastData, data)
-	return nil
-}
-
 func TestNewRoom(t *testing.T) {
 	room := NewRoom(sampleRoomID)
 
