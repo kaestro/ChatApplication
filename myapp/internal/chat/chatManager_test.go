@@ -12,6 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	chatManagerUserCount = 10
+)
+
 func TestChatManager(t *testing.T) {
 	cm := NewChatManager()
 
@@ -27,7 +31,7 @@ func TestChatManager(t *testing.T) {
 	dialer := websocket.Dialer{}
 
 	// Send multiple requests
-	for i := 0; i < 10; i++ {
+	for i := 0; i < chatManagerUserCount; i++ {
 		// Create a new websocket connection
 		conn, resp, err := dialer.Dial("ws"+s.URL[4:]+"?sessionID="+strconv.Itoa(i), nil)
 		assert.Nil(t, err)
@@ -40,9 +44,20 @@ func TestChatManager(t *testing.T) {
 
 		// Defer the closing of the connection
 		if conn != nil {
-			conn.Close()
+			defer conn.Close()
 		}
 	}
 
 	t.Logf("TestChatManager passed")
+
+	// test removing client
+	for i := 0; i < chatManagerUserCount; i++ {
+		cm.RemoveClientFromUser(strconv.Itoa(i))
+		if cm.clientManager.isClientRegistered(strconv.Itoa(i)) {
+			t.Errorf("RemoveClientFromUser failed, expected sessionID %d to be removed", i)
+			return
+		}
+	}
+
+	t.Logf("TestRemoveClientFromUser passed")
 }

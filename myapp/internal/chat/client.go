@@ -65,6 +65,8 @@ func (c *Client) listen() {
 	}
 }
 
+// TODO
+// chatMessage를 변경하는 부분에서 문제 발생중일 가능성 높아보임. 확인 필요
 func receiveMessageFromClient(c *Client) error {
 	_, message, err := c.conn.ReadMessage()
 	if err != nil {
