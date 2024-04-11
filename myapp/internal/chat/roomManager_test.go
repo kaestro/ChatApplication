@@ -79,17 +79,39 @@ func TestRoomManagerCreateRoom(t *testing.T) {
 	}
 }
 
-func TestRoomManagerGetRoomCount(t *testing.T) {
+func TestRoomManagerClearRooms(t *testing.T) {
 	rm := getRoomManager()
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &room{roomName: string(rune(i))}
+		room := &room{roomName: strconv.Itoa(i)}
+		rm.addRoom(room)
+	}
+
+	rm.clearRooms()
+	if rm.getRoomCount() != 0 {
+		t.Errorf("clearRooms failed, expected 0 rooms, got %d", rm.getRoomCount())
+		return
+	}
+
+	t.Logf("clearRooms passed, expected 0 rooms")
+}
+
+func TestRoomManagerGetRoomCount(t *testing.T) {
+	rm := getRoomManager()
+	rm.clearRooms()
+
+	// Test AddRoom
+	for i := 0; i < maxRooms; i++ {
+		room := &room{roomName: strconv.Itoa(i)}
 		rm.addRoom(room)
 	}
 
 	roomCount := rm.getRoomCount()
 	if roomCount != maxRooms {
 		t.Errorf("getRoomCount failed, expected %d rooms, got %d", maxRooms, roomCount)
+		return
 	}
+
+	t.Logf("getRoomCount passed, expected %d rooms", maxRooms)
 }

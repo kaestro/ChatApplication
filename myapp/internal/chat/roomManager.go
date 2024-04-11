@@ -79,3 +79,7 @@ func (rm *roomManager) createNewRoom(roomName string) *room {
 func (rm *roomManager) getRoomCount() int {
 	return len(rm.rooms)
 }
+
+func (rm *roomManager) clearRooms() {
+	rm.rooms = make(map[string]*room)
+}
