@@ -10,13 +10,13 @@ import (
 type Room struct {
 	roomID string
 	// Registered map of clients to their websocket connections
-	sessionIDToHandler map[string]*RoomClientHandler
+	sessionIDToHandler map[string]*roomClientHandler
 
 	// Inbound messages from the clients.
 	broadcast chan []byte
 
-	register   chan *RoomClientHandler
-	unregister chan *RoomClientHandler
+	register   chan *roomClientHandler
+	unregister chan *roomClientHandler
 
 	done chan struct{}
 }
@@ -25,10 +25,10 @@ type Room struct {
 func NewRoom(roomId string) *Room {
 	room := &Room{
 		roomID:             roomId,
-		sessionIDToHandler: make(map[string]*RoomClientHandler),
+		sessionIDToHandler: make(map[string]*roomClientHandler),
 		broadcast:          make(chan []byte),
-		register:           make(chan *RoomClientHandler),
-		unregister:         make(chan *RoomClientHandler),
+		register:           make(chan *roomClientHandler),
+		unregister:         make(chan *roomClientHandler),
 		done:               make(chan struct{}),
 	}
 
@@ -60,7 +60,7 @@ func (r *Room) AddClient(client *Client) {
 		fmt.Println("Room is closed, can't add client")
 		return
 	default:
-		r.register <- NewRoomClientHandler(client)
+		r.register <- newRoomClientHandler(client)
 	}
 }
 
@@ -104,11 +104,11 @@ func (r *Room) run() {
 	}
 }
 
-func (r *Room) registerClientHandler(clientHandler *RoomClientHandler) {
+func (r *Room) registerClientHandler(clientHandler *roomClientHandler) {
 	r.sessionIDToHandler[clientHandler.getLoginSessionID()] = clientHandler
 }
 
-func (r *Room) unregisterClientHandler(clientHandler *RoomClientHandler) {
+func (r *Room) unregisterClientHandler(clientHandler *roomClientHandler) {
 	clientHandler.close()
 	delete(r.sessionIDToHandler, clientHandler.getLoginSessionID())
 }
