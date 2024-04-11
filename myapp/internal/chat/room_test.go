@@ -10,16 +10,16 @@ import (
 )
 
 func TestNewRoom(t *testing.T) {
-	room := newRoom(sampleRoomID)
+	room := newRoom(sampleRoomName)
 
 	assert.NotNil(t, room)
-	assert.Equal(t, sampleRoomID, room.roomName)
+	assert.Equal(t, sampleRoomName, room.roomName)
 
 	t.Logf("TestNewRoom passed")
 }
 
 func TestAddClient(t *testing.T) {
-	room := newRoom(sampleRoomID)
+	room := newRoom(sampleRoomName)
 	client := newClient(sampleLoginSessionID, &mockConn{})
 
 	room.addClient(client)
@@ -29,7 +29,7 @@ func TestAddClient(t *testing.T) {
 }
 
 func TestRemoveClient(t *testing.T) {
-	room := newRoom(sampleRoomID)
+	room := newRoom(sampleRoomName)
 	client := newClient(sampleLoginSessionID, &mockConn{})
 
 	room.addClient(client)
@@ -42,7 +42,7 @@ func TestRemoveClient(t *testing.T) {
 }
 
 func TestCloseRoom(t *testing.T) {
-	room := newRoom(sampleRoomID)
+	room := newRoom(sampleRoomName)
 	room.closeRoom()
 
 	// Check if room is closed by trying to add a client
@@ -55,7 +55,7 @@ func TestCloseRoom(t *testing.T) {
 }
 
 func TestReceiveMessageFromClient(t *testing.T) {
-	room := newRoom(sampleRoomID)
+	room := newRoom(sampleRoomName)
 
 	for i := 0; i < 3; i++ {
 		client := newClient(strconv.Itoa(i), &mockConn{})
@@ -76,7 +76,7 @@ func TestReceiveMessageFromClient(t *testing.T) {
 }
 
 func TestGetClients(t *testing.T) {
-	room := newRoom(sampleRoomID)
+	room := newRoom(sampleRoomName)
 	numClients := 3
 
 	loginSessionIDs := make(map[string]bool)

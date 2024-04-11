@@ -50,14 +50,15 @@ func (rm *roomManager) addRoom(room *room) {
 	rm.rooms[room.roomName] = room
 }
 
-func (rm *roomManager) removeRoom(roomName string) {
+func (rm *roomManager) removeRoom(roomName string) error {
 	if !rm.checkRoom(roomName) {
-		fmt.Println("Room with roomID", roomName, "does not exist")
-		return
+		return error(fmt.Errorf("room with roomID %s does not exist", roomName))
 	}
 
 	rm.rooms[roomName].closeRoom()
 	delete(rm.rooms, roomName)
+
+	return nil
 }
 
 // Question: wouldn't it be better to just return room pointers?

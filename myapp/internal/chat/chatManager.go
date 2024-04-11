@@ -73,3 +73,8 @@ func (cm *ChatManager) CreateRoom(roomName string) error {
 
 	return nil
 }
+
+func (cm *ChatManager) RemoveRoom(roomName string) error {
+	rmInstance = getRoomManager()
+	return rmInstance.removeRoom(roomName)
+}
