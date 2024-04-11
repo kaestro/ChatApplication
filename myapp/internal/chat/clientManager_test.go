@@ -39,7 +39,7 @@ func TestClientManagerCapacity(t *testing.T) {
 
 	// Test AddClient
 	for i := 0; i < maxClients; i++ {
-		client := &Client{loginSessionID: string(rune(i))}
+		client := &client{loginSessionID: string(rune(i))}
 		cm.registerClient(client)
 	}
 
@@ -95,8 +95,8 @@ func TestClientManagerCreateClient(t *testing.T) {
 		return
 	}
 
-	if client.GetLoginSessionID() != sampleLoginSessionID {
-		t.Errorf("CreateClient failed, expected client to have sessionID %s, got %s", sampleLoginSessionID, client.GetLoginSessionID())
+	if client.getLoginSessionID() != sampleLoginSessionID {
+		t.Errorf("CreateClient failed, expected client to have sessionID %s, got %s", sampleLoginSessionID, client.getLoginSessionID())
 		return
 	}
 
@@ -112,7 +112,7 @@ func TestClientManagerRegisterNewClient(t *testing.T) {
 		return
 	}
 
-	if !cm.isClientRegistered(client.GetLoginSessionID()) {
+	if !cm.isClientRegistered(client.getLoginSessionID()) {
 		t.Errorf("RegisterNewClient failed, expected client to be registered")
 		return
 	}

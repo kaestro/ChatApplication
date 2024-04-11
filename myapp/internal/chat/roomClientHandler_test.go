@@ -73,7 +73,7 @@ func TestRoomClientHandler_close(t *testing.T) {
 
 func setConnClientHandler() (*mockConn, *roomClientHandler) {
 	conn := &mockConn{}
-	client := NewClient(sampleLoginSessionID, conn)
+	client := newClient(sampleLoginSessionID, conn)
 	roomClientHandler := newRoomClientHandler(client)
 	return conn, roomClientHandler
 }

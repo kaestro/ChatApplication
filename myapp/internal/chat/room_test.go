@@ -20,7 +20,7 @@ func TestNewRoom(t *testing.T) {
 
 func TestAddClient(t *testing.T) {
 	room := newRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID, &mockConn{})
+	client := newClient(sampleLoginSessionID, &mockConn{})
 
 	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
@@ -30,7 +30,7 @@ func TestAddClient(t *testing.T) {
 
 func TestRemoveClient(t *testing.T) {
 	room := newRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID, &mockConn{})
+	client := newClient(sampleLoginSessionID, &mockConn{})
 
 	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
@@ -46,7 +46,7 @@ func TestCloseRoom(t *testing.T) {
 	room.closeRoom()
 
 	// Check if room is closed by trying to add a client
-	client := NewClient(sampleLoginSessionID, &mockConn{})
+	client := newClient(sampleLoginSessionID, &mockConn{})
 	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
 
@@ -58,7 +58,7 @@ func TestReceiveMessageFromClient(t *testing.T) {
 	room := newRoom(sampleRoomID)
 
 	for i := 0; i < 3; i++ {
-		client := NewClient(strconv.Itoa(i), &mockConn{})
+		client := newClient(strconv.Itoa(i), &mockConn{})
 		room.addClient(client)
 	}
 
@@ -84,7 +84,7 @@ func TestGetClients(t *testing.T) {
 	// Add some clients to the room
 	for i := 0; i < numClients; i++ {
 		conn := &mockConn{}
-		client := NewClient(strconv.Itoa(i), conn)
+		client := newClient(strconv.Itoa(i), conn)
 		room.addClient(client)
 		loginSessionIDs[strconv.Itoa(i)] = false
 	}
@@ -99,7 +99,7 @@ func TestGetClients(t *testing.T) {
 
 	// Check if the correct clients were returned
 	for _, client := range clients {
-		loginSessionID := client.GetLoginSessionID()
+		loginSessionID := client.getLoginSessionID()
 		if _, ok := loginSessionIDs[loginSessionID]; ok {
 			loginSessionIDs[loginSessionID] = true
 		}
