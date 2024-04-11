@@ -74,7 +74,7 @@ func receiveMessageFromClient(c *Client) error {
 
 	chatMessage, err := NewChatMessageFromBytes(message)
 	if err != nil {
-		fmt.Printf("error occurred while unmarshalling message: %v", err)
+		//fmt.Printf("error occurred while unmarshalling message: %v", err)
 		return err
 	}
 

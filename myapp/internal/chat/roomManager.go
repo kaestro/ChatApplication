@@ -76,7 +76,7 @@ func (rm *RoomManager) getNewRoomID() string {
 	return fmt.Sprintf("%d", rm.lastRoomID)
 }
 
-func (rm *RoomManager) createRoom() *Room {
+func (rm *RoomManager) createNewRoom() *Room {
 	roomID := rm.getNewRoomID()
 	room := NewRoom(roomID)
 	rm.AddRoom(room)

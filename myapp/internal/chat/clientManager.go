@@ -2,6 +2,7 @@
 package chat
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -29,10 +30,11 @@ func getClientManager() *ClientManager {
 
 func (cm *ClientManager) isClientRegistered(loginSessionID string) bool {
 	_, ok := cm.clients[loginSessionID]
+
 	return ok
 }
 
-func (cm *ClientManager) getClient(loginSessionID string) *Client {
+func (cm *ClientManager) getClientByLoginSessionID(loginSessionID string) *Client {
 	if !cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return nil
@@ -46,6 +48,7 @@ func (cm *ClientManager) registerClient(client *Client) {
 		fmt.Println("Client with sessionID", client.loginSessionID, "already exists")
 		return
 	}
+
 	cm.clients[client.loginSessionID] = client
 }
 
@@ -54,6 +57,7 @@ func (cm *ClientManager) unRegisterClient(sessionID string) {
 		fmt.Println("Client with sessionID", sessionID, "does not exist")
 		return
 	}
+
 	delete(cm.clients, sessionID)
 }
 
@@ -67,7 +71,7 @@ func (cm *ClientManager) updateClientID(client *Client, loginSessionID string) {
 	}
 }
 
-func (cm *ClientManager) createClient(loginSessionID string, conn Conn) *Client {
+func (cm *ClientManager) createNewClient(loginSessionID string, conn Conn) *Client {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
 		return nil
@@ -77,19 +81,27 @@ func (cm *ClientManager) createClient(loginSessionID string, conn Conn) *Client 
 	return client
 }
 
-func (cm *ClientManager) registerNewClient(loginSessionID string, conn Conn) *Client {
+func (cm *ClientManager) registerNewClient(loginSessionID string, conn Conn) (*Client, error) {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
-		return nil
+		return cm.clients[loginSessionID], errors.New("client already exists")
 	}
 
-	client := cm.createClient(loginSessionID, conn)
+	client := cm.createNewClient(loginSessionID, conn)
 	if client == nil {
 		fmt.Println("Failed to create client with sessionID", loginSessionID)
-		return nil
+		return nil, errors.New("failed to create client")
 	}
 
 	cm.registerClient(client)
 
-	return client
+	return client, nil
+}
+
+func (cm *ClientManager) getClientCount() int {
+	return len(cm.clients)
+}
+
+func (cm *ClientManager) emptyClientManager() {
+	cm.clients = make(map[string]*Client)
 }

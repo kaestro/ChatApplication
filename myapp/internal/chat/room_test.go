@@ -74,3 +74,43 @@ func TestReceiveMessageFromClient(t *testing.T) {
 		}
 	}
 }
+
+func TestGetClients(t *testing.T) {
+	room := NewRoom(sampleRoomID)
+	numClients := 3
+
+	loginSessionIDs := make(map[string]bool)
+
+	// Add some clients to the room
+	for i := 0; i < numClients; i++ {
+		conn := &MockConn{}
+		client := NewClient(strconv.Itoa(i), conn)
+		room.AddClient(client)
+		loginSessionIDs[strconv.Itoa(i)] = false
+	}
+
+	// Get the clients from the room
+	clients := room.GetClients()
+
+	time.Sleep(time.Millisecond * 2000)
+
+	// Check if the correct number of clients was returned
+	assert.Equal(t, numClients, len(clients))
+
+	// Check if the correct clients were returned
+	for _, client := range clients {
+		loginSessionID := client.GetLoginSessionID()
+		if _, ok := loginSessionIDs[loginSessionID]; ok {
+			loginSessionIDs[loginSessionID] = true
+		}
+	}
+
+	for loginSessionID, isFound := range loginSessionIDs {
+		if !isFound {
+			t.Errorf("TestGetClients failed, expected loginSessionID %s to be found", loginSessionID)
+			return
+		}
+	}
+
+	t.Logf("TestGetClients passed")
+}

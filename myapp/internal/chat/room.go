@@ -47,6 +47,7 @@ func (r *Room) closeRoom() {
 }
 
 // TODO: client가 있을 경우 충돌 처리
+// TODO: line 58 ~ 63의 select 구문을 사용하여 room이 닫힌 경우를 middleware로 처리
 func (r *Room) AddClient(client *Client) {
 	loginSessionID := client.GetLoginSessionID()
 	if r.IsClientInsideRoom(loginSessionID) {
@@ -63,6 +64,7 @@ func (r *Room) AddClient(client *Client) {
 	}
 }
 
+// TODO: room이 닫힌 경우를 middleware로 처리
 func (r *Room) RemoveClient(loginSessionID string) {
 	if !r.IsClientInsideRoom(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
@@ -115,4 +117,12 @@ func (r *Room) broadcastMessage(message []byte) {
 	for _, clientHandler := range r.sessionIDToHandler {
 		clientHandler.receiveMessageFromRoom(message)
 	}
+}
+
+func (r *Room) GetClients() []*Client {
+	clients := make([]*Client, 0, len(r.sessionIDToHandler))
+	for _, clientHandler := range r.sessionIDToHandler {
+		clients = append(clients, clientHandler.client)
+	}
+	return clients
 }

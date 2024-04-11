@@ -2,6 +2,8 @@
 package chat
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"testing"
 )
 
@@ -16,7 +18,7 @@ func TestClientManager(t *testing.T) {
 	}
 
 	// Test GetClient
-	gotClient := cm.getClient(sampleLoginSessionID)
+	gotClient := cm.getClientByLoginSessionID(sampleLoginSessionID)
 	if gotClient != sampleClient {
 		t.Errorf("GetClient failed, expected %v, got %v", sampleClient, gotClient)
 		return
@@ -76,8 +78,8 @@ func TestClientManagerUpdateClientID(t *testing.T) {
 	}
 
 	// Check if the client associated with the new sessionID is the same as the sampleClient
-	if cm.getClient(sampleUpdateID) != sampleClient {
-		t.Errorf("UpdateClient failed, expected client to be %v, got %v", sampleClient, cm.getClient(sampleUpdateID))
+	if cm.getClientByLoginSessionID(sampleUpdateID) != sampleClient {
+		t.Errorf("UpdateClient failed, expected client to be %v, got %v", sampleClient, cm.getClientByLoginSessionID(sampleUpdateID))
 		return
 	}
 
@@ -87,7 +89,7 @@ func TestClientManagerUpdateClientID(t *testing.T) {
 func TestClientManagerCreateClient(t *testing.T) {
 	cm := getClientManager()
 
-	client := cm.createClient(sampleLoginSessionID, &MockConn{})
+	client := cm.createNewClient(sampleLoginSessionID, &MockConn{})
 	if client == nil {
 		t.Errorf("CreateClient failed, expected client to be created")
 		return
@@ -104,7 +106,7 @@ func TestClientManagerCreateClient(t *testing.T) {
 func TestClientManagerRegisterNewClient(t *testing.T) {
 	cm := getClientManager()
 
-	client := cm.registerNewClient(sampleLoginSessionID, &MockConn{})
+	client, _ := cm.registerNewClient(sampleLoginSessionID, &MockConn{})
 	if client == nil {
 		t.Errorf("RegisterNewClient failed, expected client to be created")
 		return
@@ -116,4 +118,41 @@ func TestClientManagerRegisterNewClient(t *testing.T) {
 	}
 
 	t.Log("TestClientManagerRegisterNewClient passed")
+}
+
+func TestClientManagerEmptyClientManager(t *testing.T) {
+	cm := getClientManager()
+	cm.emptyClientManager()
+
+	if cm.getClientCount() != 0 {
+		t.Errorf("EmptyClientManager failed, expected client count to be 0, got %d", cm.getClientCount())
+		return
+	}
+
+	t.Log("TestClientManagerEmptyClientManager passed")
+}
+
+func TestClientManagerGetClientCount(t *testing.T) {
+	cm := getClientManager()
+	cm.emptyClientManager()
+
+	for i := 0; i < maxClients; i++ {
+		cm.registerNewClient(generateUniqueString(), &MockConn{})
+	}
+
+	if cm.getClientCount() != maxClients {
+		t.Errorf("GetClientCount failed, expected %d, got %d", maxClients, cm.getClientCount())
+		return
+	}
+
+	t.Log("TestClientManagerGetClientCount passed")
+}
+
+func generateUniqueString() string {
+	b := make([]byte, 16) // adjust size for your needs
+	_, err := rand.Read(b)
+	if err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(b)
 }
