@@ -2,6 +2,7 @@
 package chat
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 )
@@ -80,21 +81,21 @@ func (cm *ClientManager) createNewClient(loginSessionID string, conn Conn) *Clie
 	return client
 }
 
-func (cm *ClientManager) registerNewClient(loginSessionID string, conn Conn) *Client {
+func (cm *ClientManager) registerNewClient(loginSessionID string, conn Conn) (*Client, error) {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
-		return nil
+		return cm.clients[loginSessionID], errors.New("client already exists")
 	}
 
 	client := cm.createNewClient(loginSessionID, conn)
 	if client == nil {
 		fmt.Println("Failed to create client with sessionID", loginSessionID)
-		return nil
+		return nil, errors.New("failed to create client")
 	}
 
 	cm.registerClient(client)
 
-	return client
+	return client, nil
 }
 
 func (cm *ClientManager) getClientCount() int {

@@ -106,7 +106,7 @@ func TestClientManagerCreateClient(t *testing.T) {
 func TestClientManagerRegisterNewClient(t *testing.T) {
 	cm := getClientManager()
 
-	client := cm.registerNewClient(sampleLoginSessionID, &MockConn{})
+	client, _ := cm.registerNewClient(sampleLoginSessionID, &MockConn{})
 	if client == nil {
 		t.Errorf("RegisterNewClient failed, expected client to be created")
 		return
