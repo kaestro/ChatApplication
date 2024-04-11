@@ -20,7 +20,7 @@ func TestNewRoom(t *testing.T) {
 
 func TestAddClient(t *testing.T) {
 	room := NewRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	client := NewClient(sampleLoginSessionID, &mockConn{})
 
 	room.AddClient(client)
 	time.Sleep(time.Millisecond * 100)
@@ -30,7 +30,7 @@ func TestAddClient(t *testing.T) {
 
 func TestRemoveClient(t *testing.T) {
 	room := NewRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	client := NewClient(sampleLoginSessionID, &mockConn{})
 
 	room.AddClient(client)
 	time.Sleep(time.Millisecond * 100)
@@ -46,7 +46,7 @@ func TestCloseRoom(t *testing.T) {
 	room.closeRoom()
 
 	// Check if room is closed by trying to add a client
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	client := NewClient(sampleLoginSessionID, &mockConn{})
 	room.AddClient(client)
 	time.Sleep(time.Millisecond * 100)
 
@@ -58,7 +58,7 @@ func TestReceiveMessageFromClient(t *testing.T) {
 	room := NewRoom(sampleRoomID)
 
 	for i := 0; i < 3; i++ {
-		client := NewClient(strconv.Itoa(i), &MockConn{})
+		client := NewClient(strconv.Itoa(i), &mockConn{})
 		room.AddClient(client)
 	}
 
@@ -67,7 +67,7 @@ func TestReceiveMessageFromClient(t *testing.T) {
 	time.Sleep(time.Millisecond * 100)
 
 	for loginSessionID, handler := range room.sessionIDToHandler {
-		if !assert.Equal(t, message, handler.conn.(*MockConn).LastData) {
+		if !assert.Equal(t, message, handler.conn.(*mockConn).LastData) {
 			t.Errorf("TestReceiveMessageFromClient %s failed", loginSessionID)
 		} else {
 			t.Logf("TestReceiveMessageFromClient %s passed", loginSessionID)
@@ -83,7 +83,7 @@ func TestGetClients(t *testing.T) {
 
 	// Add some clients to the room
 	for i := 0; i < numClients; i++ {
-		conn := &MockConn{}
+		conn := &mockConn{}
 		client := NewClient(strconv.Itoa(i), conn)
 		room.AddClient(client)
 		loginSessionIDs[strconv.Itoa(i)] = false

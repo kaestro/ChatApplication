@@ -5,27 +5,30 @@ import (
 	"encoding/json"
 )
 
-var (
+const (
 	maxClients                  = 10000
 	sampleLoginSessionID        = "123"
 	sampleUpdateID              = "456"
-	sampleClient                = NewClient(sampleLoginSessionID, &MockConn{})
 	maxRooms                    = 100
 	sampleRoomID                = "123"
-	sampleRoom                  = NewRoom(sampleRoomID)
-	sampleMessage               = ChatMessage{RoomID: sampleRoomID, UserName: "user", Content: "content"}
-	sampleMessageBytes, _       = json.Marshal(sampleMessage)
-	ExpectedClientSessionLength = 1
+	expectedClientSessionLength = 1
 )
 
-type MockConn struct {
+var (
+	sampleClient          = NewClient(sampleLoginSessionID, &mockConn{})
+	sampleRoom            = NewRoom(sampleRoomID)
+	sampleMessage         = ChatMessage{RoomID: sampleRoomID, UserName: "user", Content: "content"}
+	sampleMessageBytes, _ = json.Marshal(sampleMessage)
+)
+
+type mockConn struct {
 	LastMessageType    int
 	LastData           []byte
 	WriteMessageCalled bool
 	message            []byte
 }
 
-func (mc *MockConn) WriteMessage(messageType int, data []byte) error {
+func (mc *mockConn) WriteMessage(messageType int, data []byte) error {
 	mc.LastMessageType = messageType
 	mc.LastData = make([]byte, len(data))
 	copy(mc.LastData, data)
@@ -33,6 +36,6 @@ func (mc *MockConn) WriteMessage(messageType int, data []byte) error {
 	return nil
 }
 
-func (mc *MockConn) ReadMessage() (messageType int, p []byte, err error) {
+func (mc *mockConn) ReadMessage() (messageType int, p []byte, err error) {
 	return 0, mc.message, nil
 }

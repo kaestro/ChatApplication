@@ -71,8 +71,8 @@ func TestRoomClientHandler_close(t *testing.T) {
 	}
 }
 
-func setConnClientHandler() (*MockConn, *RoomClientHandler) {
-	conn := &MockConn{}
+func setConnClientHandler() (*mockConn, *RoomClientHandler) {
+	conn := &mockConn{}
 	client := NewClient(sampleLoginSessionID, conn)
 	roomClientHandler := NewRoomClientHandler(client)
 	return conn, roomClientHandler

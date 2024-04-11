@@ -9,7 +9,7 @@ import (
 )
 
 func TestIsSameClient(t *testing.T) {
-	conn := &MockConn{}
+	conn := &mockConn{}
 	client := NewClient(sampleLoginSessionID, conn)
 
 	// Test isSameClient with the same session ID
@@ -28,15 +28,15 @@ func TestIsSameClient(t *testing.T) {
 }
 
 func TestClientAddClientSession(t *testing.T) {
-	conn := &MockConn{}
+	conn := &mockConn{}
 	client := NewClient(sampleLoginSessionID, conn)
 
 	// Test AddClientSession
 	room := NewRoom(sampleRoomID)
 	client.AddClientSession(room, sampleLoginSessionID)
 
-	if len(client.clientSessions) != ExpectedClientSessionLength {
-		t.Errorf("AddClientSession failed, expected length %d, got %v", ExpectedClientSessionLength, len(client.clientSessions))
+	if len(client.clientSessions) != expectedClientSessionLength {
+		t.Errorf("AddClientSession failed, expected length %d, got %v", expectedClientSessionLength, len(client.clientSessions))
 		return
 	}
 
@@ -49,7 +49,7 @@ func TestClientAddClientSession(t *testing.T) {
 }
 
 func TestClientRemoveClientSession(t *testing.T) {
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	client := NewClient(sampleLoginSessionID, &mockConn{})
 
 	// Test RemoveClientSession
 	room := NewRoom(sampleRoomID)
@@ -65,7 +65,7 @@ func TestClientRemoveClientSession(t *testing.T) {
 }
 
 func TestGetClientGetLoginSessionID(t *testing.T) {
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	client := NewClient(sampleLoginSessionID, &mockConn{})
 
 	if client.GetLoginSessionID() != sampleLoginSessionID {
 		t.Errorf("GetLoginSessionID failed, expected %s, got %s", sampleLoginSessionID, client.GetLoginSessionID())
@@ -75,7 +75,7 @@ func TestGetClientGetLoginSessionID(t *testing.T) {
 }
 
 func TestListen(t *testing.T) {
-	conn := &MockConn{}
+	conn := &mockConn{}
 	client := &Client{
 		loginSessionID: sampleLoginSessionID,
 		clientSessions: make([]*ClientSession, 0),
@@ -106,7 +106,7 @@ func TestListen(t *testing.T) {
 }
 
 func TestSendMessageToRoom(t *testing.T) {
-	conn := &MockConn{}
+	conn := &mockConn{}
 	conn.WriteMessage(0, sampleMessageBytes)
 	client := NewClient(sampleLoginSessionID, conn)
 
