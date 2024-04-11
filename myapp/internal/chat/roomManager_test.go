@@ -10,7 +10,7 @@ func TestRoomManagerCycle(t *testing.T) {
 	rm := getRoomManager()
 
 	// Test AddRoom
-	rm.AddRoom(sampleRoom)
+	rm.addRoom(sampleRoom)
 	if !rm.checkRoom(sampleRoomID) {
 		t.Errorf("AddRoom failed, expected roomID 123 to exist")
 	}
@@ -33,13 +33,13 @@ func TestRoomManagerCapacity(t *testing.T) {
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &room{roomID: string(rune(i))}
-		rm.AddRoom(room)
+		room := &room{roomName: strconv.Itoa(i)}
+		rm.addRoom(room)
 	}
 
 	// Test AddRoom exceeding capacity
 	for i := 0; i < maxRooms; i++ {
-		if !rm.checkRoom(string(rune(i))) {
+		if !rm.checkRoom(strconv.Itoa(i)) {
 			t.Errorf("AddRoom failed, expected roomID %d to exist", i)
 		}
 	}
@@ -50,12 +50,12 @@ func TestRoomManagerGetRoomIDs(t *testing.T) {
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &room{roomID: string(rune(i))}
-		rm.AddRoom(room)
+		room := &room{roomName: strconv.Itoa(i)}
+		rm.addRoom(room)
 	}
 
 	// Test GetRoomIDs
-	roomIDs := rm.getRoomIDs()
+	roomIDs := rm.getRoomNames()
 	if len(roomIDs) != maxRooms {
 		t.Errorf("GetRoomIDs failed, expected %d roomIDs, got %d", maxRooms, len(roomIDs))
 		return
@@ -70,21 +70,12 @@ func TestRoomManagerGetRoomIDs(t *testing.T) {
 	t.Logf("GetRoomIDs passed, expected %d roomIDs", maxRooms)
 }
 
-func TestRoomManagerGetNewRoomID(t *testing.T) {
-	rm := getRoomManager()
-	roomID := rm.getNewRoomID()
-
-	if strconv.Itoa(rm.lastRoomID) != roomID {
-		t.Errorf("getNewRoomID failed, expected roomID %s to exist", roomID)
-	}
-}
-
 func TestRoomManagerCreateRoom(t *testing.T) {
 	rm := getRoomManager()
-	room := rm.createNewRoom()
+	room := rm.createNewRoom(sampleRoom.roomName)
 
-	if !rm.checkRoom(room.roomID) {
-		t.Errorf("createRoom failed, expected roomID %s to exist", room.roomID)
+	if !rm.checkRoom(room.roomName) {
+		t.Errorf("createRoom failed, expected roomID %s to exist", room.roomName)
 	}
 }
 
@@ -93,8 +84,8 @@ func TestRoomManagerGetRoomCount(t *testing.T) {
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &room{roomID: string(rune(i))}
-		rm.AddRoom(room)
+		room := &room{roomName: string(rune(i))}
+		rm.addRoom(room)
 	}
 
 	roomCount := rm.getRoomCount()

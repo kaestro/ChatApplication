@@ -88,7 +88,7 @@ func receiveMessageFromClient(c *client) error {
 // TODO: roomID가 없을 경우 처리
 func (c *client) sendMessageToRoom(message []byte, roomID string) {
 	for _, clientSession := range c.clientSessions {
-		if clientSession.room.roomID == roomID {
+		if clientSession.room.roomName == roomID {
 			clientSession.sendMessage(message)
 			break
 		}

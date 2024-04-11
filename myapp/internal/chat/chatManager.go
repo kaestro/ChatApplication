@@ -23,26 +23,16 @@ var (
 // 채팅과 관련한 모든 요청은 ChatManager를 통해 이루어진다.
 // Singleton 객체로 구현되어 있다.
 type ChatManager struct {
-	upgrader      websocket.Upgrader
-	clientManager *clientManager
-	roomManager   *roomManager
+	upgrader websocket.Upgrader
 }
 
 func NewChatManager() *ChatManager {
-	cmInstance = getClientManager()
-	rmInstance = getRoomManager()
-
 	chatManagerOnce.Do(func() {
-		cmInstance = getClientManager()
-		rmInstance = getRoomManager()
-
 		chatManager = &ChatManager{
 			upgrader: websocket.Upgrader{
 				ReadBufferSize:  readBufferSize,
 				WriteBufferSize: writeBufferSize,
 			},
-			clientManager: cmInstance,
-			roomManager:   rmInstance,
 		}
 	})
 
@@ -71,4 +61,7 @@ func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Reques
 func (cm *ChatManager) RemoveClientFromUser(loginSessionID string) {
 	cmInstance = getClientManager()
 	cmInstance.unRegisterClient(loginSessionID)
+}
+
+func (cm *ChatManager) CreateRoom(roomID string) {
 }

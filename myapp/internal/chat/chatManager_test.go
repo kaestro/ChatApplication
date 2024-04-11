@@ -53,7 +53,8 @@ func TestChatManager(t *testing.T) {
 	// test removing client
 	for i := 0; i < chatManagerUserCount; i++ {
 		cm.RemoveClientFromUser(strconv.Itoa(i))
-		if cm.clientManager.isClientRegistered(strconv.Itoa(i)) {
+		cmInstance = getClientManager()
+		if cmInstance.isClientRegistered(strconv.Itoa(i)) {
 			t.Errorf("RemoveClientFromUser failed, expected sessionID %d to be removed", i)
 			return
 		}

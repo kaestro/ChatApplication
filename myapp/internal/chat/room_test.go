@@ -13,7 +13,7 @@ func TestNewRoom(t *testing.T) {
 	room := newRoom(sampleRoomID)
 
 	assert.NotNil(t, room)
-	assert.Equal(t, sampleRoomID, room.roomID)
+	assert.Equal(t, sampleRoomID, room.roomName)
 
 	t.Logf("TestNewRoom passed")
 }

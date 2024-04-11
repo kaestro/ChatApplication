@@ -8,7 +8,7 @@ import (
 // room은 클라이언트들이 메시지를 주고받을 수 있는 공간을 나타낸다.
 // User가 방에 들어오고 나갈 수 있으며, 방에 있는 User들에게 메시지를 전달할 수 있다.
 type room struct {
-	roomID string
+	roomName string
 	// Registered map of clients to their websocket connections
 	sessionIDToHandler map[string]*roomClientHandler
 
@@ -22,9 +22,9 @@ type room struct {
 }
 
 // TODO: RoomManager와 상호작용 통해 새로운 RoomID의 Room을 생성하도록 변경
-func newRoom(roomId string) *room {
+func newRoom(roomName string) *room {
 	room := &room{
-		roomID:             roomId,
+		roomName:           roomName,
 		sessionIDToHandler: make(map[string]*roomClientHandler),
 		broadcast:          make(chan []byte),
 		register:           make(chan *roomClientHandler),
