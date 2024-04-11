@@ -63,5 +63,13 @@ func (cm *ChatManager) RemoveClientFromUser(loginSessionID string) {
 	cmInstance.unRegisterClient(loginSessionID)
 }
 
-func (cm *ChatManager) CreateRoom(roomID string) {
+func (cm *ChatManager) CreateRoom(roomName string) error {
+	rmInstance = getRoomManager()
+	room := rmInstance.createNewRoom(roomName)
+
+	if room == nil {
+		return errors.New("failed to create new room")
+	}
+
+	return nil
 }

@@ -47,6 +47,7 @@ func TestRoomManagerCapacity(t *testing.T) {
 
 func TestRoomManagerGetRoomIDs(t *testing.T) {
 	rm := getRoomManager()
+	rm.clearRooms()
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {

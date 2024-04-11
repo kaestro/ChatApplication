@@ -62,3 +62,26 @@ func TestChatManager(t *testing.T) {
 
 	t.Logf("TestRemoveClientFromUser passed")
 }
+
+func TestCreateRoom(t *testing.T) {
+	cm := NewChatManager()
+	roomName := "testRoom"
+
+	err := cm.CreateRoom(roomName)
+	if err != nil {
+		t.Errorf("Failed to create room: %v", err)
+		return
+	}
+
+	rmInstance := getRoomManager()
+	room, ok := rmInstance.rooms[roomName]
+	if !ok || room == nil {
+		t.Errorf("Room was not created")
+		return
+	} else if room.roomName != roomName {
+		t.Errorf("Room name mismatch, expected %s, got %s", roomName, room.roomName)
+		return
+	}
+
+	t.Logf("TestCreateRoom passed")
+}
