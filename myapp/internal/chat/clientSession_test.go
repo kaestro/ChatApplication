@@ -7,7 +7,7 @@ import (
 )
 
 func TestClientSession_listen(t *testing.T) {
-	room := newRoom(sampleRoomID)
+	room := newRoom(sampleRoomName)
 	clientSession := newClientSession(0, room)
 
 	go clientSession.listen()

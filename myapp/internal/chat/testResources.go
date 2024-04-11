@@ -10,14 +10,14 @@ const (
 	sampleLoginSessionID        = "123"
 	sampleUpdateID              = "456"
 	maxRooms                    = 100
-	sampleRoomID                = "123"
+	sampleRoomName              = "123"
 	expectedClientSessionLength = 1
 )
 
 var (
 	sampleClient          = newClient(sampleLoginSessionID, &mockConn{})
-	sampleRoom            = newRoom(sampleRoomID)
-	sampleMessage         = ChatMessage{RoomID: sampleRoomID, UserName: "user", Content: "content"}
+	sampleRoom            = newRoom(sampleRoomName)
+	sampleMessage         = ChatMessage{RoomID: sampleRoomName, UserName: "user", Content: "content"}
 	sampleMessageBytes, _ = json.Marshal(sampleMessage)
 )
 

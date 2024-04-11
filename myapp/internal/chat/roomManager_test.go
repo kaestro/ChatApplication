@@ -8,23 +8,24 @@ import (
 
 func TestRoomManagerCycle(t *testing.T) {
 	rm := getRoomManager()
+	rm.clearRooms()
 
 	// Test AddRoom
 	rm.addRoom(sampleRoom)
-	if !rm.checkRoom(sampleRoomID) {
+	if !rm.checkRoom(sampleRoomName) {
 		t.Errorf("AddRoom failed, expected roomID 123 to exist")
 	}
 
 	// Test GetRoom
-	gotRoom := rm.getRoom(sampleRoomID)
+	gotRoom := rm.getRoom(sampleRoomName)
 	if gotRoom != sampleRoom {
 		t.Errorf("GetRoom failed, expected %v, got %v", sampleRoom, gotRoom)
 	}
 
 	// Test RemoveRoom
-	rm.removeRoom(sampleRoomID)
-	if rm.checkRoom(sampleRoomID) {
-		t.Errorf("RemoveRoom failed, expected roomID %s to be removed", sampleRoomID)
+	rm.removeRoom(sampleRoomName)
+	if rm.checkRoom(sampleRoomName) {
+		t.Errorf("RemoveRoom failed, expected roomID %s to be removed", sampleRoomName)
 	}
 }
 

@@ -102,6 +102,6 @@ func (cm *clientManager) getClientCount() int {
 	return len(cm.clients)
 }
 
-func (cm *clientManager) emptyClientManager() {
+func (cm *clientManager) clearClientManager() {
 	cm.clients = make(map[string]*client)
 }

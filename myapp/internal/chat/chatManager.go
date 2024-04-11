@@ -40,22 +40,25 @@ func NewChatManager() *ChatManager {
 }
 
 func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Request, loginSessionID string) error {
+	conn, err := cm.upgradeToWebsocket(w, r)
+	if err != nil {
+		return err
+	}
+
+	err = cm.registerNewClient(loginSessionID, conn)
+	return err
+}
+
+func (cm *ChatManager) upgradeToWebsocket(w http.ResponseWriter, r *http.Request) (Conn, error) {
 	conn, err := cm.upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return err
-	}
+	return conn, err
+}
 
+func (cm *ChatManager) registerNewClient(loginSessionID string, conn Conn) error {
 	cmInstance = getClientManager()
-	client, err := cmInstance.registerNewClient(loginSessionID, conn)
-	if err != nil {
-		return err
-	}
+	_, err := cmInstance.registerNewClient(loginSessionID, conn)
 
-	if client == nil {
-		return errors.New("failed to register new client")
-	}
-
-	return nil
+	return err
 }
 
 func (cm *ChatManager) RemoveClientFromUser(loginSessionID string) {
@@ -70,6 +73,64 @@ func (cm *ChatManager) CreateRoom(roomName string) error {
 	if room == nil {
 		return errors.New("failed to create new room")
 	}
+
+	return nil
+}
+
+func (cm *ChatManager) RemoveRoom(roomName string) error {
+	rmInstance = getRoomManager()
+	return rmInstance.removeRoom(roomName)
+}
+
+func (cm *ChatManager) ClientEnterRoom(roomName, loginSessionID string) error {
+	room, client, err := cm.getRoomAndClient(roomName, loginSessionID)
+	if err != nil {
+		return err
+	}
+
+	err = room.addClient(client)
+	return err
+}
+
+func (cm *ChatManager) getRoomAndClient(roomName string, loginSessionID string) (*room, *client, error) {
+	room, err := cm.getRoom(roomName)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client, err := cm.getClient(loginSessionID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return room, client, nil
+}
+
+func (cm *ChatManager) getClient(loginSessionID string) (*client, error) {
+	cmInstance = getClientManager()
+	client := cmInstance.getClientByLoginSessionID(loginSessionID)
+	if client == nil {
+		return nil, errors.New("user of loginSessionID " + loginSessionID + " does not exist")
+	}
+	return client, nil
+}
+
+func (cm *ChatManager) getRoom(roomName string) (*room, error) {
+	rmInstance = getRoomManager()
+	room := rmInstance.getRoom(roomName)
+	if room == nil {
+		return nil, errors.New("room of roomName " + roomName + " does not exist")
+	}
+	return room, nil
+}
+
+// unregister channel에 요청을 보내는 식으로 구현돼 있어, 닫히는 데까지 시간이 걸린다.
+func (cm *ChatManager) ClientLeaveRoom(roomName, loginSessionID string) error {
+	room, client, err := cm.getRoomAndClient(roomName, loginSessionID)
+	if err != nil {
+		return err
+	}
+
+	room.removeClient(client.getLoginSessionID())
 
 	return nil
 }

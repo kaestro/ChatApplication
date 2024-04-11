@@ -9,6 +9,7 @@ import (
 
 func TestClientManager(t *testing.T) {
 	cm := getClientManager()
+	cm.clearClientManager()
 
 	// Test AddClient
 	cm.registerClient(sampleClient)
@@ -56,6 +57,7 @@ func TestClientManagerCapacity(t *testing.T) {
 
 func TestClientManagerUpdateClientID(t *testing.T) {
 	cm := getClientManager()
+	cm.clearClientManager()
 
 	cm.registerClient(sampleClient)
 	if !cm.isClientRegistered(sampleLoginSessionID) {
@@ -88,6 +90,7 @@ func TestClientManagerUpdateClientID(t *testing.T) {
 
 func TestClientManagerCreateClient(t *testing.T) {
 	cm := getClientManager()
+	cm.clearClientManager()
 
 	client := cm.createNewClient(sampleLoginSessionID, &mockConn{})
 	if client == nil {
@@ -122,7 +125,7 @@ func TestClientManagerRegisterNewClient(t *testing.T) {
 
 func TestClientManagerEmptyClientManager(t *testing.T) {
 	cm := getClientManager()
-	cm.emptyClientManager()
+	cm.clearClientManager()
 
 	if cm.getClientCount() != 0 {
 		t.Errorf("EmptyClientManager failed, expected client count to be 0, got %d", cm.getClientCount())
@@ -134,7 +137,7 @@ func TestClientManagerEmptyClientManager(t *testing.T) {
 
 func TestClientManagerGetClientCount(t *testing.T) {
 	cm := getClientManager()
-	cm.emptyClientManager()
+	cm.clearClientManager()
 
 	for i := 0; i < maxClients; i++ {
 		cm.registerNewClient(generateUniqueString(), &mockConn{})
