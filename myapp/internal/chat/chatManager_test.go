@@ -141,3 +141,40 @@ func TestClientEnterRoom(t *testing.T) {
 
 	t.Logf("TestClientEnterRoom passed")
 }
+
+func TestGetClient(t *testing.T) {
+	cm := NewChatManager()
+	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
+
+	client, err := cm.getClient(sampleLoginSessionID)
+	if err != nil {
+		t.Errorf("Failed to get client: %v", err)
+		return
+	}
+
+	if client == nil {
+		t.Errorf("Client was not found")
+		return
+	}
+
+	t.Logf("TestGetClient passed")
+}
+
+func TestGetRoom(t *testing.T) {
+	cm := NewChatManager()
+	cm.CreateRoom(sampleRoomName)
+
+	// Call getRoom method
+	room, err := cm.getRoom(sampleRoomName)
+	if err != nil {
+		t.Errorf("Failed to get room: %v", err)
+		return
+	}
+
+	if room == nil {
+		t.Errorf("Room was not found")
+		return
+	}
+
+	t.Logf("TestGetRoom passed")
+}

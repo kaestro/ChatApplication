@@ -83,18 +83,34 @@ func (cm *ChatManager) RemoveRoom(roomName string) error {
 }
 
 func (cm *ChatManager) ClientEnterRoom(roomName, loginSessionID string) error {
-	rmInstance = getRoomManager()
-	room := rmInstance.getRoom(roomName)
-	if room == nil {
-		return errors.New("room of roomName " + roomName + " does not exist")
+	room, err := cm.getRoom(roomName)
+	if err != nil {
+		return err
 	}
 
+	client, err := cm.getClient(loginSessionID)
+	if err != nil {
+		return err
+	}
+
+	err = room.addClient(client)
+	return err
+}
+
+func (cm *ChatManager) getClient(loginSessionID string) (*client, error) {
 	cmInstance = getClientManager()
 	client := cmInstance.getClientByLoginSessionID(loginSessionID)
 	if client == nil {
-		return errors.New("user of loginSessionID " + loginSessionID + " does not exist")
+		return nil, errors.New("user of loginSessionID " + loginSessionID + " does not exist")
 	}
+	return client, nil
+}
 
-	err := room.addClient(client)
-	return err
+func (cm *ChatManager) getRoom(roomName string) (*room, error) {
+	rmInstance = getRoomManager()
+	room := rmInstance.getRoom(roomName)
+	if room == nil {
+		return nil, errors.New("room of roomName " + roomName + " does not exist")
+	}
+	return room, nil
 }
