@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-// Room은 클라이언트들이 메시지를 주고받을 수 있는 공간을 나타낸다.
+// room은 클라이언트들이 메시지를 주고받을 수 있는 공간을 나타낸다.
 // User가 방에 들어오고 나갈 수 있으며, 방에 있는 User들에게 메시지를 전달할 수 있다.
-type Room struct {
+type room struct {
 	roomID string
 	// Registered map of clients to their websocket connections
 	sessionIDToHandler map[string]*roomClientHandler
@@ -22,8 +22,8 @@ type Room struct {
 }
 
 // TODO: RoomManager와 상호작용 통해 새로운 RoomID의 Room을 생성하도록 변경
-func NewRoom(roomId string) *Room {
-	room := &Room{
+func newRoom(roomId string) *room {
+	room := &room{
 		roomID:             roomId,
 		sessionIDToHandler: make(map[string]*roomClientHandler),
 		broadcast:          make(chan []byte),
@@ -37,20 +37,20 @@ func NewRoom(roomId string) *Room {
 	return room
 }
 
-func (r *Room) IsClientInsideRoom(loginSessionID string) bool {
+func (r *room) isClientInsideRoom(loginSessionID string) bool {
 	_, ok := r.sessionIDToHandler[loginSessionID]
 	return ok
 }
 
-func (r *Room) closeRoom() {
+func (r *room) closeRoom() {
 	close(r.done)
 }
 
 // TODO: client가 있을 경우 충돌 처리
 // TODO: line 58 ~ 63의 select 구문을 사용하여 room이 닫힌 경우를 middleware로 처리
-func (r *Room) AddClient(client *Client) {
+func (r *room) addClient(client *Client) {
 	loginSessionID := client.GetLoginSessionID()
-	if r.IsClientInsideRoom(loginSessionID) {
+	if r.isClientInsideRoom(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
 		return
 	}
@@ -65,8 +65,8 @@ func (r *Room) AddClient(client *Client) {
 }
 
 // TODO: room이 닫힌 경우를 middleware로 처리
-func (r *Room) RemoveClient(loginSessionID string) {
-	if !r.IsClientInsideRoom(loginSessionID) {
+func (r *room) removeClient(loginSessionID string) {
+	if !r.isClientInsideRoom(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return
 	}
@@ -75,8 +75,8 @@ func (r *Room) RemoveClient(loginSessionID string) {
 }
 
 // TODO: Set debugging messages to be printed only when debugging is enabled
-func (r *Room) ReceiveMessageFromClient(loginSessionID string, message []byte) {
-	if !r.IsClientInsideRoom(loginSessionID) {
+func (r *room) receiveMessageFromClient(loginSessionID string, message []byte) {
+	if !r.isClientInsideRoom(loginSessionID) {
 		// Debugging message
 		// fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return
@@ -89,7 +89,7 @@ func (r *Room) ReceiveMessageFromClient(loginSessionID string, message []byte) {
 // TODO: After implementing Client Object, call the chan returning method from here
 // Problem: It seems too much of responsibility on Client Object. That is, it might be better for
 // the Room object to have structured data of clients and websocket connections
-func (r *Room) run() {
+func (r *room) run() {
 	for {
 		select {
 		case clientHandler := <-r.register:
@@ -104,22 +104,22 @@ func (r *Room) run() {
 	}
 }
 
-func (r *Room) registerClientHandler(clientHandler *roomClientHandler) {
+func (r *room) registerClientHandler(clientHandler *roomClientHandler) {
 	r.sessionIDToHandler[clientHandler.getLoginSessionID()] = clientHandler
 }
 
-func (r *Room) unregisterClientHandler(clientHandler *roomClientHandler) {
+func (r *room) unregisterClientHandler(clientHandler *roomClientHandler) {
 	clientHandler.close()
 	delete(r.sessionIDToHandler, clientHandler.getLoginSessionID())
 }
 
-func (r *Room) broadcastMessage(message []byte) {
+func (r *room) broadcastMessage(message []byte) {
 	for _, clientHandler := range r.sessionIDToHandler {
 		clientHandler.receiveMessageFromRoom(message)
 	}
 }
 
-func (r *Room) GetClients() []*Client {
+func (r *room) getClients() []*Client {
 	clients := make([]*Client, 0, len(r.sessionIDToHandler))
 	for _, clientHandler := range r.sessionIDToHandler {
 		clients = append(clients, clientHandler.client)

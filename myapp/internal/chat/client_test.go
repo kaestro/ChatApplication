@@ -32,7 +32,7 @@ func TestClientAddClientSession(t *testing.T) {
 	client := NewClient(sampleLoginSessionID, conn)
 
 	// Test AddClientSession
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	client.AddClientSession(room, sampleLoginSessionID)
 
 	if len(client.clientSessions) != expectedClientSessionLength {
@@ -52,7 +52,7 @@ func TestClientRemoveClientSession(t *testing.T) {
 	client := NewClient(sampleLoginSessionID, &mockConn{})
 
 	// Test RemoveClientSession
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	client.AddClientSession(room, sampleLoginSessionID)
 	client.RemoveClientSession(0, sampleLoginSessionID)
 
@@ -111,7 +111,7 @@ func TestSendMessageToRoom(t *testing.T) {
 	client := NewClient(sampleLoginSessionID, conn)
 
 	// Add a client session with a room
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	client.AddClientSession(room, sampleLoginSessionID)
 
 	// Send a message to the room

@@ -30,7 +30,7 @@ func (c *Client) isSameClient(loginSessionID string) bool {
 	return c.loginSessionID == loginSessionID
 }
 
-func (c *Client) AddClientSession(room *Room, loginSessionID string) {
+func (c *Client) AddClientSession(room *room, loginSessionID string) {
 	if !c.isSameClient(loginSessionID) {
 		return
 	}

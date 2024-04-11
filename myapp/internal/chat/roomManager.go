@@ -14,14 +14,14 @@ var (
 // roomManager는 방의 유무를 확인, 생성, 제거, 조회를 담당한다.
 // Singleton 객체로 구현되어 있다.
 type roomManager struct {
-	rooms      map[string]*Room
+	rooms      map[string]*room
 	lastRoomID int
 }
 
 func getRoomManager() *roomManager {
 	roomOnce.Do(func() {
 		rmInstance = &roomManager{
-			rooms:      make(map[string]*Room),
+			rooms:      make(map[string]*room),
 			lastRoomID: 0,
 		}
 	})
@@ -34,7 +34,7 @@ func (rm *roomManager) checkRoom(roomID string) bool {
 	return ok
 }
 
-func (rm *roomManager) getRoom(roomID string) *Room {
+func (rm *roomManager) getRoom(roomID string) *room {
 	if !rm.checkRoom(roomID) {
 		fmt.Println("Room with roomID", roomID, "does not exist")
 		return nil
@@ -44,7 +44,7 @@ func (rm *roomManager) getRoom(roomID string) *Room {
 }
 
 // TODO: fmt 대신 별개의 로거를 사용하도록 변경
-func (rm *roomManager) AddRoom(room *Room) {
+func (rm *roomManager) AddRoom(room *room) {
 	if rm.checkRoom(room.roomID) {
 		// fmt.Println("Room with roomID", room.roomID, "already exists")
 		return
@@ -76,9 +76,9 @@ func (rm *roomManager) getNewRoomID() string {
 	return fmt.Sprintf("%d", rm.lastRoomID)
 }
 
-func (rm *roomManager) createNewRoom() *Room {
+func (rm *roomManager) createNewRoom() *room {
 	roomID := rm.getNewRoomID()
-	room := NewRoom(roomID)
+	room := newRoom(roomID)
 	rm.AddRoom(room)
 	return room
 }

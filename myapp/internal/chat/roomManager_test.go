@@ -33,7 +33,7 @@ func TestRoomManagerCapacity(t *testing.T) {
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &Room{roomID: string(rune(i))}
+		room := &room{roomID: string(rune(i))}
 		rm.AddRoom(room)
 	}
 
@@ -50,7 +50,7 @@ func TestRoomManagerGetRoomIDs(t *testing.T) {
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &Room{roomID: string(rune(i))}
+		room := &room{roomID: string(rune(i))}
 		rm.AddRoom(room)
 	}
 
@@ -93,7 +93,7 @@ func TestRoomManagerGetRoomCount(t *testing.T) {
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &Room{roomID: string(rune(i))}
+		room := &room{roomID: string(rune(i))}
 		rm.AddRoom(room)
 	}
 

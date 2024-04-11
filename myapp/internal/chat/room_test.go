@@ -10,7 +10,7 @@ import (
 )
 
 func TestNewRoom(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 
 	assert.NotNil(t, room)
 	assert.Equal(t, sampleRoomID, room.roomID)
@@ -19,51 +19,51 @@ func TestNewRoom(t *testing.T) {
 }
 
 func TestAddClient(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	client := NewClient(sampleLoginSessionID, &mockConn{})
 
-	room.AddClient(client)
+	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
 
-	assert.True(t, room.IsClientInsideRoom(sampleLoginSessionID))
+	assert.True(t, room.isClientInsideRoom(sampleLoginSessionID))
 }
 
 func TestRemoveClient(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	client := NewClient(sampleLoginSessionID, &mockConn{})
 
-	room.AddClient(client)
+	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
 
-	room.RemoveClient(sampleLoginSessionID)
+	room.removeClient(sampleLoginSessionID)
 	time.Sleep(time.Millisecond * 100)
 
-	assert.False(t, room.IsClientInsideRoom(sampleLoginSessionID))
+	assert.False(t, room.isClientInsideRoom(sampleLoginSessionID))
 }
 
 func TestCloseRoom(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	room.closeRoom()
 
 	// Check if room is closed by trying to add a client
 	client := NewClient(sampleLoginSessionID, &mockConn{})
-	room.AddClient(client)
+	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
 
 	// If room is closed, client should not be added
-	assert.False(t, room.IsClientInsideRoom(sampleLoginSessionID))
+	assert.False(t, room.isClientInsideRoom(sampleLoginSessionID))
 }
 
 func TestReceiveMessageFromClient(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 
 	for i := 0; i < 3; i++ {
 		client := NewClient(strconv.Itoa(i), &mockConn{})
-		room.AddClient(client)
+		room.addClient(client)
 	}
 
 	message := sampleMessageBytes
-	room.ReceiveMessageFromClient("0", message)
+	room.receiveMessageFromClient("0", message)
 	time.Sleep(time.Millisecond * 100)
 
 	for loginSessionID, handler := range room.sessionIDToHandler {
@@ -76,7 +76,7 @@ func TestReceiveMessageFromClient(t *testing.T) {
 }
 
 func TestGetClients(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	numClients := 3
 
 	loginSessionIDs := make(map[string]bool)
@@ -85,12 +85,12 @@ func TestGetClients(t *testing.T) {
 	for i := 0; i < numClients; i++ {
 		conn := &mockConn{}
 		client := NewClient(strconv.Itoa(i), conn)
-		room.AddClient(client)
+		room.addClient(client)
 		loginSessionIDs[strconv.Itoa(i)] = false
 	}
 
 	// Get the clients from the room
-	clients := room.GetClients()
+	clients := room.getClients()
 
 	time.Sleep(time.Millisecond * 2000)
 
