@@ -29,10 +29,11 @@ func getClientManager() *ClientManager {
 
 func (cm *ClientManager) isClientRegistered(loginSessionID string) bool {
 	_, ok := cm.clients[loginSessionID]
+
 	return ok
 }
 
-func (cm *ClientManager) getClient(loginSessionID string) *Client {
+func (cm *ClientManager) getClientByLoginSessionID(loginSessionID string) *Client {
 	if !cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return nil
@@ -46,6 +47,7 @@ func (cm *ClientManager) registerClient(client *Client) {
 		fmt.Println("Client with sessionID", client.loginSessionID, "already exists")
 		return
 	}
+
 	cm.clients[client.loginSessionID] = client
 }
 
@@ -54,6 +56,7 @@ func (cm *ClientManager) unRegisterClient(sessionID string) {
 		fmt.Println("Client with sessionID", sessionID, "does not exist")
 		return
 	}
+
 	delete(cm.clients, sessionID)
 }
 
@@ -67,7 +70,7 @@ func (cm *ClientManager) updateClientID(client *Client, loginSessionID string) {
 	}
 }
 
-func (cm *ClientManager) createClient(loginSessionID string) *Client {
+func (cm *ClientManager) createNewClient(loginSessionID string) *Client {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
 		return nil
@@ -83,7 +86,7 @@ func (cm *ClientManager) registerNewClient(loginSessionID string) *Client {
 		return nil
 	}
 
-	client := cm.createClient(loginSessionID)
+	client := cm.createNewClient(loginSessionID)
 	if client == nil {
 		fmt.Println("Failed to create client with sessionID", loginSessionID)
 		return nil
@@ -92,4 +95,12 @@ func (cm *ClientManager) registerNewClient(loginSessionID string) *Client {
 	cm.registerClient(client)
 
 	return client
+}
+
+func (cm *ClientManager) getClientCount() int {
+	return len(cm.clients)
+}
+
+func (cm *ClientManager) emptyClientManager() {
+	cm.clients = make(map[string]*Client)
 }
