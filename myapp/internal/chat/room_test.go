@@ -79,3 +79,25 @@ func TestReceiveMessageFromClient(t *testing.T) {
 		}
 	}
 }
+
+func TestGetClients(t *testing.T) {
+	room := NewRoom(sampleRoomID)
+
+	// Add some clients to the room
+	for i := 0; i < 3; i++ {
+		client := NewClient(strconv.Itoa(i))
+		conn := &MockConn{}
+		room.AddClient(client, conn)
+	}
+
+	// Get the clients from the room
+	clients := room.GetClients()
+
+	// Check if the correct number of clients was returned
+	assert.Equal(t, 3, len(clients))
+
+	// Check if the correct clients were returned
+	for i, client := range clients {
+		assert.Equal(t, strconv.Itoa(i), client.loginSessionID)
+	}
+}
