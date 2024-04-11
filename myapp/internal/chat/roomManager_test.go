@@ -81,7 +81,7 @@ func TestRoomManagerGetNewRoomID(t *testing.T) {
 
 func TestRoomManagerCreateRoom(t *testing.T) {
 	rm := GetRoomManager()
-	room := rm.createRoom()
+	room := rm.createNewRoom()
 
 	if !rm.CheckRoom(room.roomID) {
 		t.Errorf("createRoom failed, expected roomID %s to exist", room.roomID)
