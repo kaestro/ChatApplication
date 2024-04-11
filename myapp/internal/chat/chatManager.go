@@ -134,3 +134,5 @@ func (cm *ChatManager) ClientLeaveRoom(roomName, loginSessionID string) error {
 
 	return nil
 }
+
+// TODO: User가 메시지를 보내는 요청 처리
