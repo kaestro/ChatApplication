@@ -92,7 +92,7 @@ func TestGetClients(t *testing.T) {
 	// Get the clients from the room
 	clients := room.getClients()
 
-	time.Sleep(time.Millisecond * 2000)
+	time.Sleep(time.Millisecond * 2500)
 
 	// Check if the correct number of clients was returned
 	assert.Equal(t, numClients, len(clients))

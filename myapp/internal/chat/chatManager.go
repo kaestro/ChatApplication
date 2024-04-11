@@ -83,18 +83,26 @@ func (cm *ChatManager) RemoveRoom(roomName string) error {
 }
 
 func (cm *ChatManager) ClientEnterRoom(roomName, loginSessionID string) error {
-	room, err := cm.getRoom(roomName)
-	if err != nil {
-		return err
-	}
-
-	client, err := cm.getClient(loginSessionID)
+	room, client, err := cm.getRoomAndClient(roomName, loginSessionID)
 	if err != nil {
 		return err
 	}
 
 	err = room.addClient(client)
 	return err
+}
+
+func (cm *ChatManager) getRoomAndClient(roomName string, loginSessionID string) (*room, *client, error) {
+	room, err := cm.getRoom(roomName)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client, err := cm.getClient(loginSessionID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return room, client, nil
 }
 
 func (cm *ChatManager) getClient(loginSessionID string) (*client, error) {
