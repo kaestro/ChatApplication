@@ -25,16 +25,16 @@ var (
 type ChatManager struct {
 	upgrader      websocket.Upgrader
 	clientManager *ClientManager
-	roomManager   *RoomManager
+	roomManager   *roomManager
 }
 
 func NewChatManager() *ChatManager {
 	clientManager = getClientManager()
-	roomManager = GetRoomManager()
+	rmInstance = getRoomManager()
 
 	chatManagerOnce.Do(func() {
 		clientManager = getClientManager()
-		roomManager = GetRoomManager()
+		rmInstance = getRoomManager()
 
 		chatManager = &ChatManager{
 			upgrader: websocket.Upgrader{
@@ -42,7 +42,7 @@ func NewChatManager() *ChatManager {
 				WriteBufferSize: writeBufferSize,
 			},
 			clientManager: clientManager,
-			roomManager:   roomManager,
+			roomManager:   rmInstance,
 		}
 	})
 
