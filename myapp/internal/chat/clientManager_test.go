@@ -89,7 +89,7 @@ func TestClientManagerUpdateClientID(t *testing.T) {
 func TestClientManagerCreateClient(t *testing.T) {
 	cm := getClientManager()
 
-	client := cm.createNewClient(sampleLoginSessionID)
+	client := cm.createNewClient(sampleLoginSessionID, &MockConn{})
 	if client == nil {
 		t.Errorf("CreateClient failed, expected client to be created")
 		return
@@ -106,7 +106,7 @@ func TestClientManagerCreateClient(t *testing.T) {
 func TestClientManagerRegisterNewClient(t *testing.T) {
 	cm := getClientManager()
 
-	client := cm.registerNewClient(sampleLoginSessionID)
+	client := cm.registerNewClient(sampleLoginSessionID, &MockConn{})
 	if client == nil {
 		t.Errorf("RegisterNewClient failed, expected client to be created")
 		return
@@ -137,7 +137,7 @@ func TestClientManagerGetClientCount(t *testing.T) {
 	cm.emptyClientManager()
 
 	for i := 0; i < maxClients; i++ {
-		cm.registerNewClient(generateUniqueString())
+		cm.registerNewClient(generateUniqueString(), &MockConn{})
 	}
 
 	if cm.getClientCount() != maxClients {

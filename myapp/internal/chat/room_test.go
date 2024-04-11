@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,10 +20,9 @@ func TestNewRoom(t *testing.T) {
 
 func TestAddClient(t *testing.T) {
 	room := NewRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID)
-	conn := &websocket.Conn{}
+	client := NewClient(sampleLoginSessionID, &MockConn{})
 
-	room.AddClient(client, conn)
+	room.AddClient(client)
 	time.Sleep(time.Millisecond * 100)
 
 	assert.True(t, room.IsClientInsideRoom(sampleLoginSessionID))
@@ -32,10 +30,9 @@ func TestAddClient(t *testing.T) {
 
 func TestRemoveClient(t *testing.T) {
 	room := NewRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID)
-	conn := &websocket.Conn{}
+	client := NewClient(sampleLoginSessionID, &MockConn{})
 
-	room.AddClient(client, conn)
+	room.AddClient(client)
 	time.Sleep(time.Millisecond * 100)
 
 	room.RemoveClient(sampleLoginSessionID)
@@ -49,9 +46,8 @@ func TestCloseRoom(t *testing.T) {
 	room.closeRoom()
 
 	// Check if room is closed by trying to add a client
-	client := NewClient(sampleLoginSessionID)
-	conn := &websocket.Conn{}
-	room.AddClient(client, conn)
+	client := NewClient(sampleLoginSessionID, &MockConn{})
+	room.AddClient(client)
 	time.Sleep(time.Millisecond * 100)
 
 	// If room is closed, client should not be added
@@ -62,12 +58,11 @@ func TestReceiveMessageFromClient(t *testing.T) {
 	room := NewRoom(sampleRoomID)
 
 	for i := 0; i < 3; i++ {
-		client := NewClient(strconv.Itoa(i))
-		conn := &MockConn{}
-		room.AddClient(client, conn)
+		client := NewClient(strconv.Itoa(i), &MockConn{})
+		room.AddClient(client)
 	}
 
-	message := []byte(sampleMessage)
+	message := sampleMessageBytes
 	room.ReceiveMessageFromClient("0", message)
 	time.Sleep(time.Millisecond * 100)
 
@@ -85,9 +80,9 @@ func TestGetClients(t *testing.T) {
 
 	// Add some clients to the room
 	for i := 0; i < 3; i++ {
-		client := NewClient(strconv.Itoa(i))
 		conn := &MockConn{}
-		room.AddClient(client, conn)
+		client := NewClient(strconv.Itoa(i), conn)
+		room.AddClient(client)
 	}
 
 	// Get the clients from the room

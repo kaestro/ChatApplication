@@ -7,9 +7,8 @@ import (
 )
 
 func TestClientSession_listen(t *testing.T) {
-	mockConn := &MockConn{}
 	room := NewRoom(sampleRoomID)
-	clientSession := NewClientSession(1, mockConn, room)
+	clientSession := NewClientSession(0, room)
 
 	go clientSession.listen()
 

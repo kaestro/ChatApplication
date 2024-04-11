@@ -48,7 +48,7 @@ func (r *Room) closeRoom() {
 
 // TODO: client가 있을 경우 충돌 처리
 // TODO: line 58 ~ 63의 select 구문을 사용하여 room이 닫힌 경우를 middleware로 처리
-func (r *Room) AddClient(client *Client, conn Conn) {
+func (r *Room) AddClient(client *Client) {
 	loginSessionID := client.GetLoginSessionID()
 	if r.IsClientInsideRoom(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
@@ -60,7 +60,7 @@ func (r *Room) AddClient(client *Client, conn Conn) {
 		fmt.Println("Room is closed, can't add client")
 		return
 	default:
-		r.register <- NewRoomClientHandler(client, conn)
+		r.register <- NewRoomClientHandler(client)
 	}
 }
 
