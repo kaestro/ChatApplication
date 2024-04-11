@@ -122,3 +122,15 @@ func (cm *ChatManager) getRoom(roomName string) (*room, error) {
 	}
 	return room, nil
 }
+
+// unregister channel에 요청을 보내는 식으로 구현돼 있어, 닫히는 데까지 시간이 걸린다.
+func (cm *ChatManager) ClientLeaveRoom(roomName, loginSessionID string) error {
+	room, client, err := cm.getRoomAndClient(roomName, loginSessionID)
+	if err != nil {
+		return err
+	}
+
+	room.removeClient(client.getLoginSessionID())
+
+	return nil
+}

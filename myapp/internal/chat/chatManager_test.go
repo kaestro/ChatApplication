@@ -202,3 +202,32 @@ func TestGetRoomAndClient(t *testing.T) {
 
 	t.Logf("TestGetRoomAndClient passed")
 }
+
+func TestClientLeaveRoom(t *testing.T) {
+	cm := NewChatManager()
+	rmInstance := getRoomManager()
+	rmInstance.clearRooms()
+
+	// Create a room and a client
+	cm.CreateRoom(sampleRoomName)
+	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
+	cm.ClientEnterRoom(sampleRoomName, sampleLoginSessionID)
+
+	// Call ClientLeaveRoom method
+	err := cm.ClientLeaveRoom(sampleRoomName, sampleLoginSessionID)
+	if err != nil {
+		t.Errorf("Failed to leave room: %v", err)
+		return
+	}
+
+	time.Sleep(100 * time.Millisecond)
+
+	// Check if the client is still in the room
+	room := rmInstance.getRoom(sampleRoomName)
+	if room.isClientInsideRoom(sampleLoginSessionID) {
+		t.Errorf("Client was not removed from the room")
+		return
+	}
+
+	t.Logf("TestClientLeaveRoom passed")
+}
