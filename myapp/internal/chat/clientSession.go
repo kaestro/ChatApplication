@@ -3,13 +3,13 @@ package chat
 
 import (
 	"log"
-	"strconv"
 )
 
 // ClientSession은 방과 클라이언트의 중개자 역할을 한다.
 // 클라이언트와 방 사이의 연결을 유지하고, 클라이언트의 메시지를 받아 해당 방으로 전달한다.
 type ClientSession struct {
 	id               int
+	loginSessionID   string
 	socketConnection Conn
 	room             *Room
 }
@@ -34,6 +34,8 @@ func (cs *ClientSession) listen() {
 			break
 		}
 
-		cs.room.ReceiveMessageFromClient(strconv.Itoa(cs.id), message)
+		if message != nil {
+			cs.room.ReceiveMessageFromClient(cs.loginSessionID, message)
+		}
 	}
 }
