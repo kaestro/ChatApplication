@@ -24,16 +24,16 @@ var (
 // Singleton 객체로 구현되어 있다.
 type ChatManager struct {
 	upgrader      websocket.Upgrader
-	clientManager *ClientManager
+	clientManager *clientManager
 	roomManager   *roomManager
 }
 
 func NewChatManager() *ChatManager {
-	clientManager = getClientManager()
+	cmInstance = getClientManager()
 	rmInstance = getRoomManager()
 
 	chatManagerOnce.Do(func() {
-		clientManager = getClientManager()
+		cmInstance = getClientManager()
 		rmInstance = getRoomManager()
 
 		chatManager = &ChatManager{
@@ -41,7 +41,7 @@ func NewChatManager() *ChatManager {
 				ReadBufferSize:  readBufferSize,
 				WriteBufferSize: writeBufferSize,
 			},
-			clientManager: clientManager,
+			clientManager: cmInstance,
 			roomManager:   rmInstance,
 		}
 	})
@@ -55,8 +55,8 @@ func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	clientManager = getClientManager()
-	client, err := clientManager.registerNewClient(loginSessionID, conn)
+	cmInstance = getClientManager()
+	client, err := cmInstance.registerNewClient(loginSessionID, conn)
 	if err != nil {
 		return err
 	}
@@ -69,6 +69,6 @@ func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Reques
 }
 
 func (cm *ChatManager) RemoveClientFromUser(loginSessionID string) {
-	clientManager = getClientManager()
-	clientManager.unRegisterClient(loginSessionID)
+	cmInstance = getClientManager()
+	cmInstance.unRegisterClient(loginSessionID)
 }
