@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
@@ -104,4 +105,39 @@ func TestRemoveRoom(t *testing.T) {
 	}
 
 	t.Logf("TestRemoveRoom passed")
+}
+
+func TestClientEnterRoom(t *testing.T) {
+	cm := NewChatManager()
+
+	// Create a room and a client
+	err := cm.CreateRoom(sampleRoomName)
+	if err != nil {
+		t.Errorf("Failed to create room: %v", err)
+		return
+	}
+	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
+
+	// Call ClientEnterRoom method
+	err = cm.ClientEnterRoom(sampleRoomName, sampleLoginSessionID)
+	if err != nil {
+		t.Errorf("Failed to enter room: %v", err)
+		return
+	}
+
+	time.Sleep(100 * time.Millisecond)
+
+	// Check if the client is in the room
+	rmInstance := getRoomManager()
+	room, ok := rmInstance.rooms[sampleRoomName]
+	if !ok || room == nil {
+		t.Errorf("Room was not found")
+		return
+	}
+	if !room.isClientInsideRoom(sampleLoginSessionID) {
+		t.Errorf("Client was not added to the room")
+		return
+	}
+
+	t.Logf("TestClientEnterRoom passed")
 }

@@ -40,22 +40,25 @@ func NewChatManager() *ChatManager {
 }
 
 func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Request, loginSessionID string) error {
+	conn, err := cm.upgradeToWebsocket(w, r)
+	if err != nil {
+		return err
+	}
+
+	err = cm.registerNewClient(loginSessionID, conn)
+	return err
+}
+
+func (cm *ChatManager) upgradeToWebsocket(w http.ResponseWriter, r *http.Request) (Conn, error) {
 	conn, err := cm.upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return err
-	}
+	return conn, err
+}
 
+func (cm *ChatManager) registerNewClient(loginSessionID string, conn Conn) error {
 	cmInstance = getClientManager()
-	client, err := cmInstance.registerNewClient(loginSessionID, conn)
-	if err != nil {
-		return err
-	}
+	_, err := cmInstance.registerNewClient(loginSessionID, conn)
 
-	if client == nil {
-		return errors.New("failed to register new client")
-	}
-
-	return nil
+	return err
 }
 
 func (cm *ChatManager) RemoveClientFromUser(loginSessionID string) {
@@ -77,4 +80,21 @@ func (cm *ChatManager) CreateRoom(roomName string) error {
 func (cm *ChatManager) RemoveRoom(roomName string) error {
 	rmInstance = getRoomManager()
 	return rmInstance.removeRoom(roomName)
+}
+
+func (cm *ChatManager) ClientEnterRoom(roomName, loginSessionID string) error {
+	rmInstance = getRoomManager()
+	room := rmInstance.getRoom(roomName)
+	if room == nil {
+		return errors.New("room of roomName " + roomName + " does not exist")
+	}
+
+	cmInstance = getClientManager()
+	client := cmInstance.getClientByLoginSessionID(loginSessionID)
+	if client == nil {
+		return errors.New("user of loginSessionID " + loginSessionID + " does not exist")
+	}
+
+	err := room.addClient(client)
+	return err
 }

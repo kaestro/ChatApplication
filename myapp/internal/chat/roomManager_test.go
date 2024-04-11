@@ -8,6 +8,7 @@ import (
 
 func TestRoomManagerCycle(t *testing.T) {
 	rm := getRoomManager()
+	rm.clearRooms()
 
 	// Test AddRoom
 	rm.addRoom(sampleRoom)
