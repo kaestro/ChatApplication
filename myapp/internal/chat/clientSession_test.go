@@ -8,7 +8,7 @@ import (
 
 func TestClientSession_listen(t *testing.T) {
 	room := newRoom(sampleRoomID)
-	clientSession := NewClientSession(0, room)
+	clientSession := newClientSession(0, room)
 
 	go clientSession.listen()
 

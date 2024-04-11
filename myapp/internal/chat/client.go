@@ -8,14 +8,14 @@ import (
 // client는 채팅 서버에 접속한 클라이언트(user)를 나타낸다.
 type Client struct {
 	loginSessionID string           // 어느 user인지 구분하는 id
-	clientSessions []*ClientSession // room, socket, send channel을 가지고 있는 session slice
+	clientSessions []*clientSession // room, socket, send channel을 가지고 있는 session slice
 	conn           Conn
 }
 
 func NewClient(loginSessionID string, conn Conn) *Client {
 	client := &Client{
 		loginSessionID: loginSessionID,
-		clientSessions: make([]*ClientSession, 0),
+		clientSessions: make([]*clientSession, 0),
 		conn:           conn,
 	}
 
@@ -35,7 +35,7 @@ func (c *Client) AddClientSession(room *room, loginSessionID string) {
 		return
 	}
 
-	c.clientSessions = append(c.clientSessions, NewClientSession(len(c.clientSessions), room))
+	c.clientSessions = append(c.clientSessions, newClientSession(len(c.clientSessions), room))
 }
 
 func (c *Client) RemoveClientSession(clientSessionID int, loginSessionID string) {

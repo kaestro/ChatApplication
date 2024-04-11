@@ -78,7 +78,7 @@ func TestListen(t *testing.T) {
 	conn := &mockConn{}
 	client := &Client{
 		loginSessionID: sampleLoginSessionID,
-		clientSessions: make([]*ClientSession, 0),
+		clientSessions: make([]*clientSession, 0),
 		conn:           conn,
 	}
 
