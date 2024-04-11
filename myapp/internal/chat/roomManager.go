@@ -7,82 +7,79 @@ import (
 )
 
 var (
-	roomOnce    sync.Once
-	roomManager *RoomManager
+	roomOnce   sync.Once
+	rmInstance *roomManager
 )
 
-// RoomManager는 방의 유무를 확인, 생성, 제거, 조회를 담당한다.
+// roomManager는 방의 유무를 확인, 생성, 제거, 조회를 담당한다.
 // Singleton 객체로 구현되어 있다.
-type RoomManager struct {
-	rooms      map[string]*Room
-	lastRoomID int
+type roomManager struct {
+	rooms map[string]*room
 }
 
-func GetRoomManager() *RoomManager {
+func getRoomManager() *roomManager {
 	roomOnce.Do(func() {
-		roomManager = &RoomManager{
-			rooms:      make(map[string]*Room),
-			lastRoomID: 0,
+		rmInstance = &roomManager{
+			rooms: make(map[string]*room),
 		}
 	})
 
-	return roomManager
+	return rmInstance
 }
 
-func (rm *RoomManager) CheckRoom(roomID string) bool {
-	_, ok := rm.rooms[roomID]
+func (rm *roomManager) checkRoom(roomName string) bool {
+	_, ok := rm.rooms[roomName]
 	return ok
 }
 
-func (rm *RoomManager) GetRoom(roomID string) *Room {
-	if !rm.CheckRoom(roomID) {
-		fmt.Println("Room with roomID", roomID, "does not exist")
+func (rm *roomManager) getRoom(roomName string) *room {
+	if !rm.checkRoom(roomName) {
+		fmt.Println("Room with roomID", roomName, "does not exist")
 		return nil
 	}
 
-	return rm.rooms[roomID]
+	return rm.rooms[roomName]
 }
 
 // TODO: fmt 대신 별개의 로거를 사용하도록 변경
-func (rm *RoomManager) AddRoom(room *Room) {
-	if rm.CheckRoom(room.roomID) {
+func (rm *roomManager) addRoom(room *room) {
+	if rm.checkRoom(room.roomName) {
 		// fmt.Println("Room with roomID", room.roomID, "already exists")
 		return
 	}
-	rm.rooms[room.roomID] = room
+	rm.rooms[room.roomName] = room
 }
 
-func (rm *RoomManager) RemoveRoom(roomID string) {
-	if !rm.CheckRoom(roomID) {
-		fmt.Println("Room with roomID", roomID, "does not exist")
+func (rm *roomManager) removeRoom(roomName string) {
+	if !rm.checkRoom(roomName) {
+		fmt.Println("Room with roomID", roomName, "does not exist")
 		return
 	}
 
-	rm.rooms[roomID].closeRoom()
-	delete(rm.rooms, roomID)
+	rm.rooms[roomName].closeRoom()
+	delete(rm.rooms, roomName)
 }
 
 // Question: wouldn't it be better to just return room pointers?
-func (rm *RoomManager) GetRoomIDs() []string {
-	roomIDs := make([]string, 0, len(rm.rooms))
-	for roomID := range rm.rooms {
-		roomIDs = append(roomIDs, roomID)
+func (rm *roomManager) getRoomNames() []string {
+	roomNames := make([]string, 0, len(rm.rooms))
+	for roomName := range rm.rooms {
+		roomNames = append(roomNames, roomName)
 	}
-	return roomIDs
+	return roomNames
 }
 
-func (rm *RoomManager) getNewRoomID() string {
-	rm.lastRoomID++
-	return fmt.Sprintf("%d", rm.lastRoomID)
-}
-
-func (rm *RoomManager) createNewRoom() *Room {
-	roomID := rm.getNewRoomID()
-	room := NewRoom(roomID)
-	rm.AddRoom(room)
+func (rm *roomManager) createNewRoom(roomName string) *room {
+	//roomID := rm.getNewRoomID()
+	room := newRoom(roomName)
+	rm.addRoom(room)
 	return room
 }
 
-func (rm *RoomManager) getRoomCount() int {
+func (rm *roomManager) getRoomCount() int {
 	return len(rm.rooms)
+}
+
+func (rm *roomManager) clearRooms() {
+	rm.rooms = make(map[string]*room)
 }

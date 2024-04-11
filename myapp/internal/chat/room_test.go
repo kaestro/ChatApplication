@@ -10,64 +10,64 @@ import (
 )
 
 func TestNewRoom(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 
 	assert.NotNil(t, room)
-	assert.Equal(t, sampleRoomID, room.roomID)
+	assert.Equal(t, sampleRoomID, room.roomName)
 
 	t.Logf("TestNewRoom passed")
 }
 
 func TestAddClient(t *testing.T) {
-	room := NewRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	room := newRoom(sampleRoomID)
+	client := newClient(sampleLoginSessionID, &mockConn{})
 
-	room.AddClient(client)
+	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
 
-	assert.True(t, room.IsClientInsideRoom(sampleLoginSessionID))
+	assert.True(t, room.isClientInsideRoom(sampleLoginSessionID))
 }
 
 func TestRemoveClient(t *testing.T) {
-	room := NewRoom(sampleRoomID)
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	room := newRoom(sampleRoomID)
+	client := newClient(sampleLoginSessionID, &mockConn{})
 
-	room.AddClient(client)
+	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
 
-	room.RemoveClient(sampleLoginSessionID)
+	room.removeClient(sampleLoginSessionID)
 	time.Sleep(time.Millisecond * 100)
 
-	assert.False(t, room.IsClientInsideRoom(sampleLoginSessionID))
+	assert.False(t, room.isClientInsideRoom(sampleLoginSessionID))
 }
 
 func TestCloseRoom(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	room.closeRoom()
 
 	// Check if room is closed by trying to add a client
-	client := NewClient(sampleLoginSessionID, &MockConn{})
-	room.AddClient(client)
+	client := newClient(sampleLoginSessionID, &mockConn{})
+	room.addClient(client)
 	time.Sleep(time.Millisecond * 100)
 
 	// If room is closed, client should not be added
-	assert.False(t, room.IsClientInsideRoom(sampleLoginSessionID))
+	assert.False(t, room.isClientInsideRoom(sampleLoginSessionID))
 }
 
 func TestReceiveMessageFromClient(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 
 	for i := 0; i < 3; i++ {
-		client := NewClient(strconv.Itoa(i), &MockConn{})
-		room.AddClient(client)
+		client := newClient(strconv.Itoa(i), &mockConn{})
+		room.addClient(client)
 	}
 
 	message := sampleMessageBytes
-	room.ReceiveMessageFromClient("0", message)
+	room.receiveMessageFromClient("0", message)
 	time.Sleep(time.Millisecond * 100)
 
 	for loginSessionID, handler := range room.sessionIDToHandler {
-		if !assert.Equal(t, message, handler.conn.(*MockConn).LastData) {
+		if !assert.Equal(t, message, handler.conn.(*mockConn).LastData) {
 			t.Errorf("TestReceiveMessageFromClient %s failed", loginSessionID)
 		} else {
 			t.Logf("TestReceiveMessageFromClient %s passed", loginSessionID)
@@ -76,21 +76,21 @@ func TestReceiveMessageFromClient(t *testing.T) {
 }
 
 func TestGetClients(t *testing.T) {
-	room := NewRoom(sampleRoomID)
+	room := newRoom(sampleRoomID)
 	numClients := 3
 
 	loginSessionIDs := make(map[string]bool)
 
 	// Add some clients to the room
 	for i := 0; i < numClients; i++ {
-		conn := &MockConn{}
-		client := NewClient(strconv.Itoa(i), conn)
-		room.AddClient(client)
+		conn := &mockConn{}
+		client := newClient(strconv.Itoa(i), conn)
+		room.addClient(client)
 		loginSessionIDs[strconv.Itoa(i)] = false
 	}
 
 	// Get the clients from the room
-	clients := room.GetClients()
+	clients := room.getClients()
 
 	time.Sleep(time.Millisecond * 2000)
 
@@ -99,7 +99,7 @@ func TestGetClients(t *testing.T) {
 
 	// Check if the correct clients were returned
 	for _, client := range clients {
-		loginSessionID := client.GetLoginSessionID()
+		loginSessionID := client.getLoginSessionID()
 		if _, ok := loginSessionIDs[loginSessionID]; ok {
 			loginSessionIDs[loginSessionID] = true
 		}

@@ -7,62 +7,63 @@ import (
 )
 
 func TestRoomManagerCycle(t *testing.T) {
-	rm := GetRoomManager()
+	rm := getRoomManager()
 
 	// Test AddRoom
-	rm.AddRoom(sampleRoom)
-	if !rm.CheckRoom(sampleRoomID) {
+	rm.addRoom(sampleRoom)
+	if !rm.checkRoom(sampleRoomID) {
 		t.Errorf("AddRoom failed, expected roomID 123 to exist")
 	}
 
 	// Test GetRoom
-	gotRoom := rm.GetRoom(sampleRoomID)
+	gotRoom := rm.getRoom(sampleRoomID)
 	if gotRoom != sampleRoom {
 		t.Errorf("GetRoom failed, expected %v, got %v", sampleRoom, gotRoom)
 	}
 
 	// Test RemoveRoom
-	rm.RemoveRoom(sampleRoomID)
-	if rm.CheckRoom(sampleRoomID) {
+	rm.removeRoom(sampleRoomID)
+	if rm.checkRoom(sampleRoomID) {
 		t.Errorf("RemoveRoom failed, expected roomID %s to be removed", sampleRoomID)
 	}
 }
 
 func TestRoomManagerCapacity(t *testing.T) {
-	rm := GetRoomManager()
+	rm := getRoomManager()
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &Room{roomID: string(rune(i))}
-		rm.AddRoom(room)
+		room := &room{roomName: strconv.Itoa(i)}
+		rm.addRoom(room)
 	}
 
 	// Test AddRoom exceeding capacity
 	for i := 0; i < maxRooms; i++ {
-		if !rm.CheckRoom(string(rune(i))) {
+		if !rm.checkRoom(strconv.Itoa(i)) {
 			t.Errorf("AddRoom failed, expected roomID %d to exist", i)
 		}
 	}
 }
 
 func TestRoomManagerGetRoomIDs(t *testing.T) {
-	rm := GetRoomManager()
+	rm := getRoomManager()
+	rm.clearRooms()
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &Room{roomID: string(rune(i))}
-		rm.AddRoom(room)
+		room := &room{roomName: strconv.Itoa(i)}
+		rm.addRoom(room)
 	}
 
 	// Test GetRoomIDs
-	roomIDs := rm.GetRoomIDs()
+	roomIDs := rm.getRoomNames()
 	if len(roomIDs) != maxRooms {
 		t.Errorf("GetRoomIDs failed, expected %d roomIDs, got %d", maxRooms, len(roomIDs))
 		return
 	}
 
 	for _, roomID := range roomIDs {
-		if !rm.CheckRoom(roomID) {
+		if !rm.checkRoom(roomID) {
 			t.Errorf("GetRoomIDs failed, expected roomID %s to exist", roomID)
 		}
 	}
@@ -70,35 +71,48 @@ func TestRoomManagerGetRoomIDs(t *testing.T) {
 	t.Logf("GetRoomIDs passed, expected %d roomIDs", maxRooms)
 }
 
-func TestRoomManagerGetNewRoomID(t *testing.T) {
-	rm := GetRoomManager()
-	roomID := rm.getNewRoomID()
-
-	if strconv.Itoa(rm.lastRoomID) != roomID {
-		t.Errorf("getNewRoomID failed, expected roomID %s to exist", roomID)
-	}
-}
-
 func TestRoomManagerCreateRoom(t *testing.T) {
-	rm := GetRoomManager()
-	room := rm.createNewRoom()
+	rm := getRoomManager()
+	room := rm.createNewRoom(sampleRoom.roomName)
 
-	if !rm.CheckRoom(room.roomID) {
-		t.Errorf("createRoom failed, expected roomID %s to exist", room.roomID)
+	if !rm.checkRoom(room.roomName) {
+		t.Errorf("createRoom failed, expected roomID %s to exist", room.roomName)
 	}
 }
 
-func TestRoomManagerGetRoomCount(t *testing.T) {
-	rm := GetRoomManager()
+func TestRoomManagerClearRooms(t *testing.T) {
+	rm := getRoomManager()
 
 	// Test AddRoom
 	for i := 0; i < maxRooms; i++ {
-		room := &Room{roomID: string(rune(i))}
-		rm.AddRoom(room)
+		room := &room{roomName: strconv.Itoa(i)}
+		rm.addRoom(room)
+	}
+
+	rm.clearRooms()
+	if rm.getRoomCount() != 0 {
+		t.Errorf("clearRooms failed, expected 0 rooms, got %d", rm.getRoomCount())
+		return
+	}
+
+	t.Logf("clearRooms passed, expected 0 rooms")
+}
+
+func TestRoomManagerGetRoomCount(t *testing.T) {
+	rm := getRoomManager()
+	rm.clearRooms()
+
+	// Test AddRoom
+	for i := 0; i < maxRooms; i++ {
+		room := &room{roomName: strconv.Itoa(i)}
+		rm.addRoom(room)
 	}
 
 	roomCount := rm.getRoomCount()
 	if roomCount != maxRooms {
 		t.Errorf("getRoomCount failed, expected %d rooms, got %d", maxRooms, roomCount)
+		return
 	}
+
+	t.Logf("getRoomCount passed, expected %d rooms", maxRooms)
 }

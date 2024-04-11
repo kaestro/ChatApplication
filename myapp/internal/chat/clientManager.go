@@ -8,33 +8,33 @@ import (
 )
 
 var (
-	clientOnce    sync.Once
-	clientManager *ClientManager
+	clientOnce sync.Once
+	cmInstance *clientManager
 )
 
-// Client에 대한 CRUD를 담당하는 ClientManager
+// Client에 대한 CRUD를 담당하는 clientManager
 // Singleton 객체로 구현되어 있다.
-type ClientManager struct {
-	clients map[string]*Client // key: loginSessionID, value: Client object
+type clientManager struct {
+	clients map[string]*client // key: loginSessionID, value: Client object
 }
 
-func getClientManager() *ClientManager {
+func getClientManager() *clientManager {
 	clientOnce.Do(func() {
-		clientManager = &ClientManager{
-			clients: make(map[string]*Client),
+		cmInstance = &clientManager{
+			clients: make(map[string]*client),
 		}
 	})
 
-	return clientManager
+	return cmInstance
 }
 
-func (cm *ClientManager) isClientRegistered(loginSessionID string) bool {
+func (cm *clientManager) isClientRegistered(loginSessionID string) bool {
 	_, ok := cm.clients[loginSessionID]
 
 	return ok
 }
 
-func (cm *ClientManager) getClientByLoginSessionID(loginSessionID string) *Client {
+func (cm *clientManager) getClientByLoginSessionID(loginSessionID string) *client {
 	if !cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return nil
@@ -43,7 +43,7 @@ func (cm *ClientManager) getClientByLoginSessionID(loginSessionID string) *Clien
 	return cm.clients[loginSessionID]
 }
 
-func (cm *ClientManager) registerClient(client *Client) {
+func (cm *clientManager) registerClient(client *client) {
 	if cm.isClientRegistered(client.loginSessionID) {
 		fmt.Println("Client with sessionID", client.loginSessionID, "already exists")
 		return
@@ -52,7 +52,7 @@ func (cm *ClientManager) registerClient(client *Client) {
 	cm.clients[client.loginSessionID] = client
 }
 
-func (cm *ClientManager) unRegisterClient(sessionID string) {
+func (cm *clientManager) unRegisterClient(sessionID string) {
 	if !cm.isClientRegistered(sessionID) {
 		fmt.Println("Client with sessionID", sessionID, "does not exist")
 		return
@@ -61,7 +61,7 @@ func (cm *ClientManager) unRegisterClient(sessionID string) {
 	delete(cm.clients, sessionID)
 }
 
-func (cm *ClientManager) updateClientID(client *Client, loginSessionID string) {
+func (cm *clientManager) updateClientID(client *client, loginSessionID string) {
 	for savedID, savedClient := range cm.clients {
 		if savedClient == client {
 			cm.clients[loginSessionID] = client
@@ -71,17 +71,17 @@ func (cm *ClientManager) updateClientID(client *Client, loginSessionID string) {
 	}
 }
 
-func (cm *ClientManager) createNewClient(loginSessionID string, conn Conn) *Client {
+func (cm *clientManager) createNewClient(loginSessionID string, conn Conn) *client {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
 		return nil
 	}
 
-	client := NewClient(loginSessionID, conn)
+	client := newClient(loginSessionID, conn)
 	return client
 }
 
-func (cm *ClientManager) registerNewClient(loginSessionID string, conn Conn) (*Client, error) {
+func (cm *clientManager) registerNewClient(loginSessionID string, conn Conn) (*client, error) {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
 		return cm.clients[loginSessionID], errors.New("client already exists")
@@ -98,10 +98,10 @@ func (cm *ClientManager) registerNewClient(loginSessionID string, conn Conn) (*C
 	return client, nil
 }
 
-func (cm *ClientManager) getClientCount() int {
+func (cm *clientManager) getClientCount() int {
 	return len(cm.clients)
 }
 
-func (cm *ClientManager) emptyClientManager() {
-	cm.clients = make(map[string]*Client)
+func (cm *clientManager) emptyClientManager() {
+	cm.clients = make(map[string]*client)
 }

@@ -12,6 +12,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	chatManagerUserCount = 10
+)
+
 func TestChatManager(t *testing.T) {
 	cm := NewChatManager()
 
@@ -27,7 +31,7 @@ func TestChatManager(t *testing.T) {
 	dialer := websocket.Dialer{}
 
 	// Send multiple requests
-	for i := 0; i < 10; i++ {
+	for i := 0; i < chatManagerUserCount; i++ {
 		// Create a new websocket connection
 		conn, resp, err := dialer.Dial("ws"+s.URL[4:]+"?sessionID="+strconv.Itoa(i), nil)
 		assert.Nil(t, err)
@@ -40,9 +44,44 @@ func TestChatManager(t *testing.T) {
 
 		// Defer the closing of the connection
 		if conn != nil {
-			conn.Close()
+			defer conn.Close()
 		}
 	}
 
 	t.Logf("TestChatManager passed")
+
+	// test removing client
+	for i := 0; i < chatManagerUserCount; i++ {
+		cm.RemoveClientFromUser(strconv.Itoa(i))
+		cmInstance = getClientManager()
+		if cmInstance.isClientRegistered(strconv.Itoa(i)) {
+			t.Errorf("RemoveClientFromUser failed, expected sessionID %d to be removed", i)
+			return
+		}
+	}
+
+	t.Logf("TestRemoveClientFromUser passed")
+}
+
+func TestCreateRoom(t *testing.T) {
+	cm := NewChatManager()
+	roomName := "testRoom"
+
+	err := cm.CreateRoom(roomName)
+	if err != nil {
+		t.Errorf("Failed to create room: %v", err)
+		return
+	}
+
+	rmInstance := getRoomManager()
+	room, ok := rmInstance.rooms[roomName]
+	if !ok || room == nil {
+		t.Errorf("Room was not created")
+		return
+	} else if room.roomName != roomName {
+		t.Errorf("Room name mismatch, expected %s, got %s", roomName, room.roomName)
+		return
+	}
+
+	t.Logf("TestCreateRoom passed")
 }

@@ -45,8 +45,8 @@ func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	clientManager = getClientManager()
-	client, err := clientManager.registerNewClient(loginSessionID, conn)
+	cmInstance = getClientManager()
+	client, err := cmInstance.registerNewClient(loginSessionID, conn)
 	if err != nil {
 		return err
 	}
@@ -59,6 +59,17 @@ func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Reques
 }
 
 func (cm *ChatManager) RemoveClientFromUser(loginSessionID string) {
-	clientManager = getClientManager()
-	clientManager.unRegisterClient(loginSessionID)
+	cmInstance = getClientManager()
+	cmInstance.unRegisterClient(loginSessionID)
+}
+
+func (cm *ChatManager) CreateRoom(roomName string) error {
+	rmInstance = getRoomManager()
+	room := rmInstance.createNewRoom(roomName)
+
+	if room == nil {
+		return errors.New("failed to create new room")
+	}
+
+	return nil
 }

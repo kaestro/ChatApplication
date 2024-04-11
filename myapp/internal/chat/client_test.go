@@ -9,8 +9,8 @@ import (
 )
 
 func TestIsSameClient(t *testing.T) {
-	conn := &MockConn{}
-	client := NewClient(sampleLoginSessionID, conn)
+	conn := &mockConn{}
+	client := newClient(sampleLoginSessionID, conn)
 
 	// Test isSameClient with the same session ID
 	if !client.isSameClient(sampleLoginSessionID) {
@@ -28,15 +28,15 @@ func TestIsSameClient(t *testing.T) {
 }
 
 func TestClientAddClientSession(t *testing.T) {
-	conn := &MockConn{}
-	client := NewClient(sampleLoginSessionID, conn)
+	conn := &mockConn{}
+	client := newClient(sampleLoginSessionID, conn)
 
 	// Test AddClientSession
-	room := NewRoom(sampleRoomID)
-	client.AddClientSession(room, sampleLoginSessionID)
+	room := newRoom(sampleRoomID)
+	client.addClientSession(room, sampleLoginSessionID)
 
-	if len(client.clientSessions) != ExpectedClientSessionLength {
-		t.Errorf("AddClientSession failed, expected length %d, got %v", ExpectedClientSessionLength, len(client.clientSessions))
+	if len(client.clientSessions) != expectedClientSessionLength {
+		t.Errorf("AddClientSession failed, expected length %d, got %v", expectedClientSessionLength, len(client.clientSessions))
 		return
 	}
 
@@ -49,12 +49,12 @@ func TestClientAddClientSession(t *testing.T) {
 }
 
 func TestClientRemoveClientSession(t *testing.T) {
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	client := newClient(sampleLoginSessionID, &mockConn{})
 
 	// Test RemoveClientSession
-	room := NewRoom(sampleRoomID)
-	client.AddClientSession(room, sampleLoginSessionID)
-	client.RemoveClientSession(0, sampleLoginSessionID)
+	room := newRoom(sampleRoomID)
+	client.addClientSession(room, sampleLoginSessionID)
+	client.removeClientSession(0, sampleLoginSessionID)
 
 	if len(client.clientSessions) != 0 {
 		t.Errorf("RemoveClientSession failed, expected length 0, got %v", len(client.clientSessions))
@@ -65,20 +65,20 @@ func TestClientRemoveClientSession(t *testing.T) {
 }
 
 func TestGetClientGetLoginSessionID(t *testing.T) {
-	client := NewClient(sampleLoginSessionID, &MockConn{})
+	client := newClient(sampleLoginSessionID, &mockConn{})
 
-	if client.GetLoginSessionID() != sampleLoginSessionID {
-		t.Errorf("GetLoginSessionID failed, expected %s, got %s", sampleLoginSessionID, client.GetLoginSessionID())
+	if client.getLoginSessionID() != sampleLoginSessionID {
+		t.Errorf("GetLoginSessionID failed, expected %s, got %s", sampleLoginSessionID, client.getLoginSessionID())
 	}
 
 	t.Logf("GetLoginSessionID passed")
 }
 
 func TestListen(t *testing.T) {
-	conn := &MockConn{}
-	client := &Client{
+	conn := &mockConn{}
+	client := &client{
 		loginSessionID: sampleLoginSessionID,
-		clientSessions: make([]*ClientSession, 0),
+		clientSessions: make([]*clientSession, 0),
 		conn:           conn,
 	}
 
@@ -106,13 +106,13 @@ func TestListen(t *testing.T) {
 }
 
 func TestSendMessageToRoom(t *testing.T) {
-	conn := &MockConn{}
+	conn := &mockConn{}
 	conn.WriteMessage(0, sampleMessageBytes)
-	client := NewClient(sampleLoginSessionID, conn)
+	client := newClient(sampleLoginSessionID, conn)
 
 	// Add a client session with a room
-	room := NewRoom(sampleRoomID)
-	client.AddClientSession(room, sampleLoginSessionID)
+	room := newRoom(sampleRoomID)
+	client.addClientSession(room, sampleLoginSessionID)
 
 	// Send a message to the room
 	client.sendMessageToRoom(sampleMessageBytes, sampleRoomID)
