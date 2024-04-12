@@ -21,8 +21,12 @@ jobs:
       uses: docker/setup-buildx-action@v1
 
     - name: Build and Test with docker-compose
+      shell: bash
       run: |
-        docker-compose up --exit-code-from test; exit_code=$?;  true
+        set +e
+        docker-compose up --exit-code-from test
+        exit_code=$?
+        set -e
         docker-compose logs test > test.log
         echo "exit_code=$exit_code" >> $GITHUB_ENV
         docker-compose down
