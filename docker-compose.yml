@@ -60,6 +60,7 @@ services:
       - postgresql
       - redis
       - mongodb
+      - db_init
     environment:
       - REDIS_ADDR=redis:6379
       - REDIS_PASSWORD=redisPassword
