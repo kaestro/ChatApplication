@@ -13,9 +13,17 @@ var (
 )
 
 type ChatMessage struct {
-	RoomID   string `json:"roomID"`
+	RoomName string `json:"roomName"`
 	UserName string `json:"userName"`
 	Content  string `json:"content"`
+}
+
+func NewChatMessage(roomName, userName, content string) *ChatMessage {
+	return &ChatMessage{
+		RoomName: roomName,
+		UserName: userName,
+		Content:  content,
+	}
 }
 
 func (cm *ChatMessage) ToBytes() ([]byte, error) {
@@ -29,7 +37,7 @@ func NewChatMessageFromBytes(data []byte) (*ChatMessage, error) {
 		return nil, err
 	}
 
-	if chatMessage.RoomID == "" {
+	if chatMessage.RoomName == "" {
 		return nil, error(fmt.Errorf(roomIDNeededError))
 	} else if chatMessage.UserName == "" {
 		return nil, error(fmt.Errorf(userNameNeededError))
