@@ -4,6 +4,8 @@ name: CI
 on:
   pull_request:
     branches: [ main, develop ]
+  push:
+    branches: [ main, develop ]
 
 jobs:
   test:
@@ -23,10 +25,5 @@ jobs:
     - name: Build with docker-compose
       run: docker-compose up -d
 
-    - name: Build
-      run: go build ./...
-      working-directory: myapp
-    
     - name: Test Web Server
-      run: go test ./...
-      working-directory: myapp
+      run: docker-compose exec main_server go test ./...
