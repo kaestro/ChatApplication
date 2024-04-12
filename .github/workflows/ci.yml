@@ -21,6 +21,7 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Build and Test with docker-compose
         run: |
           docker-compose up --exit-code-from test || true
@@ -31,6 +32,7 @@ jobs:
     needs: build_and_test
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Upload test log
         uses: actions/upload-artifact@v2
         with:
