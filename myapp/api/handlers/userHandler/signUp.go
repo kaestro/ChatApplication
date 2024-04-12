@@ -1,6 +1,6 @@
 // myapp/api/handlers/user/signup.go
 
-package user
+package userHandler
 
 import (
 	"encoding/json"

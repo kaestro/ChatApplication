@@ -1,9 +1,9 @@
 // myapp/api/handlers/user/logIn.go
-package user
+package userHandler
 
 import (
 	"encoding/json"
-	"myapp/api/service/user"
+	"myapp/api/service/userService"
 	"myapp/internal/db"
 	"myapp/internal/session"
 	"net/http"
@@ -15,13 +15,13 @@ import (
 // 오류 유형에 따라 적절한 HTTP 상태 코드를 반환합니다.
 func handleLoginError(ginContext *gin.Context, err error) {
 	switch err {
-	case user.ErrAlreadyLoggedIn:
+	case userService.ErrAlreadyLoggedIn:
 		ginContext.JSON(http.StatusConflict, gin.H{"error": "User is already logged in"})
-	case user.ErrUserNotFound:
+	case userService.ErrUserNotFound:
 		ginContext.JSON(http.StatusNotFound, gin.H{"error": "Failed to find user"})
-	case user.ErrInvalidPassword:
+	case userService.ErrInvalidPassword:
 		ginContext.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
-	case user.ErrFailedToGenerateSessionKey, user.ErrFailedToSaveSessionKey:
+	case userService.ErrFailedToGenerateSessionKey, userService.ErrFailedToSaveSessionKey:
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process session key"})
 	default:
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
@@ -54,7 +54,7 @@ func LogIn(ginContext *gin.Context) {
 	sessionManager := session.GetLoginSessionManager()
 
 	// LoginService를 생성합니다.
-	loginService := user.NewLoginService(dbManager, sessionManager)
+	loginService := userService.NewLoginService(dbManager, sessionManager)
 
 	// LoginService의 LogIn 메서드를 호출합니다.
 	sessionKey, err := loginService.LogIn(loginInfo.EmailAddress, loginInfo.Password, userSessionKey)

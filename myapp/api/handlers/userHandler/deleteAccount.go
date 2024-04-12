@@ -1,5 +1,5 @@
 // myapp/api/handlers/user/deleteAccount.go
-package user
+package userHandler
 
 import (
 	"fmt"

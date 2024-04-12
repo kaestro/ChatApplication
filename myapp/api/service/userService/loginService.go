@@ -1,5 +1,5 @@
 // myapp/api/service/user/loginService.go
-package user
+package userService
 
 import (
 	"errors"

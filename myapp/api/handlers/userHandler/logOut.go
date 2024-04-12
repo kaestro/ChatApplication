@@ -1,5 +1,5 @@
 // myapp/api/handlers/user/logout.go
-package user
+package userHandler
 
 import (
 	"myapp/internal/session"
