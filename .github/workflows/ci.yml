@@ -22,7 +22,7 @@ jobs:
 
     - name: Build and Test with docker-compose
       run: |
-        docker-compose up -d --exit-code-from test
+        docker-compose up --exit-code-from test
         docker-compose logs test > test.log
         docker-compose down
       continue-on-error: true
