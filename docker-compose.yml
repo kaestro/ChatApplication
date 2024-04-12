@@ -1,3 +1,4 @@
+# docker-compose.yml
 version: '3'
 services:
   postgresql:
@@ -9,6 +10,14 @@ services:
       - "5432:5432"
     volumes:
       - postgresql_data:/var/lib/postgresql/data
+
+  db_init:
+    build: ./db_init
+    environment:
+      - PGPASSWORD=rootpassword
+    depends_on:
+      postgresql:
+        condition: service_started
 
   redis:
     image: redis:latest
@@ -30,7 +39,7 @@ services:
       - mongodb_data:/data/db
   
   main_server:
-    image: main_server:latest
+    build: ./myapp
     ports:
       - "8080:8080"
     depends_on:
@@ -40,7 +49,7 @@ services:
     environment:
       - REDIS_ADDR=redis:6379
       - DB_URL=postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable
-      - MONGO_URL=mongodb://mongodb:27017
+      - MONGO_URL=mongodb://mongodb:27017  
 
 volumes:
   postgresql_data:
