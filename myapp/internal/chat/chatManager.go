@@ -136,4 +136,17 @@ func (cm *ChatManager) ClientLeaveRoom(roomName, loginSessionID string) error {
 	return nil
 }
 
-// TODO: User가 메시지를 보내는 요청 처리
+func (cm *ChatManager) SendMessageToRoom(loginSessionID string, message ChatMessage) error {
+	room, err := cm.getRoom(message.RoomName)
+	if err != nil {
+		return err
+	}
+
+	messageBytes, err := message.ToBytes()
+	if err != nil {
+		return err
+	}
+
+	room.receiveMessageFromClient(loginSessionID, messageBytes)
+	return nil
+}

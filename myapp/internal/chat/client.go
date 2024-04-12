@@ -80,7 +80,7 @@ func receiveMessageFromConnection(c *client) error {
 		return err
 	}
 
-	c.sendMessageToRoom(message, chatMessage.RoomID)
+	c.sendMessageToRoom(message, chatMessage.RoomName)
 
 	return nil
 }

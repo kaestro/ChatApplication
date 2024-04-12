@@ -235,3 +235,18 @@ func TestClientLeaveRoom(t *testing.T) {
 
 	t.Logf("TestClientLeaveRoom passed")
 }
+
+func TestChatManager_SendMessageToRoom(t *testing.T) {
+	cm := NewChatManager()
+	cm.CreateRoom(sampleRoomName)
+	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
+	cm.ClientEnterRoom(sampleRoomName, sampleLoginSessionID)
+
+	err := cm.SendMessageToRoom(sampleLoginSessionID, sampleMessage)
+	if err != nil {
+		t.Errorf("Failed to send message to room: %v", err)
+		return
+	}
+
+	t.Logf("TestSendMessageToRoom passed")
+}
