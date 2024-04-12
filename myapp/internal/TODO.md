@@ -15,3 +15,7 @@ room에 client를 3명 추가하고 연결하는데 2초로 부족한데, 이 �
 ## clientManager.go
 
 보유 client 갯수 제한 및 지속 시간 제한을 둘 수 있도록 변경
+
+## session쪽
+
+key, value 변수명이 헷갈리기 좋게 돼있어서, 이 부분이 리팩토링 필요하다.

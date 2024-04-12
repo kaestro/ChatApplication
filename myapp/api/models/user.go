@@ -1,5 +1,4 @@
 // myapp/api/models/user.go
-
 package models
 
 type User struct {

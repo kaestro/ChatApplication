@@ -5,7 +5,7 @@ package main
 import (
 	"fmt"
 
-	"myapp/api/handlers/user"
+	"myapp/api/handlers/userHandler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,10 +20,10 @@ func main() {
 		})
 	})
 
-	r.POST("/signup", user.SignUp)
-	r.POST("/login", user.LogIn)
-	r.POST("/logout", user.LogOut)
-	r.POST("/deleteAccount", user.DeleteAccount)
+	r.POST("/signup", userHandler.SignUp)
+	r.POST("/login", userHandler.LogIn)
+	r.POST("/logout", userHandler.LogOut)
+	r.POST("/deleteAccount", userHandler.SignOut)
 
 	r.Run()
 

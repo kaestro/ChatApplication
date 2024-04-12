@@ -3,6 +3,8 @@ package session
 
 import (
 	"context"
+	"errors"
+	"net"
 	"os"
 	"time"
 
@@ -23,11 +25,16 @@ func (factory *RedisStoreFactory) Create(sessionTypeNum SessionType) SessionStor
 			redisAddr = "localhost:6379" // default value
 		}
 
+		redisPassword := os.Getenv("REDIS_PASSWORD")
+		if redisPassword == "" {
+			redisPassword = "redisPassword" // default value
+		}
+
 		store = &RedisStore{
 			client: redis.NewClient(&redis.Options{
 				Addr:     redisAddr,
-				Password: "redisPassword", // no password set
-				DB:       0,               // use default DB
+				Password: redisPassword,
+				DB:       0, // use default DB
 			}),
 		}
 	} else if sessionTypeNum == OtherSession {
@@ -78,4 +85,16 @@ func (store *RedisStore) IsSessionValid(key string, emailAddress string) bool {
 	}
 
 	return val == emailAddress
+}
+
+func (store *RedisStore) waitForRedis(addr string) error {
+	for i := 0; i < 10; i++ {
+		conn, err := net.Dial("tcp", addr)
+		if err == nil {
+			conn.Close()
+			return nil
+		}
+		time.Sleep(time.Second)
+	}
+	return errors.New("cannot connect to Redis")
 }

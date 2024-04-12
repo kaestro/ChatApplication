@@ -1,0 +1,16 @@
+# Dockerfile.test
+FROM golang:1.22-alpine
+
+RUN apk add --no-cache bash
+
+WORKDIR /myapp
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+COPY wait-for-it.sh .
+
+RUN chmod +x wait-for-it.sh
+
+CMD ["sh", "-c", "./wait-for-it.sh redis:6379 -- go test ./... > /proc/1/fd/1 2>/proc/1/fd/2"]
