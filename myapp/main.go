@@ -23,7 +23,7 @@ func main() {
 	r.POST("/signup", userHandler.SignUp)
 	r.POST("/login", userHandler.LogIn)
 	r.POST("/logout", userHandler.LogOut)
-	r.POST("/deleteAccount", userHandler.DeleteAccount)
+	r.POST("/deleteAccount", userHandler.SignOut)
 
 	r.Run()
 
