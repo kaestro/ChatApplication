@@ -1,4 +1,4 @@
-// myapp/api/service/user/loginService.go
+// myapp/api/service/userService/authenticateUser.go
 package userService
 
 import (
@@ -7,6 +7,9 @@ import (
 	"myapp/internal/db"
 	"myapp/internal/password"
 	"myapp/internal/session"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
@@ -22,16 +25,16 @@ type LoginService struct {
 	sessionManager *session.LoginSessionManager
 }
 
-func NewLoginService(dbManager db.DBManagerInterface, sessionManager *session.LoginSessionManager) *LoginService {
+func NewLoginService() *LoginService {
 	return &LoginService{
-		dbManager:      dbManager,
-		sessionManager: sessionManager,
+		dbManager:      db.GetDBManager(),
+		sessionManager: session.GetLoginSessionManager(),
 	}
 }
 
-func (s *LoginService) LogIn(userEmailAddress, userPassword, userSessionKey string) (string, error) {
+func (s *LoginService) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (string, error) {
 	// 세션 키가 sessionManager에 저장되어 있는지 확인합니다.
-	if s.sessionManager.IsSessionValid(userSessionKey, userEmailAddress) {
+	if s.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
 		return "", ErrAlreadyLoggedIn
 	}
 
@@ -39,13 +42,13 @@ func (s *LoginService) LogIn(userEmailAddress, userPassword, userSessionKey stri
 	var user models.User
 
 	// 사용자가 제공한 이메일 주소로 데이터베이스에서 사용자를 찾습니다.
-	err := s.dbManager.Read(&user, "email_address", userEmailAddress)
+	err := s.dbManager.Read(&user, "email_address", loginInfo.EmailAddress)
 	if err != nil {
 		return "", ErrUserNotFound
 	}
 
 	// 사용자가 제공한 비밀번호와 데이터베이스에 저장된 해시된 비밀번호를 비교합니다.
-	if !password.CheckPasswordHash(userPassword, user.Password) {
+	if !password.CheckPasswordHash(loginInfo.Password, user.Password) {
 		return "", ErrInvalidPassword
 	}
 
@@ -62,4 +65,21 @@ func (s *LoginService) LogIn(userEmailAddress, userPassword, userSessionKey stri
 	}
 
 	return sessionKey, nil
+}
+
+// handleLoginError 함수는 로그인 과정에서 발생한 오류를 처리합니다.
+// 오류 유형에 따라 적절한 HTTP 상태 코드를 반환합니다.
+func HandleLoginError(ginContext *gin.Context, err error) {
+	switch err {
+	case ErrAlreadyLoggedIn:
+		ginContext.JSON(http.StatusConflict, gin.H{"error": "User is already logged in"})
+	case ErrUserNotFound:
+		ginContext.JSON(http.StatusNotFound, gin.H{"error": "Failed to find user"})
+	case ErrInvalidPassword:
+		ginContext.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid password"})
+	case ErrFailedToGenerateSessionKey, ErrFailedToSaveSessionKey:
+		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process session key"})
+	default:
+		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+	}
 }
