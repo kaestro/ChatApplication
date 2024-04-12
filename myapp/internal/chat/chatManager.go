@@ -2,55 +2,151 @@
 package chat
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
 
-// TODO: Design ChatManager
+const (
+	readBufferSize  = 1024
+	writeBufferSize = 1024
+)
+
+var (
+	chatManagerOnce sync.Once
+	chatManager     *ChatManager
+)
+
 // 채팅 서버의 전반적인 관리를 담당하는 ChatManager
 // 채팅과 관련한 모든 요청은 ChatManager를 통해 이루어진다.
+// Singleton 객체로 구현되어 있다.
 type ChatManager struct {
+	upgrader websocket.Upgrader
 }
 
-// TODO: enterRoom delegated from client to ChatManager
-// Question: Do Client Connection actually need conn object?
-func (cm *ChatManager) EnterRoom(room *Room) {
-	// Check if the client is already in the room
-	// if already in, return
+func NewChatManager() *ChatManager {
+	chatManagerOnce.Do(func() {
+		chatManager = &ChatManager{
+			upgrader: websocket.Upgrader{
+				ReadBufferSize:  readBufferSize,
+				WriteBufferSize: writeBufferSize,
+			},
+		}
+	})
 
-	// if not, add another Connection object to the client
-	// Question: How to generate a unique id for the connection?
-	// Assuming that each clients won't be having many connections, simple slice can be used
+	return chatManager
 }
 
-// TODO
-// session id에 해당하는 client가 이미 있는지 확인하고, 있으면 그 client에다가 room 추가해주고
-// 없으면 client 새로 만들고 이 client 저장할 것 만들고.
-// 그럼 이 client는 이제 메모리 상에 저장해야한다.
-// 그럼 이제 이 client들 크기가 얼마 되는지 고려한 코드 작성 해야할듯?
-func (cm *ChatManager) Connect(w http.ResponseWriter, r *http.Request, room *Room, client *Client, sessionID string) (*Client, error) {
-	// Upgrade initial GET request to a websocket
-	// TODO: 이 부분 따로 함수로 꺼내는 refactoring ~ line 31
-	var upgrader = websocket.Upgrader{
-		ReadBufferSize:  1024,
-		WriteBufferSize: 1024,
-	}
-
-	ws, err := upgrader.Upgrade(w, r, nil)
+func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Request, loginSessionID string) error {
+	conn, err := cm.upgradeToWebsocket(w, r)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// TODO: add another call Add Connection method implemented inside Client
-	// Register the client to the room
-	room.AddClient(client, ws)
+	err = cm.registerNewClient(loginSessionID, conn)
+	return err
+}
 
+func (cm *ChatManager) upgradeToWebsocket(w http.ResponseWriter, r *http.Request) (Conn, error) {
+	conn, err := cm.upgrader.Upgrade(w, r, nil)
+	return conn, err
+}
+
+func (cm *ChatManager) registerNewClient(loginSessionID string, conn Conn) error {
+	cmInstance = getClientManager()
+	_, err := cmInstance.registerNewClient(loginSessionID, conn)
+
+	return err
+}
+
+func (cm *ChatManager) RemoveClientFromUser(loginSessionID string) {
+	cmInstance = getClientManager()
+	cmInstance.unRegisterClient(loginSessionID)
+}
+
+func (cm *ChatManager) CreateRoom(roomName string) error {
+	rmInstance = getRoomManager()
+	room := rmInstance.createNewRoom(roomName)
+
+	if room == nil {
+		return error(fmt.Errorf(ErrorFailedToCreateRoom))
+	}
+
+	return nil
+}
+
+func (cm *ChatManager) RemoveRoomByName(roomName string) error {
+	rmInstance = getRoomManager()
+	return rmInstance.removeRoomByName(roomName)
+}
+
+func (cm *ChatManager) ClientEnterRoom(roomName, loginSessionID string) error {
+	room, client, err := cm.getRoomAndClient(roomName, loginSessionID)
+	if err != nil {
+		return err
+	}
+
+	err = room.addClient(client)
+	return err
+}
+
+func (cm *ChatManager) getRoomAndClient(roomName string, loginSessionID string) (*room, *client, error) {
+	room, err := cm.getRoom(roomName)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	client, err := cm.getClient(loginSessionID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return room, client, nil
+}
+
+func (cm *ChatManager) getClient(loginSessionID string) (*client, error) {
+	cmInstance = getClientManager()
+	client := cmInstance.getClientByLoginSessionID(loginSessionID)
+	if client == nil {
+		return nil, errors.New("user of loginSessionID " + loginSessionID + " does not exist")
+	}
 	return client, nil
 }
 
-// client를 연결에서 끊는다.
-func (cm *ChatManager) Disconnect(client *Client, room *Room) {
-	// TODO: implement the method inside Client class and call it here
-	// Room object will also have to remove the client from the list if room also has the client pointer obj
+func (cm *ChatManager) getRoom(roomName string) (*room, error) {
+	rmInstance = getRoomManager()
+	room := rmInstance.getRoom(roomName)
+	if room == nil {
+		return nil, errors.New("room of roomName " + roomName + " does not exist")
+	}
+	return room, nil
+}
+
+// unregister channel에 요청을 보내는 식으로 구현돼 있어, 닫히는 데까지 시간이 걸린다.
+func (cm *ChatManager) ClientLeaveRoom(roomName, loginSessionID string) error {
+	room, client, err := cm.getRoomAndClient(roomName, loginSessionID)
+	if err != nil {
+		return err
+	}
+
+	room.removeClient(client.getLoginSessionID())
+
+	return nil
+}
+
+func (cm *ChatManager) SendMessageToRoom(loginSessionID string, message ChatMessage) error {
+	room, err := cm.getRoom(message.RoomName)
+	if err != nil {
+		return err
+	}
+
+	messageBytes, err := message.ToBytes()
+	if err != nil {
+		return err
+	}
+
+	room.receiveMessageFromClient(loginSessionID, messageBytes)
+	return nil
 }

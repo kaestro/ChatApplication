@@ -5,30 +5,30 @@ import (
 	"fmt"
 )
 
-// Room은 클라이언트들이 메시지를 주고받을 수 있는 공간을 나타낸다.
+// room은 클라이언트들이 메시지를 주고받을 수 있는 공간을 나타낸다.
 // User가 방에 들어오고 나갈 수 있으며, 방에 있는 User들에게 메시지를 전달할 수 있다.
-type Room struct {
-	roomID string
+type room struct {
+	roomName string
 	// Registered map of clients to their websocket connections
-	sessionIDToHandler map[string]*RoomClientHandler
+	sessionIDToHandler map[string]*roomClientHandler
 
 	// Inbound messages from the clients.
 	broadcast chan []byte
 
-	register   chan *RoomClientHandler
-	unregister chan *RoomClientHandler
+	register   chan *roomClientHandler
+	unregister chan *roomClientHandler
 
 	done chan struct{}
 }
 
 // TODO: RoomManager와 상호작용 통해 새로운 RoomID의 Room을 생성하도록 변경
-func NewRoom(roomId string) *Room {
-	room := &Room{
-		roomID:             roomId,
-		sessionIDToHandler: make(map[string]*RoomClientHandler),
+func newRoom(roomName string) *room {
+	room := &room{
+		roomName:           roomName,
+		sessionIDToHandler: make(map[string]*roomClientHandler),
 		broadcast:          make(chan []byte),
-		register:           make(chan *RoomClientHandler),
-		unregister:         make(chan *RoomClientHandler),
+		register:           make(chan *roomClientHandler),
+		unregister:         make(chan *roomClientHandler),
 		done:               make(chan struct{}),
 	}
 
@@ -37,34 +37,36 @@ func NewRoom(roomId string) *Room {
 	return room
 }
 
-func (r *Room) IsClientInsideRoom(loginSessionID string) bool {
+func (r *room) isClientInsideRoom(loginSessionID string) bool {
 	_, ok := r.sessionIDToHandler[loginSessionID]
 	return ok
 }
 
-func (r *Room) closeRoom() {
+func (r *room) closeRoom() {
 	close(r.done)
 }
 
 // TODO: client가 있을 경우 충돌 처리
-func (r *Room) AddClient(client *Client, conn Conn) {
-	loginSessionID := client.GetLoginSessionID()
-	if r.IsClientInsideRoom(loginSessionID) {
-		fmt.Println("Client with sessionID", loginSessionID, "already exists")
-		return
+// TODO: line 58 ~ 63의 select 구문을 사용하여 room이 닫힌 경우를 middleware로 처리
+func (r *room) addClient(client *client) error {
+	loginSessionID := client.getLoginSessionID()
+	if r.isClientInsideRoom(loginSessionID) {
+		return error(fmt.Errorf("client with sessionID %s already exists", loginSessionID))
 	}
 
 	select {
 	case <-r.done:
-		fmt.Println("Room is closed, can't add client")
-		return
+		return error(fmt.Errorf("room %s is closed", r.roomName))
 	default:
-		r.register <- NewRoomClientHandler(client, conn)
+		r.register <- newRoomClientHandler(client)
 	}
+
+	return nil
 }
 
-func (r *Room) RemoveClient(loginSessionID string) {
-	if !r.IsClientInsideRoom(loginSessionID) {
+// TODO: room이 닫힌 경우를 middleware로 처리
+func (r *room) removeClient(loginSessionID string) {
+	if !r.isClientInsideRoom(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return
 	}
@@ -73,8 +75,8 @@ func (r *Room) RemoveClient(loginSessionID string) {
 }
 
 // TODO: Set debugging messages to be printed only when debugging is enabled
-func (r *Room) ReceiveMessageFromClient(loginSessionID string, message []byte) {
-	if !r.IsClientInsideRoom(loginSessionID) {
+func (r *room) receiveMessageFromClient(loginSessionID string, message []byte) {
+	if !r.isClientInsideRoom(loginSessionID) {
 		// Debugging message
 		// fmt.Println("Client with sessionID", loginSessionID, "does not exist")
 		return
@@ -87,7 +89,7 @@ func (r *Room) ReceiveMessageFromClient(loginSessionID string, message []byte) {
 // TODO: After implementing Client Object, call the chan returning method from here
 // Problem: It seems too much of responsibility on Client Object. That is, it might be better for
 // the Room object to have structured data of clients and websocket connections
-func (r *Room) run() {
+func (r *room) run() {
 	for {
 		select {
 		case clientHandler := <-r.register:
@@ -102,17 +104,25 @@ func (r *Room) run() {
 	}
 }
 
-func (r *Room) registerClientHandler(clientHandler *RoomClientHandler) {
+func (r *room) registerClientHandler(clientHandler *roomClientHandler) {
 	r.sessionIDToHandler[clientHandler.getLoginSessionID()] = clientHandler
 }
 
-func (r *Room) unregisterClientHandler(clientHandler *RoomClientHandler) {
+func (r *room) unregisterClientHandler(clientHandler *roomClientHandler) {
 	clientHandler.close()
 	delete(r.sessionIDToHandler, clientHandler.getLoginSessionID())
 }
 
-func (r *Room) broadcastMessage(message []byte) {
+func (r *room) broadcastMessage(message []byte) {
 	for _, clientHandler := range r.sessionIDToHandler {
 		clientHandler.receiveMessageFromRoom(message)
 	}
+}
+
+func (r *room) getClients() []*client {
+	clients := make([]*client, 0, len(r.sessionIDToHandler))
+	for _, clientHandler := range r.sessionIDToHandler {
+		clients = append(clients, clientHandler.client)
+	}
+	return clients
 }

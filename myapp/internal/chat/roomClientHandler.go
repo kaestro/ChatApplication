@@ -7,19 +7,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// RoomClientHandler는 Room과 Client 사이의 중개자 역할을 한다.
+// roomClientHandler는 Room과 Client 사이의 중개자 역할을 한다.
 // client와 연결을 유지하고, 방에서 메시지를 받아 해당 소켓으로 전달한다.
-type RoomClientHandler struct {
-	client  *Client
+type roomClientHandler struct {
+	client  *client
 	conn    Conn
 	receive chan []byte
 	done    chan struct{}
 }
 
-func NewRoomClientHandler(client *Client, conn Conn) *RoomClientHandler {
-	roomClientHandler := &RoomClientHandler{
+func newRoomClientHandler(client *client) *roomClientHandler {
+	roomClientHandler := &roomClientHandler{
 		client:  client,
-		conn:    conn,
+		conn:    client.conn,
 		receive: make(chan []byte),
 		done:    make(chan struct{}),
 	}
@@ -29,19 +29,19 @@ func NewRoomClientHandler(client *Client, conn Conn) *RoomClientHandler {
 	return roomClientHandler
 }
 
-func (rch *RoomClientHandler) getLoginSessionID() string {
+func (rch *roomClientHandler) getLoginSessionID() string {
 	return rch.client.loginSessionID
 }
 
-func (rch *RoomClientHandler) receiveMessageFromRoom(message []byte) {
+func (rch *roomClientHandler) receiveMessageFromRoom(message []byte) {
 	rch.receive <- message
 }
 
-func (rch *RoomClientHandler) close() {
+func (rch *roomClientHandler) close() {
 	close(rch.done)
 }
 
-func (rch *RoomClientHandler) listen() {
+func (rch *roomClientHandler) listen() {
 	for {
 		select {
 		case message := <-rch.receive:
@@ -53,7 +53,7 @@ func (rch *RoomClientHandler) listen() {
 }
 
 // TODO: fmt 대신 별개의 로거를 사용하도록 변경
-func (rch *RoomClientHandler) sendMessageToClient(message []byte) {
+func (rch *roomClientHandler) sendMessageToClient(message []byte) {
 	err := rch.conn.WriteMessage(websocket.TextMessage, message)
 	if err != nil {
 		fmt.Println("Error writing message to websocket:", err)
