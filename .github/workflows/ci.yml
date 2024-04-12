@@ -26,7 +26,6 @@ jobs:
         docker-compose logs test > test.log
         docker-compose down
         exit $exit_code
-      continue-on-error: true
 
     - name: Upload test log
       uses: actions/upload-artifact@v2
