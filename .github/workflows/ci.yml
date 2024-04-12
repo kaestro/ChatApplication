@@ -22,9 +22,10 @@ jobs:
 
     - name: Build and Test with docker-compose
       run: |
-        docker-compose up --exit-code-from test
+        docker-compose up --exit-code-from test || exit_code=$? && true
         docker-compose logs test > test.log
         docker-compose down
+        exit $exit_code
       continue-on-error: true
 
     - name: Upload test log
