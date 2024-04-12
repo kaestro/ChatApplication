@@ -58,7 +58,7 @@ func (c *client) getLoginSessionID() string {
 // TODO: error 발생시 처리
 func (c *client) listen() {
 	for {
-		err := receiveMessageFromClient(c)
+		err := receiveMessageFromConnection(c)
 		if err != nil {
 			return
 		}
@@ -67,7 +67,7 @@ func (c *client) listen() {
 
 // TODO
 // chatMessage를 변경하는 부분에서 문제 발생중일 가능성 높아보임. 확인 필요
-func receiveMessageFromClient(c *client) error {
+func receiveMessageFromConnection(c *client) error {
 	_, message, err := c.conn.ReadMessage()
 	if err != nil {
 		fmt.Printf("error occurred while reading message: %v", err)

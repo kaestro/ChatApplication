@@ -2,14 +2,15 @@
 package chat
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 )
 
 var (
-	clientOnce sync.Once
-	cmInstance *clientManager
+	clientOnce                sync.Once
+	cmInstance                *clientManager
+	ErrorClientExists         = "client already exists"
+	ErrorFailedToCreateClient = "failed to create client"
 )
 
 // Client에 대한 CRUD를 담당하는 clientManager
@@ -83,14 +84,12 @@ func (cm *clientManager) createNewClient(loginSessionID string, conn Conn) *clie
 
 func (cm *clientManager) registerNewClient(loginSessionID string, conn Conn) (*client, error) {
 	if cm.isClientRegistered(loginSessionID) {
-		fmt.Println("Client with sessionID", loginSessionID, "already exists")
-		return cm.clients[loginSessionID], errors.New("client already exists")
+		return cm.clients[loginSessionID], error(fmt.Errorf(ErrorClientExists))
 	}
 
 	client := cm.createNewClient(loginSessionID, conn)
 	if client == nil {
-		fmt.Println("Failed to create client with sessionID", loginSessionID)
-		return nil, errors.New("failed to create client")
+		return nil, error(fmt.Errorf(ErrorFailedToCreateClient))
 	}
 
 	cm.registerClient(client)

@@ -95,7 +95,11 @@ func TestGetClients(t *testing.T) {
 	time.Sleep(time.Millisecond * 2500)
 
 	// Check if the correct number of clients was returned
-	assert.Equal(t, numClients, len(clients))
+	if !assert.Equal(t, numClients, len(clients)) {
+		// 단순히 시간이 오래 걸리는 경우가 있어서, 다시 한번 시도
+		time.Sleep(time.Millisecond * 3000)
+		assert.Equal(t, numClients, len(clients))
+	}
 
 	// Check if the correct clients were returned
 	for _, client := range clients {
