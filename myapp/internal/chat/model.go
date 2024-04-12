@@ -1,7 +1,16 @@
 // myapp/internal/chat/models.go
 package chat
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
+
+var (
+	roomIDNeededError   = "roomID is required"
+	userNameNeededError = "userName is required"
+	contentNeededError  = "content is required"
+)
 
 type ChatMessage struct {
 	RoomID   string `json:"roomID"`
@@ -18,6 +27,14 @@ func NewChatMessageFromBytes(data []byte) (*ChatMessage, error) {
 	err := json.Unmarshal(data, chatMessage)
 	if err != nil {
 		return nil, err
+	}
+
+	if chatMessage.RoomID == "" {
+		return nil, error(fmt.Errorf(roomIDNeededError))
+	} else if chatMessage.UserName == "" {
+		return nil, error(fmt.Errorf(userNameNeededError))
+	} else if chatMessage.Content == "" {
+		return nil, error(fmt.Errorf(contentNeededError))
 	}
 
 	return chatMessage, nil

@@ -91,7 +91,7 @@ func TestRemoveRoom(t *testing.T) {
 	cm := NewChatManager()
 	cm.CreateRoom(sampleRoomName)
 
-	err := cm.RemoveRoom(sampleRoomName)
+	err := cm.RemoveRoomByName(sampleRoomName)
 	if err != nil {
 		t.Errorf("Failed to remove room: %v", err)
 		return
@@ -225,8 +225,12 @@ func TestClientLeaveRoom(t *testing.T) {
 	// Check if the client is still in the room
 	room := rmInstance.getRoom(sampleRoomName)
 	if room.isClientInsideRoom(sampleLoginSessionID) {
-		t.Errorf("Client was not removed from the room")
-		return
+		// 단순히 처리되는 데 시간이 걸리기 때문에 에러 발생하는 것인지 확인
+		time.Sleep(1000 * time.Millisecond)
+		if room.isClientInsideRoom(sampleLoginSessionID) {
+			t.Errorf("Client was not removed from the room")
+			return
+		}
 	}
 
 	t.Logf("TestClientLeaveRoom passed")

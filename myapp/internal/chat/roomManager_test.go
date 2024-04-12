@@ -23,7 +23,7 @@ func TestRoomManagerCycle(t *testing.T) {
 	}
 
 	// Test RemoveRoom
-	rm.removeRoom(sampleRoomName)
+	rm.removeRoomByName(sampleRoomName)
 	if rm.checkRoom(sampleRoomName) {
 		t.Errorf("RemoveRoom failed, expected roomID %s to be removed", sampleRoomName)
 	}

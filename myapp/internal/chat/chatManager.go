@@ -3,6 +3,7 @@ package chat
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -71,15 +72,15 @@ func (cm *ChatManager) CreateRoom(roomName string) error {
 	room := rmInstance.createNewRoom(roomName)
 
 	if room == nil {
-		return errors.New("failed to create new room")
+		return error(fmt.Errorf(ErrorFailedToCreateRoom))
 	}
 
 	return nil
 }
 
-func (cm *ChatManager) RemoveRoom(roomName string) error {
+func (cm *ChatManager) RemoveRoomByName(roomName string) error {
 	rmInstance = getRoomManager()
-	return rmInstance.removeRoom(roomName)
+	return rmInstance.removeRoomByName(roomName)
 }
 
 func (cm *ChatManager) ClientEnterRoom(roomName, loginSessionID string) error {
@@ -134,3 +135,5 @@ func (cm *ChatManager) ClientLeaveRoom(roomName, loginSessionID string) error {
 
 	return nil
 }
+
+// TODO: User가 메시지를 보내는 요청 처리

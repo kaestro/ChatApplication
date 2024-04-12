@@ -7,8 +7,9 @@ import (
 )
 
 var (
-	roomOnce   sync.Once
-	rmInstance *roomManager
+	roomOnce                sync.Once
+	rmInstance              *roomManager
+	ErrorFailedToCreateRoom = "failed to create room"
 )
 
 // roomManager는 방의 유무를 확인, 생성, 제거, 조회를 담당한다.
@@ -50,7 +51,7 @@ func (rm *roomManager) addRoom(room *room) {
 	rm.rooms[room.roomName] = room
 }
 
-func (rm *roomManager) removeRoom(roomName string) error {
+func (rm *roomManager) removeRoomByName(roomName string) error {
 	if !rm.checkRoom(roomName) {
 		return error(fmt.Errorf("room with roomID %s does not exist", roomName))
 	}
