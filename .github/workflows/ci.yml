@@ -23,4 +23,10 @@ jobs:
     - name: Build and Test with docker-compose
       run: |
         docker-compose up --exit-code-from test
-        docker-compose logs test
+        docker-compose logs test > test.log
+
+    - name: Upload test log
+      uses: actions/upload-artifact@v2
+      with:
+        name: test-log
+        path: test.log
