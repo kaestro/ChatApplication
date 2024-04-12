@@ -14,10 +14,9 @@ services:
   db_init:
     build: ./db_init
     environment:
-      - PGPASSWORD=rootpassword
+      - POSTGRES_PASSWORD=rootpassword
     depends_on:
-      postgresql:
-        condition: service_started
+      - postgresql
 
   redis:
     image: redis:latest
@@ -48,8 +47,26 @@ services:
       - mongodb
     environment:
       - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=redisPassword
       - DB_URL=postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable
       - MONGO_URL=mongodb://mongodb:27017  
+
+  test:
+    build: 
+      context: ./myapp
+      dockerfile: Dockerfile.test
+    depends_on:
+      - main_server
+      - postgresql
+      - redis
+      - mongodb
+      - db_init
+    environment:
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=redisPassword
+      - DB_URL=postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable
+      - MONGO_URL=mongodb://mongodb:27017
+
 
 volumes:
   postgresql_data:
