@@ -2,7 +2,7 @@
 package userHandler
 
 import (
-	"myapp/internal/session"
+	"myapp/api/service/userService"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,8 +12,7 @@ import (
 func LogOut(ginContext *gin.Context) {
 	userSessionKey := ginContext.GetHeader("Session-Key")
 
-	sessionManager := session.GetLoginSessionManager()
-	err := sessionManager.DeleteSession(userSessionKey)
+	err := userService.DeauthenticateUser(userSessionKey)
 	if err != nil {
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete session key"})
 		return

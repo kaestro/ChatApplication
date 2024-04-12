@@ -29,7 +29,11 @@ func TestUserHandler(t *testing.T) {
 		ginContext, _ := gin.CreateTestContext(response)
 		ginContext.Request = request
 		SignUp(ginContext)
-		assert.Equal(t, http.StatusCreated, response.Code)
+
+		if !assert.Equal(t, http.StatusCreated, response.Code) {
+			t.Logf("test Signup failed: %v", response.Body.String())
+			return
+		}
 	})
 
 	t.Run("LogIn", func(t *testing.T) {
@@ -38,7 +42,11 @@ func TestUserHandler(t *testing.T) {
 		ginContext, _ := gin.CreateTestContext(response)
 		ginContext.Request = request
 		LogIn(ginContext)
-		assert.Equal(t, http.StatusOK, response.Code)
+
+		if !assert.Equal(t, http.StatusOK, response.Code) {
+			t.Logf("test Login failed: %v", response.Body.String())
+			return
+		}
 	})
 
 	t.Run("LogOut", func(t *testing.T) {
@@ -61,7 +69,11 @@ func TestUserHandler(t *testing.T) {
 		ginContext, _ = gin.CreateTestContext(response)
 		ginContext.Request = request
 		LogOut(ginContext)
-		assert.Equal(t, http.StatusOK, response.Code)
+
+		if !assert.Equal(t, http.StatusOK, response.Code) {
+			t.Logf("test Logout failed: %v", response.Body.String())
+			return
+		}
 	})
 
 	t.Run("SignOut", func(t *testing.T) {
@@ -84,6 +96,10 @@ func TestUserHandler(t *testing.T) {
 		ginContext, _ = gin.CreateTestContext(response)
 		ginContext.Request = request
 		SignOut(ginContext)
-		assert.Equal(t, http.StatusOK, response.Code)
+
+		if !assert.Equal(t, http.StatusOK, response.Code) {
+			t.Logf("test SignOut failed: %v", response.Body.String())
+			return
+		}
 	})
 }

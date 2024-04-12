@@ -3,6 +3,7 @@ package userService
 
 import (
 	"errors"
+	"fmt"
 	"myapp/api/models"
 	"myapp/internal/db"
 	"myapp/internal/password"
@@ -35,7 +36,14 @@ func NewLoginService() *LoginService {
 func (s *LoginService) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (string, error) {
 	// 세션 키가 sessionManager에 저장되어 있는지 확인합니다.
 	if s.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
-		return "", ErrAlreadyLoggedIn
+		fmt.Println("User is already logged in")
+
+		sessionKey, err := s.sessionManager.GetSession(loginInfo.EmailAddress)
+		if err != nil {
+			return "", err
+		}
+
+		return sessionKey, ErrAlreadyLoggedIn
 	}
 
 	// 사용자 정보를 담을 User 구조체를 선언합니다.
