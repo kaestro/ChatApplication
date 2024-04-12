@@ -1,10 +1,9 @@
 # db_init/Dockerfile
 FROM postgres:latest
 
-WORKDIR /docker-entrypoint-initdb.d
+COPY create_user.sql .
+COPY wait-for-postgres.sh .
 
-COPY ./create_user.sql /docker-entrypoint-initdb.d/
+RUN chmod +x wait-for-postgres.sh
 
-ENV PGPASSWORD=rootpassword
-
-ENTRYPOINT ["psql", "-h", "postgresql", "-U", "postgres", "-d", "postgres", "-f", "/docker-entrypoint-initdb.d/create_user.sql"]
+CMD ["./wait-for-postgres.sh", "postgresql", "psql", "-h", "postgresql", "-U", "postgres", "-f", "create_user.sql"]

@@ -14,6 +14,9 @@ import (
 )
 
 func TestUserHandler(t *testing.T) {
+	sampleEmailAddress := "tuh@gmail.com"
+	samplePassword := "testpassword"
+
 	gin.SetMode(gin.TestMode)
 
 	user := models.User{
