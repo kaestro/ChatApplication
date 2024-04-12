@@ -17,7 +17,7 @@ const (
 var (
 	sampleClient          = newClient(sampleLoginSessionID, &mockConn{})
 	sampleRoom            = newRoom(sampleRoomName)
-	sampleMessage         = ChatMessage{RoomID: sampleRoomName, UserName: "user", Content: "content"}
+	sampleMessage         = ChatMessage{RoomName: sampleRoomName, UserName: "user", Content: "content"}
 	sampleMessageBytes, _ = json.Marshal(sampleMessage)
 )
 
