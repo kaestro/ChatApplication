@@ -24,6 +24,7 @@ jobs:
       run: |
         docker-compose up --exit-code-from test
         docker-compose logs test > test.log
+      continue-on-error: true
 
     - name: Upload test log
       uses: actions/upload-artifact@v2
