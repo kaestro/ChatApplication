@@ -19,15 +19,15 @@ func LogIn(ginContext *gin.Context) {
 	}
 
 	userSessionKey := ginContext.GetHeader("Session-Key")
-	loginService := userService.NewLoginService()
+	userServiceUtil := userService.NewUserServiceUtil()
 
-	user, err := loginService.AuthenticateUser(loginInfo, userSessionKey)
+	user, err := userServiceUtil.AuthenticateUser(loginInfo, userSessionKey)
 	if err != nil {
-		loginService.HandleLoginError(ginContext, err)
+		userServiceUtil.HandleLoginError(ginContext, err)
 		return
 	}
 
-	sessionKey, err := loginService.GenerateSessionKey(user)
+	sessionKey, err := userServiceUtil.GenerateSessionKey(user)
 	if err != nil {
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

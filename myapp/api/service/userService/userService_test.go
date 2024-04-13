@@ -66,7 +66,7 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("TestAuthenticateUser", func(t *testing.T) {
-		loginService := NewLoginService()
+		loginService := NewUserServiceUtil()
 		_, err := loginService.AuthenticateUser(sampleLoginInfo, "")
 		if !assert.Nil(t, err) {
 			t.Logf("Failed to authenticate user: %v", err)
@@ -77,7 +77,7 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("TestDeauthenticateUser", func(t *testing.T) {
-		loginService := NewLoginService()
+		loginService := NewUserServiceUtil()
 		user, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
 		sessionKey, _ := loginService.GenerateSessionKey(user)
 
@@ -91,7 +91,7 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("TestDeleteUserBySessionKey", func(t *testing.T) {
-		loginService := NewLoginService()
+		loginService := NewUserServiceUtil()
 		user_model, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
 		sessionKey, _ := loginService.GenerateSessionKey(user_model)
 
