@@ -27,7 +27,7 @@ type ChatManager struct {
 	upgrader websocket.Upgrader
 }
 
-func NewChatManager() *ChatManager {
+func GetChatManager() *ChatManager {
 	chatManagerOnce.Do(func() {
 		chatManager = &ChatManager{
 			upgrader: websocket.Upgrader{
