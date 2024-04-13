@@ -60,6 +60,7 @@ func TestParseAndAuthenticateRequest(t *testing.T) {
 	}
 
 	t.Logf("Passed test for ParseAndAuthenticateRequest with valid JSON")
+	userService.DeleteUserByEmailAddress(user.EmailAddress)
 }
 
 func TestEnterChatRoom(t *testing.T) {
