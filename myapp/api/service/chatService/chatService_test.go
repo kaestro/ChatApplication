@@ -11,9 +11,8 @@ import (
 )
 
 func TestChatService(t *testing.T) {
-	testSessionKey := "tcsSessionKey"
-
 	t.Run("TestPublishWebSocket", func(t *testing.T) {
+		testSessionKey := "tpwsSessionKey"
 		// 웹소켓 서버 시작
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			err := PublishWebSocket(w, r, testSessionKey)
@@ -31,11 +30,12 @@ func TestChatService(t *testing.T) {
 	})
 
 	t.Run("TestCheckSocketConnection", func(t *testing.T) {
+		testSessionKey := "tcscSessionKey"
 		// 웹소켓 서버 시작
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			err := PublishWebSocket(w, r, testSessionKey)
 			if err != nil {
-				t.Errorf("Expected no error, but got %v", err)
+				t.Errorf("Expected error, but got %v", err)
 			}
 		}))
 		defer server.Close()
