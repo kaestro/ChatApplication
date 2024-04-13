@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Request Type: POST
 // Headers: Session-Key
 // Body: None
 func SignOut(ginContext *gin.Context) {

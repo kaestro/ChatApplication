@@ -16,13 +16,14 @@ import (
 )
 
 func TestValidateUpgradeHeader(t *testing.T) {
+	socketKey, _ := GenerateRandomSocketKey()
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("GET", "/", nil)
 	c.Request.Header.Set("Upgrade", "websocket")
 	c.Request.Header.Set("Connection", "upgrade")
 	c.Request.Header.Set("Sec-WebSocket-Version", "13")
-	c.Request.Header.Set("Sec-WebSocket-Key", "test")
+	c.Request.Header.Set("Sec-WebSocket-Key", socketKey)
 
 	err := ValidateUpgradeHeader(c)
 
@@ -45,8 +46,8 @@ func TestParseChatRequestAndAuthenticateUser(t *testing.T) {
 	c.Request.Header.Set("Content-Type", "application/json")
 
 	user := models.NewUser(tparEmailAddress, tparEmailAddress, tparPassword)
-	userService.CreateUser(user, c)
-	loginInfo, err := ParseChatRequestAndAuthenticateUser(c)
+	userService.CreateUser(user)
+	loginInfo, err := ParseEnterChatAndAuthenticateUser(c)
 
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
@@ -68,8 +69,7 @@ func TestEnterChatRoom(t *testing.T) {
 	password := "testECRPassword"
 	emailAddress := "testECR@example.com"
 	roomRequest := models.NewRoomRequest(roomName, sessionKey, emailAddress, password)
-	loginInfo := models.NewLoginInfo(emailAddress, password)
-	loginInfo.LoginSessionID = sessionKey
+	loginInfo := models.NewLoginInfo(emailAddress, password, sessionKey)
 
 	// gin.Engine을 생성합니다.
 	router := gin.Default()
@@ -127,4 +127,25 @@ func TestEnterChatRoom(t *testing.T) {
 
 	defer server.Close()
 
+}
+
+func TestGenerateRandomSocketKey(t *testing.T) {
+	secWebSocketKey, err := GenerateRandomSocketKey()
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+		return
+	}
+
+	decodedKey, err := base64.StdEncoding.DecodeString(secWebSocketKey)
+	if err != nil {
+		t.Errorf("Expected no error, but got %v", err)
+		return
+	}
+
+	if len(decodedKey) != 16 {
+		t.Errorf("Expected 16 bytes, but got %v", len(decodedKey))
+		return
+	}
+
+	t.Logf("Passed test for GenerateRandomSocketKey with valid key")
 }

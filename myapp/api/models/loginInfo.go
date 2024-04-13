@@ -7,10 +7,10 @@ type LoginInfo struct {
 	LoginSessionID string `json:"loginSessionID"`
 }
 
-func NewLoginInfo(emailAddress, password string) LoginInfo {
+func NewLoginInfo(emailAddress, password, loginSessionID string) LoginInfo {
 	return LoginInfo{
 		EmailAddress:   emailAddress,
 		Password:       password,
-		LoginSessionID: "",
+		LoginSessionID: loginSessionID,
 	}
 }

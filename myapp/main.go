@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 
+	"myapp/api/handlers/chatHandler"
 	"myapp/api/handlers/userHandler"
 
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,8 @@ func main() {
 	r.POST("/login", userHandler.LogIn)
 	r.POST("/logout", userHandler.LogOut)
 	r.POST("/deleteAccount", userHandler.SignOut)
+
+	r.GET("/enterChat", chatHandler.EnterChat)
 
 	r.Run()
 

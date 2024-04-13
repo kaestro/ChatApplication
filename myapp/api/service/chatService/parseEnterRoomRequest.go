@@ -2,6 +2,7 @@
 package chatService
 
 import (
+	"encoding/base64"
 	"myapp/api/models"
 
 	"github.com/gin-gonic/gin"
@@ -13,10 +14,16 @@ func IsUpgradeHeaderValid(c *gin.Context) bool {
 	secWebSocketVersionHeader := c.GetHeader("Sec-WebSocket-Version")
 	secWebSocketKeyHeader := c.GetHeader("Sec-WebSocket-Key")
 
+	isSecWebSocketKeyValid := false
+	decodedKey, err := base64.StdEncoding.DecodeString(secWebSocketKeyHeader)
+	if err == nil && len(decodedKey) == 16 {
+		isSecWebSocketKeyValid = true
+	}
+
 	return upgradeHeader == "websocket" &&
 		connectionHeader == "upgrade" &&
 		secWebSocketVersionHeader == "13" &&
-		secWebSocketKeyHeader != ""
+		isSecWebSocketKeyValid
 }
 
 func ParseEnterRoomRequest(c *gin.Context) (models.RoomRequest, error) {

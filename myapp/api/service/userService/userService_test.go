@@ -12,7 +12,6 @@ import (
 
 func TestCreateAndDeleteUserByEmailAddress(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	ginContext, _ := gin.CreateTestContext(httptest.NewRecorder())
 
 	sampleEmailAddress := "tcduea@gmail.com"
 	samplePassword := "testpassword"
@@ -24,7 +23,7 @@ func TestCreateAndDeleteUserByEmailAddress(t *testing.T) {
 		UserName:     sampleUserName,
 	}
 
-	err := CreateUser(user, ginContext)
+	err := CreateUser(user)
 	if !assert.Nil(t, err) {
 		t.Logf("Failed to create user: %v", err)
 		return
@@ -57,7 +56,7 @@ func TestUserService(t *testing.T) {
 	}
 
 	t.Run("TestCreateUser", func(t *testing.T) {
-		err := CreateUser(sampleUser, ginContext)
+		err := CreateUser(sampleUser)
 		if !assert.Nil(t, err) {
 			t.Logf("Failed to create user: %v", err)
 			return

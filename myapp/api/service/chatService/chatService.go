@@ -2,6 +2,8 @@
 package chatService
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"myapp/api/models"
 	"myapp/api/service/userService"
@@ -17,7 +19,7 @@ func ValidateUpgradeHeader(c *gin.Context) error {
 	return nil
 }
 
-func ParseChatRequestAndAuthenticateUser(c *gin.Context) (models.LoginInfo, error) {
+func ParseEnterChatAndAuthenticateUser(c *gin.Context) (models.LoginInfo, error) {
 	loginInfo, err := ParseEnterChatRequest(c)
 	if err != nil {
 		return models.LoginInfo{}, err
@@ -43,4 +45,15 @@ func EnterChatRoom(c *gin.Context, req models.RoomRequest) error {
 	err := cm.ClientEnterRoom(req.RoomName, req.LoginSessionID)
 
 	return err
+}
+
+func GenerateRandomSocketKey() (string, error) {
+	key := make([]byte, 16)
+	_, err := rand.Read(key)
+	if err != nil {
+		panic(err)
+	}
+
+	secWebSocketKey := base64.StdEncoding.EncodeToString(key)
+	return secWebSocketKey, nil
 }
