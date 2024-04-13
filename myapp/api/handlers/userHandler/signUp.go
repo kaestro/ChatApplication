@@ -3,8 +3,8 @@
 package userHandler
 
 import (
-	"encoding/json"
 	"myapp/api/models"
+	"myapp/api/service"
 	"myapp/api/service/userService"
 	"net/http"
 
@@ -17,7 +17,7 @@ import (
 func SignUp(ginContext *gin.Context) {
 	var user models.User
 
-	err := json.NewDecoder(ginContext.Request.Body).Decode(&user)
+	err := service.DecodeUserFromBody(ginContext, &user)
 	if err != nil {
 		ginContext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

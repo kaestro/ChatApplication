@@ -77,8 +77,8 @@ func TestUserService(t *testing.T) {
 
 	t.Run("TestDeauthenticateUser", func(t *testing.T) {
 		loginService := NewUserServiceUtil()
-		user, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
-		sessionKey, _ := loginService.GenerateSessionKey(user)
+		loginInfo, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		sessionKey, _ := loginService.GenerateSessionKey(loginInfo)
 
 		err := DeauthenticateUser(sessionKey)
 		if !assert.Nil(t, err) {

@@ -51,7 +51,8 @@ func (r *room) closeRoom() {
 func (r *room) addClient(client *client) error {
 	loginSessionID := client.getLoginSessionID()
 	if r.isClientInsideRoom(loginSessionID) {
-		return error(fmt.Errorf("client with sessionID %s already exists", loginSessionID))
+		fmt.Printf("Client with sessionID %s is already inside room %s\n", loginSessionID, r.roomName)
+		return nil
 	}
 
 	select {

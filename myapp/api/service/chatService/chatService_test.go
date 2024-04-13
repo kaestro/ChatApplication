@@ -42,8 +42,9 @@ func TestParseChatRequestAndAuthenticateUser(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"roomName": "123", "loginSessionID": "456", "emailAddress": "tpar@gmail.com", "password": "password"}`))
+	c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"roomName": "123", "emailAddress": "tpar@gmail.com", "password": "password"}`))
 	c.Request.Header.Set("Content-Type", "application/json")
+	c.Request.Header.Set("Session-Key", tparLoginSessionID)
 
 	user := models.NewUser(tparEmailAddress, tparEmailAddress, tparPassword)
 	userService.CreateUser(user)
@@ -54,7 +55,9 @@ func TestParseChatRequestAndAuthenticateUser(t *testing.T) {
 		return
 	}
 
-	if loginInfo.LoginSessionID != tparLoginSessionID || loginInfo.EmailAddress != tparEmailAddress {
+	newLoginSessionID := loginInfo.LoginSessionID
+
+	if loginInfo.LoginSessionID != newLoginSessionID || loginInfo.EmailAddress != tparEmailAddress {
 		t.Errorf("Expected RoomRequest with RoomName 123, LoginSessionID 456, and EmailAddress test@example.com, but got %v", loginInfo)
 		return
 	}
