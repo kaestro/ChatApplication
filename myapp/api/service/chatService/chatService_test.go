@@ -34,8 +34,7 @@ func TestValidateUpgradeHeader(t *testing.T) {
 	t.Logf("Passed test for ValidateUpgradeHeader with valid Upgrade header")
 }
 
-func TestParseAndAuthenticateRequest(t *testing.T) {
-	tparRoomName := "123"
+func TestParseChatRequestAndAuthenticateUser(t *testing.T) {
 	tparLoginSessionID := "456"
 	tparEmailAddress := "tpar@gmail.com"
 	tparPassword := "password"
@@ -47,15 +46,15 @@ func TestParseAndAuthenticateRequest(t *testing.T) {
 
 	user := models.NewUser(tparEmailAddress, tparEmailAddress, tparPassword)
 	userService.CreateUser(user, c)
-	req, err := ParseAndAuthenticateRequest(c)
+	loginInfo, err := ParseChatRequestAndAuthenticateUser(c)
 
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
 		return
 	}
 
-	if req.RoomName != tparRoomName || req.LoginSessionID != tparLoginSessionID || req.EmailAddress != tparEmailAddress {
-		t.Errorf("Expected RoomRequest with RoomName 123, LoginSessionID 456, and EmailAddress test@example.com, but got %v", req)
+	if loginInfo.LoginSessionID != tparLoginSessionID || loginInfo.EmailAddress != tparEmailAddress {
+		t.Errorf("Expected RoomRequest with RoomName 123, LoginSessionID 456, and EmailAddress test@example.com, but got %v", loginInfo)
 		return
 	}
 

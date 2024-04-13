@@ -26,3 +26,11 @@ func ParseEnterRoomRequest(c *gin.Context) (models.RoomRequest, error) {
 	}
 	return req, nil
 }
+
+func ParseEnterChatRequest(c *gin.Context) (models.LoginInfo, error) {
+	var loginInfo models.LoginInfo
+	if err := c.ShouldBindJSON(&loginInfo); err != nil {
+		return models.LoginInfo{}, err
+	}
+	return loginInfo, nil
+}

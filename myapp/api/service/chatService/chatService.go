@@ -17,19 +17,18 @@ func ValidateUpgradeHeader(c *gin.Context) error {
 	return nil
 }
 
-func ParseAndAuthenticateRequest(c *gin.Context) (models.RoomRequest, error) {
-	req, err := ParseEnterRoomRequest(c)
+func ParseChatRequestAndAuthenticateUser(c *gin.Context) (models.LoginInfo, error) {
+	loginInfo, err := ParseEnterChatRequest(c)
 	if err != nil {
-		return models.RoomRequest{}, err
+		return models.LoginInfo{}, err
 	}
 
-	loginInfo := models.NewLoginInfo(req.EmailAddress, req.Password)
-	_, err = userService.NewUserServiceUtil().AuthenticateUser(loginInfo, req.LoginSessionID)
+	_, err = userService.NewUserServiceUtil().AuthenticateUser(loginInfo, loginInfo.LoginSessionID)
 	if err != nil {
-		return models.RoomRequest{}, err
+		return models.LoginInfo{}, err
 	}
 
-	return req, nil
+	return loginInfo, nil
 }
 
 func EnterChat(c *gin.Context, req models.LoginInfo) error {
