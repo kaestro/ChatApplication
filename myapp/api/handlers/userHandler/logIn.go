@@ -10,7 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// LogIn 함수는 사용자가 제공한 이메일 주소와 비밀번호를 검증하여 로그인합니다.
+// Request Type: POST
+// Headers: Session-Key
+// Body: LoginInfo { emailAddress, password }
 func LogIn(ginContext *gin.Context) {
 	loginInfo, err := getLoginInfo(ginContext)
 	if err != nil {
@@ -19,11 +21,17 @@ func LogIn(ginContext *gin.Context) {
 	}
 
 	userSessionKey := ginContext.GetHeader("Session-Key")
+	userServiceUtil := userService.NewUserServiceUtil()
 
-	loginService := userService.NewLoginService()
-	sessionKey, err := loginService.AuthenticateUser(loginInfo, userSessionKey)
+	user, err := userServiceUtil.AuthenticateUser(loginInfo, userSessionKey)
 	if err != nil {
-		userService.HandleLoginError(ginContext, err)
+		userServiceUtil.HandleLoginError(ginContext, err)
+		return
+	}
+
+	sessionKey, err := userServiceUtil.GenerateSessionKey(user)
+	if err != nil {
+		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 

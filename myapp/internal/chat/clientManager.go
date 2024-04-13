@@ -75,7 +75,7 @@ func (cm *clientManager) updateClientID(client *client, loginSessionID string) {
 func (cm *clientManager) createNewClient(loginSessionID string, conn Conn) *client {
 	if cm.isClientRegistered(loginSessionID) {
 		fmt.Println("Client with sessionID", loginSessionID, "already exists")
-		return nil
+		return cm.getClientByLoginSessionID(loginSessionID)
 	}
 
 	client := newClient(loginSessionID, conn)

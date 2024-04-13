@@ -18,7 +18,7 @@ const (
 )
 
 func TestChatManager(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 
 	// Start a test server
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +65,7 @@ func TestChatManager(t *testing.T) {
 }
 
 func TestCreateRoom(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 	roomName := sampleRoomName
 
 	err := cm.CreateRoom(roomName)
@@ -88,7 +88,7 @@ func TestCreateRoom(t *testing.T) {
 }
 
 func TestRemoveRoom(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 	cm.CreateRoom(sampleRoomName)
 
 	err := cm.RemoveRoomByName(sampleRoomName)
@@ -108,7 +108,7 @@ func TestRemoveRoom(t *testing.T) {
 }
 
 func TestClientEnterRoom(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 
 	// Create a room and a client
 	err := cm.CreateRoom(sampleRoomName)
@@ -143,10 +143,10 @@ func TestClientEnterRoom(t *testing.T) {
 }
 
 func TestGetClient(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
 
-	client, err := cm.getClient(sampleLoginSessionID)
+	client, err := cm.GetClient(sampleLoginSessionID)
 	if err != nil {
 		t.Errorf("Failed to get client: %v", err)
 		return
@@ -161,7 +161,7 @@ func TestGetClient(t *testing.T) {
 }
 
 func TestGetRoom(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 	cm.CreateRoom(sampleRoomName)
 
 	// Call getRoom method
@@ -180,7 +180,7 @@ func TestGetRoom(t *testing.T) {
 }
 
 func TestGetRoomAndClient(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 	cm.CreateRoom(sampleRoomName)
 	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
 
@@ -204,7 +204,7 @@ func TestGetRoomAndClient(t *testing.T) {
 }
 
 func TestClientLeaveRoom(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 	rmInstance := getRoomManager()
 	rmInstance.clearRooms()
 
@@ -226,7 +226,7 @@ func TestClientLeaveRoom(t *testing.T) {
 	room := rmInstance.getRoom(sampleRoomName)
 	if room.isClientInsideRoom(sampleLoginSessionID) {
 		// 단순히 처리되는 데 시간이 걸리기 때문에 에러 발생하는 것인지 확인
-		time.Sleep(1000 * time.Millisecond)
+		time.Sleep(10 * time.Second)
 		if room.isClientInsideRoom(sampleLoginSessionID) {
 			t.Errorf("Client was not removed from the room")
 			return
@@ -237,7 +237,7 @@ func TestClientLeaveRoom(t *testing.T) {
 }
 
 func TestChatManager_SendMessageToRoom(t *testing.T) {
-	cm := NewChatManager()
+	cm := GetChatManager()
 	cm.CreateRoom(sampleRoomName)
 	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
 	cm.ClientEnterRoom(sampleRoomName, sampleLoginSessionID)

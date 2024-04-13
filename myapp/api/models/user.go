@@ -7,3 +7,11 @@ type User struct {
 	EmailAddress string `json:"emailAddress" gorm:"type:varchar(255);unique"`
 	Password     string `json:"password" gorm:"type:varchar(255)"`
 }
+
+func NewUser(userName, emailAddress, password string) User {
+	return User{
+		UserName:     userName,
+		EmailAddress: emailAddress,
+		Password:     password,
+	}
+}

@@ -26,83 +26,73 @@ func TestUserHandler(t *testing.T) {
 
 	userJson, _ := json.Marshal(user)
 
-	t.Run("SignUp", func(t *testing.T) {
-		request, _ := http.NewRequest("POST", "/signup", bytes.NewBuffer(userJson))
-		response := httptest.NewRecorder()
-		ginContext, _ := gin.CreateTestContext(response)
-		ginContext.Request = request
-		SignUp(ginContext)
+	// Run subtests sequentially
+	sessionKey := testSignUp(t, userJson)
+	sessionKey = testLogIn(t, userJson, sessionKey)
+	sessionKey = testLogOut(t, sessionKey)
+	sessionKey = testLogIn(t, userJson, sessionKey)
+	testSignOut(t, sessionKey)
+}
 
-		if !assert.Equal(t, http.StatusCreated, response.Code) {
-			t.Logf("test Signup failed: %v", response.Body.String())
-			return
-		}
-	})
+func testSignUp(t *testing.T, userJson []byte) string {
+	request, _ := http.NewRequest("POST", "/signup", bytes.NewBuffer(userJson))
+	response := httptest.NewRecorder()
+	ginContext, _ := gin.CreateTestContext(response)
+	ginContext.Request = request
+	SignUp(ginContext)
 
-	t.Run("LogIn", func(t *testing.T) {
-		request, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(userJson))
-		response := httptest.NewRecorder()
-		ginContext, _ := gin.CreateTestContext(response)
-		ginContext.Request = request
-		LogIn(ginContext)
+	if !assert.Equal(t, http.StatusCreated, response.Code) {
+		t.Logf("test Signup failed: %v", response.Body.String())
+	}
 
-		if !assert.Equal(t, http.StatusOK, response.Code) {
-			t.Logf("test Login failed: %v", response.Body.String())
-			return
-		}
-	})
+	var responseBody map[string]string
+	json.Unmarshal(response.Body.Bytes(), &responseBody)
+	return responseBody["sessionKey"]
+}
 
-	t.Run("LogOut", func(t *testing.T) {
-		// LogIn before LogOut
-		request, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(userJson))
-		response := httptest.NewRecorder()
-		ginContext, _ := gin.CreateTestContext(response)
-		ginContext.Request = request
-		LogIn(ginContext)
+func testLogIn(t *testing.T, userJson []byte, sessionKey string) string {
+	request, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(userJson))
+	request.Header.Set("Session-Key", sessionKey)
+	response := httptest.NewRecorder()
+	ginContext, _ := gin.CreateTestContext(response)
+	ginContext.Request = request
+	LogIn(ginContext)
 
-		// Parse the response body to get the sessionKey
-		var responseBody map[string]string
-		json.Unmarshal(response.Body.Bytes(), &responseBody)
-		sessionKey := responseBody["sessionKey"]
+	if !assert.Equal(t, http.StatusOK, response.Code) {
+		t.Logf("test Login failed: %v", response.Body.String())
+	}
 
-		// LogOut with the sessionKey from the LogIn response
-		request, _ = http.NewRequest("POST", "/logout", nil)
-		request.Header.Set("Session-Key", sessionKey)
-		response = httptest.NewRecorder()
-		ginContext, _ = gin.CreateTestContext(response)
-		ginContext.Request = request
-		LogOut(ginContext)
+	var responseBody map[string]string
+	json.Unmarshal(response.Body.Bytes(), &responseBody)
+	return responseBody["sessionKey"]
+}
 
-		if !assert.Equal(t, http.StatusOK, response.Code) {
-			t.Logf("test Logout failed: %v", response.Body.String())
-			return
-		}
-	})
+func testLogOut(t *testing.T, sessionKey string) string {
+	request, _ := http.NewRequest("POST", "/logout", nil)
+	request.Header.Set("Session-Key", sessionKey)
+	response := httptest.NewRecorder()
+	ginContext, _ := gin.CreateTestContext(response)
+	ginContext.Request = request
+	LogOut(ginContext)
 
-	t.Run("SignOut", func(t *testing.T) {
-		// LogIn before SignOut
-		request, _ := http.NewRequest("POST", "/login", bytes.NewBuffer(userJson))
-		response := httptest.NewRecorder()
-		ginContext, _ := gin.CreateTestContext(response)
-		ginContext.Request = request
-		LogIn(ginContext)
+	if !assert.Equal(t, http.StatusOK, response.Code) {
+		t.Logf("test Logout failed: %v", response.Body.String())
+	}
 
-		// Parse the response body to get the sessionKey
-		var responseBody map[string]string
-		json.Unmarshal(response.Body.Bytes(), &responseBody)
-		sessionKey := responseBody["sessionKey"]
+	var responseBody map[string]string
+	json.Unmarshal(response.Body.Bytes(), &responseBody)
+	return responseBody["sessionKey"]
+}
 
-		// SignOut with the sessionKey from the LogIn response
-		request, _ = http.NewRequest("POST", "/signout", nil)
-		request.Header.Set("Session-Key", sessionKey)
-		response = httptest.NewRecorder()
-		ginContext, _ = gin.CreateTestContext(response)
-		ginContext.Request = request
-		SignOut(ginContext)
+func testSignOut(t *testing.T, sessionKey string) {
+	request, _ := http.NewRequest("POST", "/signout", nil)
+	request.Header.Set("Session-Key", sessionKey)
+	response := httptest.NewRecorder()
+	ginContext, _ := gin.CreateTestContext(response)
+	ginContext.Request = request
+	SignOut(ginContext)
 
-		if !assert.Equal(t, http.StatusOK, response.Code) {
-			t.Logf("test SignOut failed: %v", response.Body.String())
-			return
-		}
-	})
+	if !assert.Equal(t, http.StatusOK, response.Code) {
+		t.Logf("test SignOut failed: %v", response.Body.String())
+	}
 }

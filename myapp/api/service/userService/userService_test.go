@@ -12,7 +12,6 @@ import (
 
 func TestCreateAndDeleteUserByEmailAddress(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	ginContext, _ := gin.CreateTestContext(httptest.NewRecorder())
 
 	sampleEmailAddress := "tcduea@gmail.com"
 	samplePassword := "testpassword"
@@ -24,7 +23,7 @@ func TestCreateAndDeleteUserByEmailAddress(t *testing.T) {
 		UserName:     sampleUserName,
 	}
 
-	err := CreateUser(user, ginContext)
+	err := CreateUser(user)
 	if !assert.Nil(t, err) {
 		t.Logf("Failed to create user: %v", err)
 		return
@@ -57,7 +56,7 @@ func TestUserService(t *testing.T) {
 	}
 
 	t.Run("TestCreateUser", func(t *testing.T) {
-		err := CreateUser(sampleUser, ginContext)
+		err := CreateUser(sampleUser)
 		if !assert.Nil(t, err) {
 			t.Logf("Failed to create user: %v", err)
 			return
@@ -66,7 +65,7 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("TestAuthenticateUser", func(t *testing.T) {
-		loginService := NewLoginService()
+		loginService := NewUserServiceUtil()
 		_, err := loginService.AuthenticateUser(sampleLoginInfo, "")
 		if !assert.Nil(t, err) {
 			t.Logf("Failed to authenticate user: %v", err)
@@ -77,8 +76,9 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("TestDeauthenticateUser", func(t *testing.T) {
-		loginService := NewLoginService()
-		sessionKey, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		loginService := NewUserServiceUtil()
+		user, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		sessionKey, _ := loginService.GenerateSessionKey(user)
 
 		err := DeauthenticateUser(sessionKey)
 		if !assert.Nil(t, err) {
@@ -90,8 +90,9 @@ func TestUserService(t *testing.T) {
 	})
 
 	t.Run("TestDeleteUserBySessionKey", func(t *testing.T) {
-		loginService := NewLoginService()
-		sessionKey, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		loginService := NewUserServiceUtil()
+		user_model, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		sessionKey, _ := loginService.GenerateSessionKey(user_model)
 
 		err := DeleteUserBySessionKey(sessionKey, ginContext)
 		if !assert.Nil(t, err) {

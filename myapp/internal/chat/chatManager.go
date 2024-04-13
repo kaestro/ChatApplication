@@ -27,7 +27,7 @@ type ChatManager struct {
 	upgrader websocket.Upgrader
 }
 
-func NewChatManager() *ChatManager {
+func GetChatManager() *ChatManager {
 	chatManagerOnce.Do(func() {
 		chatManager = &ChatManager{
 			upgrader: websocket.Upgrader{
@@ -41,6 +41,14 @@ func NewChatManager() *ChatManager {
 }
 
 func (cm *ChatManager) ProvideClientToUser(w http.ResponseWriter, r *http.Request, loginSessionID string) error {
+	if w == nil {
+		return errors.New("http.ResponseWriter is nil")
+	} else if r == nil {
+		return errors.New("http.Request is nil")
+	} else if loginSessionID == "" {
+		return errors.New("loginSessionID is empty")
+	}
+
 	conn, err := cm.upgradeToWebsocket(w, r)
 	if err != nil {
 		return err
@@ -99,14 +107,14 @@ func (cm *ChatManager) getRoomAndClient(roomName string, loginSessionID string) 
 		return nil, nil, err
 	}
 
-	client, err := cm.getClient(loginSessionID)
+	client, err := cm.GetClient(loginSessionID)
 	if err != nil {
 		return nil, nil, err
 	}
 	return room, client, nil
 }
 
-func (cm *ChatManager) getClient(loginSessionID string) (*client, error) {
+func (cm *ChatManager) GetClient(loginSessionID string) (*client, error) {
 	cmInstance = getClientManager()
 	client := cmInstance.getClientByLoginSessionID(loginSessionID)
 	if client == nil {
