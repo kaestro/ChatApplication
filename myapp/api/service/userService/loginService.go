@@ -19,6 +19,7 @@ var (
 	ErrInvalidPassword            = errors.New("invalid password")
 	ErrFailedToGenerateSessionKey = errors.New("failed to generate session key")
 	ErrFailedToSaveSessionKey     = errors.New("failed to save session key")
+	dbColumnUserIdentifier        = "email_address"
 )
 
 type LoginService struct {
@@ -33,34 +34,25 @@ func NewLoginService() *LoginService {
 	}
 }
 
-func (s *LoginService) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (string, error) {
-	// 세션 키가 sessionManager에 저장되어 있는지 확인합니다.
-	if s.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
-		fmt.Println("User is already logged in")
+func (s *LoginService) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.User, error) {
+	_, isLoggedIn := s.checkUserLoggedIn(userSessionKey, loginInfo)
 
-		sessionKey, err := s.sessionManager.GetSession(loginInfo.EmailAddress)
-		if err != nil {
-			return "", err
-		}
-
-		return sessionKey, ErrAlreadyLoggedIn
-	}
-
-	// 사용자 정보를 담을 User 구조체를 선언합니다.
 	var user models.User
-
-	// 사용자가 제공한 이메일 주소로 데이터베이스에서 사용자를 찾습니다.
-	err := s.dbManager.Read(&user, "email_address", loginInfo.EmailAddress)
+	err := s.dbManager.Read(&user, dbColumnUserIdentifier, loginInfo.EmailAddress)
 	if err != nil {
-		return "", ErrUserNotFound
+		return models.User{}, ErrUserNotFound
+	} else if isLoggedIn {
+		return user, ErrAlreadyLoggedIn
 	}
 
-	// 사용자가 제공한 비밀번호와 데이터베이스에 저장된 해시된 비밀번호를 비교합니다.
 	if !password.CheckPasswordHash(loginInfo.Password, user.Password) {
-		return "", ErrInvalidPassword
+		return user, ErrInvalidPassword
 	}
 
-	// 세션 키를 생성합니다.
+	return user, nil
+}
+
+func (s *LoginService) GenerateSessionKey(user models.User) (string, error) {
 	sessionKey, err := session.GenerateRandomSessionKey()
 	if err != nil {
 		return "", ErrFailedToGenerateSessionKey
@@ -75,9 +67,23 @@ func (s *LoginService) AuthenticateUser(loginInfo models.LoginInfo, userSessionK
 	return sessionKey, nil
 }
 
+func (s *LoginService) checkUserLoggedIn(userSessionKey string, loginInfo models.LoginInfo) (string, bool) {
+	if s.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
+		fmt.Println("User is already logged in")
+
+		sessionKey, err := s.sessionManager.GetSession(loginInfo.EmailAddress)
+		if err != nil {
+			return "", false
+		}
+
+		return sessionKey, true
+	}
+	return "", false
+}
+
 // handleLoginError 함수는 로그인 과정에서 발생한 오류를 처리합니다.
 // 오류 유형에 따라 적절한 HTTP 상태 코드를 반환합니다.
-func HandleLoginError(ginContext *gin.Context, err error) {
+func (s *LoginService) HandleLoginError(ginContext *gin.Context, err error) {
 	switch err {
 	case ErrAlreadyLoggedIn:
 		ginContext.JSON(http.StatusConflict, gin.H{"error": "User is already logged in"})
