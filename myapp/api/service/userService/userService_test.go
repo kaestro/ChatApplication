@@ -78,7 +78,8 @@ func TestUserService(t *testing.T) {
 
 	t.Run("TestDeauthenticateUser", func(t *testing.T) {
 		loginService := NewLoginService()
-		sessionKey, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		user, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		sessionKey, _ := loginService.GenerateSessionKey(user)
 
 		err := DeauthenticateUser(sessionKey)
 		if !assert.Nil(t, err) {
@@ -91,7 +92,8 @@ func TestUserService(t *testing.T) {
 
 	t.Run("TestDeleteUserBySessionKey", func(t *testing.T) {
 		loginService := NewLoginService()
-		sessionKey, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		user_model, _ := loginService.AuthenticateUser(sampleLoginInfo, "")
+		sessionKey, _ := loginService.GenerateSessionKey(user_model)
 
 		err := DeleteUserBySessionKey(sessionKey, ginContext)
 		if !assert.Nil(t, err) {
