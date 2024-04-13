@@ -3,10 +3,13 @@ package userService
 
 import (
 	"myapp/api/models"
+	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -74,6 +77,24 @@ func TestUserService(t *testing.T) {
 		}
 
 		t.Logf("Successfully authenticated user")
+	})
+
+	t.Run("TestPublishWebSocket", func(t *testing.T) {
+		// 웹소켓 서버 시작
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			loginService := NewLoginService()
+			err := loginService.PublishWebSocket(w, r, "testSessionKey")
+			if err != nil {
+				t.Errorf("Expected no error, but got %v", err)
+			}
+		}))
+		defer server.Close()
+
+		// 웹소켓 클라이언트로 연결 시도
+		_, _, err := websocket.DefaultDialer.Dial(strings.Replace(server.URL, "http", "ws", 1), nil)
+		if err != nil {
+			t.Errorf("Expected no error, but got %v", err)
+		}
 	})
 
 	t.Run("TestDeauthenticateUser", func(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"myapp/api/models"
+	"myapp/internal/chat"
 	"myapp/internal/db"
 	"myapp/internal/password"
 	"myapp/internal/session"
@@ -96,4 +97,11 @@ func (s *LoginService) HandleLoginError(ginContext *gin.Context, err error) {
 	default:
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 	}
+}
+
+func (s *LoginService) PublishWebSocket(w http.ResponseWriter, r *http.Request, sessionKey string) error {
+	chatManager := chat.GetChatManager()
+
+	err := chatManager.ProvideClientToUser(w, r, sessionKey)
+	return err
 }
