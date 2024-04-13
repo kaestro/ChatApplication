@@ -27,16 +27,22 @@ func LogIn(ginContext *gin.Context) {
 		return
 	}
 
-	user, err := userServiceUtil.AuthenticateUser(loginInfo, userSessionKey)
+	loginInfo, err = userServiceUtil.AuthenticateUser(loginInfo, userSessionKey)
 	if err != nil {
 		userServiceUtil.HandleLoginError(ginContext, err)
 		return
 	}
 
-	sessionKey, err := userServiceUtil.GenerateSessionKey(user)
-	if err != nil {
-		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	var sessionKey string
+	if loginInfo.LoginSessionID == "" {
+		sessionKey, err := userServiceUtil.GenerateSessionKey(loginInfo)
+		if err != nil {
+			ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		loginInfo.LoginSessionID = sessionKey
+	} else {
+		sessionKey = loginInfo.LoginSessionID
 	}
 
 	ginContext.JSON(http.StatusOK, gin.H{"sessionKey": sessionKey})

@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"myapp/api/service"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -52,10 +54,11 @@ func TestParseEnterRoomRequest(t *testing.T) {
 	t.Run("returns RoomRequest and no error when JSON is valid", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"roomName": "123", "loginSessionID": "456", "emailAddress": "test@example.com"}`))
+		c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"roomName": "123", "emailAddress": "test@example.com"}`))
 		c.Request.Header.Set("Content-Type", "application/json")
+		c.Request.Header.Set("Session-Key", "456")
 
-		req, err := ParseEnterRoomRequest(c)
+		req, err := service.ParseRoomRequest(c)
 
 		if err != nil {
 			t.Errorf("Expected no error, but got %v", err)
@@ -76,7 +79,7 @@ func TestParseEnterRoomRequest(t *testing.T) {
 		c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"invalid": "json"`))
 		c.Request.Header.Set("Content-Type", "application/json")
 
-		_, err := ParseEnterRoomRequest(c)
+		_, err := service.ParseRoomRequest(c)
 
 		if err == nil {
 			t.Error("Expected error, but got nil")

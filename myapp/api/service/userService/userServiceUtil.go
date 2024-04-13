@@ -34,25 +34,39 @@ func NewUserServiceUtil() *UserServiceUtil {
 	}
 }
 
-func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.User, error) {
+// 이미 로그인 된 경우 loginInfo의 세션 키를 userSessionKey로 설정하고,
+// 아닐 경우 세션 키를 빈 값으로 설정합니다.
+func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.LoginInfo, error) {
 	_, isLoggedIn := usu.CheckUserLoggedIn(userSessionKey, loginInfo)
 
 	var user models.User
 	err := usu.dbManager.Read(&user, dbColumnUserIdentifier, loginInfo.EmailAddress)
 	if err != nil {
-		return models.User{}, ErrUserNotFound
+		return models.LoginInfo{}, ErrUserNotFound
 	} else if isLoggedIn {
-		return user, nil
+		loginInfo.LoginSessionID = userSessionKey
+		return loginInfo, nil
 	}
 
 	if !password.CheckPasswordHash(loginInfo.Password, user.Password) {
-		return models.User{}, ErrInvalidPassword
+		return models.LoginInfo{}, ErrInvalidPassword
 	}
 
-	return user, nil
+	loginSession := session.GetLoginSessionManager()
+	sessionKey, err := session.GenerateRandomSessionKey()
+	if err != nil {
+		return models.LoginInfo{}, ErrFailedToGenerateSessionKey
+	}
+	loginInfo.LoginSessionID = sessionKey
+	err = loginSession.SetSession(sessionKey, loginInfo.EmailAddress)
+	if err != nil {
+		return models.LoginInfo{}, ErrFailedToSaveSessionKey
+	}
+
+	return loginInfo, nil
 }
 
-func (usu *UserServiceUtil) GenerateSessionKey(user models.User) (string, error) {
+func (usu *UserServiceUtil) GenerateSessionKey(user models.LoginInfo) (string, error) {
 	sessionKey, err := session.GenerateRandomSessionKey()
 	if err != nil {
 		return "", ErrFailedToGenerateSessionKey
@@ -71,12 +85,12 @@ func (usu *UserServiceUtil) CheckUserLoggedIn(userSessionKey string, loginInfo m
 	if usu.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
 		fmt.Println("User is already logged in")
 
-		sessionKey, err := usu.sessionManager.GetSession(loginInfo.EmailAddress)
+		_, err := usu.sessionManager.GetSession(loginInfo.LoginSessionID)
 		if err != nil {
 			return "", false
 		}
 
-		return sessionKey, true
+		return userSessionKey, true
 	}
 	return "", false
 }

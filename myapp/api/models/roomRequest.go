@@ -16,3 +16,7 @@ func NewRoomRequest(roomName, loginSessionID, emailAddress, password string) Roo
 		Password:       password,
 	}
 }
+
+func (r *RoomRequest) GetLoginInfo() LoginInfo {
+	return NewLoginInfo(r.EmailAddress, r.Password, r.LoginSessionID)
+}

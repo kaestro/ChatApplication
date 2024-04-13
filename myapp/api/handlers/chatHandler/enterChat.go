@@ -8,7 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Header: Upgrade, Connection, Sec-WebSocket-Version, Sec-WebSocket-Key
+// request type: GET
+// Header: Upgrade, Connection, Sec-WebSocket-Version, Sec-WebSocket-Key, Session-Key
 // Body: LoginInfo { EmailAddress, Password, LoginSessionID }
 func EnterChat(c *gin.Context) {
 	if err := chatService.ValidateUpgradeHeader(c); err != nil {

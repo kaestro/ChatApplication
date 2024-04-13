@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"myapp/api/models"
 	"myapp/api/service"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,18 +22,10 @@ func IsUpgradeHeaderValid(c *gin.Context) bool {
 		isSecWebSocketKeyValid = true
 	}
 
-	return upgradeHeader == "websocket" &&
-		connectionHeader == "upgrade" &&
-		secWebSocketVersionHeader == "13" &&
+	return strings.EqualFold(upgradeHeader, "websocket") &&
+		strings.EqualFold(connectionHeader, "upgrade") &&
+		strings.EqualFold(secWebSocketVersionHeader, "13") &&
 		isSecWebSocketKeyValid
-}
-
-func ParseEnterRoomRequest(c *gin.Context) (models.RoomRequest, error) {
-	var req models.RoomRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		return models.RoomRequest{}, err
-	}
-	return req, nil
 }
 
 func ParseEnterChatRequest(c *gin.Context) (models.LoginInfo, error) {
