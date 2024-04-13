@@ -2,6 +2,8 @@
 package chatService
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"myapp/api/models"
 	"myapp/api/service/userService"
@@ -17,19 +19,18 @@ func ValidateUpgradeHeader(c *gin.Context) error {
 	return nil
 }
 
-func ParseAndAuthenticateRequest(c *gin.Context) (models.RoomRequest, error) {
-	req, err := ParseEnterRoomRequest(c)
+func ParseEnterChatAndAuthenticateUser(c *gin.Context) (models.LoginInfo, error) {
+	loginInfo, err := ParseEnterChatRequest(c)
 	if err != nil {
-		return models.RoomRequest{}, err
+		return models.LoginInfo{}, err
 	}
 
-	loginInfo := models.NewLoginInfo(req.EmailAddress, req.Password)
-	_, err = userService.NewUserServiceUtil().AuthenticateUser(loginInfo, req.LoginSessionID)
+	_, err = userService.NewUserServiceUtil().AuthenticateUser(loginInfo, loginInfo.LoginSessionID)
 	if err != nil {
-		return models.RoomRequest{}, err
+		return models.LoginInfo{}, err
 	}
 
-	return req, nil
+	return loginInfo, nil
 }
 
 func EnterChat(c *gin.Context, req models.LoginInfo) error {
@@ -44,4 +45,15 @@ func EnterChatRoom(c *gin.Context, req models.RoomRequest) error {
 	err := cm.ClientEnterRoom(req.RoomName, req.LoginSessionID)
 
 	return err
+}
+
+func GenerateRandomSocketKey() (string, error) {
+	key := make([]byte, 16)
+	_, err := rand.Read(key)
+	if err != nil {
+		panic(err)
+	}
+
+	secWebSocketKey := base64.StdEncoding.EncodeToString(key)
+	return secWebSocketKey, nil
 }

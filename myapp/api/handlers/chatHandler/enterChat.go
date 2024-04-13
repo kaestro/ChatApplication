@@ -8,20 +8,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// myapp/api/handlers/chatHandler/enterRoom.go
-func EnterRoom(c *gin.Context) {
+// Header: Upgrade, Connection, Sec-WebSocket-Version, Sec-WebSocket-Key
+// Body: LoginInfo { EmailAddress, Password, LoginSessionID }
+func EnterChat(c *gin.Context) {
 	if err := chatService.ValidateUpgradeHeader(c); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	req, err := chatService.ParseAndAuthenticateRequest(c)
+	loginInfo, err := chatService.ParseEnterChatAndAuthenticateUser(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := chatService.EnterChatRoom(c, req); err != nil {
+	if err := chatService.EnterChat(c, loginInfo); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

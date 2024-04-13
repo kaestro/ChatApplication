@@ -8,7 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Logout 함수는 사용자의 세션을 종료합니다.
+// Request Type: POST
+// Headers: Session-Key
+// Body: None
 func LogOut(ginContext *gin.Context) {
 	userSessionKey := ginContext.GetHeader("Session-Key")
 

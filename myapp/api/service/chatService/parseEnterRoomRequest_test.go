@@ -12,13 +12,14 @@ import (
 
 func TestIsUpgradeHeaderValid(t *testing.T) {
 	t.Run("returns true when all headers are valid", func(t *testing.T) {
+		socketKey, _ := GenerateRandomSocketKey()
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
 		c.Request, _ = http.NewRequest("GET", "/", nil)
 		c.Request.Header.Set("Upgrade", "websocket")
 		c.Request.Header.Set("Connection", "upgrade")
 		c.Request.Header.Set("Sec-WebSocket-Version", "13")
-		c.Request.Header.Set("Sec-WebSocket-Key", "test")
+		c.Request.Header.Set("Sec-WebSocket-Key", socketKey)
 
 		isValid := IsUpgradeHeaderValid(c)
 

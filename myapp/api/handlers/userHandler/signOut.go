@@ -9,7 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// signOut 함수는 사용자를 db에서 삭제합니다.
+// Request Type: POST
+// Headers: Session-Key
+// Body: None
 func SignOut(ginContext *gin.Context) {
 	// 세션 키를 요청 헤더에서 읽어옵니다.
 	userSessionKey := ginContext.GetHeader("Session-Key")

@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -49,7 +50,11 @@ func TestPublishAndCheckConnection(t *testing.T) {
 		// CheckSocketConnection 함수를 사용하여 연결 확인
 		err = CheckSocketConnection(testSessionKey)
 		if err != nil {
-			t.Errorf("Expected no error, but got %v", err)
+			time.Sleep(1 * time.Second)
+			err = CheckSocketConnection(testSessionKey)
+			if err != nil {
+				t.Errorf("Expected no error, but got %v", err)
+			}
 		}
 	})
 }

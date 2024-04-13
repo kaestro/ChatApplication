@@ -11,6 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// request type: POST
+// Headers: None
+// Body: User { userName, emailAddress, password }
 func SignUp(ginContext *gin.Context) {
 	var user models.User
 
@@ -20,7 +23,7 @@ func SignUp(ginContext *gin.Context) {
 		return
 	}
 
-	err = userService.CreateUser(user, ginContext)
+	err = userService.CreateUser(user)
 	if err != nil {
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
