@@ -1,4 +1,4 @@
-// myapp/api/service/userService/authenticateUser.go
+// myapp/api/service/userService/userServiceUtil.go
 package userService
 
 import (
@@ -22,23 +22,23 @@ var (
 	dbColumnUserIdentifier        = "email_address"
 )
 
-type LoginService struct {
+type UserServiceUtil struct {
 	dbManager      db.DBManagerInterface
 	sessionManager *session.LoginSessionManager
 }
 
-func NewLoginService() *LoginService {
-	return &LoginService{
+func NewUserServiceUtil() *UserServiceUtil {
+	return &UserServiceUtil{
 		dbManager:      db.GetDBManager(),
 		sessionManager: session.GetLoginSessionManager(),
 	}
 }
 
-func (s *LoginService) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.User, error) {
-	_, isLoggedIn := s.checkUserLoggedIn(userSessionKey, loginInfo)
+func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.User, error) {
+	_, isLoggedIn := usu.checkUserLoggedIn(userSessionKey, loginInfo)
 
 	var user models.User
-	err := s.dbManager.Read(&user, dbColumnUserIdentifier, loginInfo.EmailAddress)
+	err := usu.dbManager.Read(&user, dbColumnUserIdentifier, loginInfo.EmailAddress)
 	if err != nil {
 		return models.User{}, ErrUserNotFound
 	} else if isLoggedIn {
@@ -52,14 +52,14 @@ func (s *LoginService) AuthenticateUser(loginInfo models.LoginInfo, userSessionK
 	return user, nil
 }
 
-func (s *LoginService) GenerateSessionKey(user models.User) (string, error) {
+func (usu *UserServiceUtil) GenerateSessionKey(user models.User) (string, error) {
 	sessionKey, err := session.GenerateRandomSessionKey()
 	if err != nil {
 		return "", ErrFailedToGenerateSessionKey
 	}
 
 	// 세션 키를 캐시에 저장합니다.
-	err = s.sessionManager.SetSession(sessionKey, user.EmailAddress)
+	err = usu.sessionManager.SetSession(sessionKey, user.EmailAddress)
 	if err != nil {
 		return "", ErrFailedToSaveSessionKey
 	}
@@ -67,11 +67,11 @@ func (s *LoginService) GenerateSessionKey(user models.User) (string, error) {
 	return sessionKey, nil
 }
 
-func (s *LoginService) checkUserLoggedIn(userSessionKey string, loginInfo models.LoginInfo) (string, bool) {
-	if s.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
+func (usu *UserServiceUtil) checkUserLoggedIn(userSessionKey string, loginInfo models.LoginInfo) (string, bool) {
+	if usu.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
 		fmt.Println("User is already logged in")
 
-		sessionKey, err := s.sessionManager.GetSession(loginInfo.EmailAddress)
+		sessionKey, err := usu.sessionManager.GetSession(loginInfo.EmailAddress)
 		if err != nil {
 			return "", false
 		}
@@ -83,7 +83,7 @@ func (s *LoginService) checkUserLoggedIn(userSessionKey string, loginInfo models
 
 // handleLoginError 함수는 로그인 과정에서 발생한 오류를 처리합니다.
 // 오류 유형에 따라 적절한 HTTP 상태 코드를 반환합니다.
-func (s *LoginService) HandleLoginError(ginContext *gin.Context, err error) {
+func (usu *UserServiceUtil) HandleLoginError(ginContext *gin.Context, err error) {
 	switch err {
 	case ErrAlreadyLoggedIn:
 		ginContext.JSON(http.StatusConflict, gin.H{"error": "User is already logged in"})
