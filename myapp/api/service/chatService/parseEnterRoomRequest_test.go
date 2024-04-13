@@ -11,11 +11,14 @@ import (
 )
 
 func TestIsUpgradeHeaderValid(t *testing.T) {
-	t.Run("returns true and 200 OK when Upgrade header is websocket", func(t *testing.T) {
+	t.Run("returns true when all headers are valid", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest("GET", "/", nil) // Add this line
+		c.Request, _ = http.NewRequest("GET", "/", nil)
 		c.Request.Header.Set("Upgrade", "websocket")
+		c.Request.Header.Set("Connection", "upgrade")
+		c.Request.Header.Set("Sec-WebSocket-Version", "13")
+		c.Request.Header.Set("Sec-WebSocket-Key", "test")
 
 		isValid := IsUpgradeHeaderValid(c)
 
@@ -23,14 +26,17 @@ func TestIsUpgradeHeaderValid(t *testing.T) {
 			t.Error("Expected true but got false")
 			return
 		}
-		t.Logf("Passed test for IsUpgradeHeaderValid with Upgrade header websocket")
+		t.Logf("Passed test for IsUpgradeHeaderValid with valid headers")
 	})
 
-	t.Run("returns false and 400 Bad Request when Upgrade header is not websocket", func(t *testing.T) {
+	t.Run("returns false when any header is invalid", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest("GET", "/", nil) // Add this line
+		c.Request, _ = http.NewRequest("GET", "/", nil)
 		c.Request.Header.Set("Upgrade", "not-websocket")
+		c.Request.Header.Set("Connection", "not-upgrade")
+		c.Request.Header.Set("Sec-WebSocket-Version", "not-13")
+		c.Request.Header.Set("Sec-WebSocket-Key", "")
 
 		isValid := IsUpgradeHeaderValid(c)
 
@@ -38,7 +44,7 @@ func TestIsUpgradeHeaderValid(t *testing.T) {
 			t.Errorf("Expected false but got %v", isValid)
 			return
 		}
-		t.Logf("Passed test for IsUpgradeHeaderValid with Upgrade header not websocket")
+		t.Logf("Passed test for IsUpgradeHeaderValid with invalid headers")
 	})
 }
 func TestParseEnterRoomRequest(t *testing.T) {

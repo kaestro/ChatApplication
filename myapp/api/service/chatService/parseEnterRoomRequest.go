@@ -9,7 +9,14 @@ import (
 
 func IsUpgradeHeaderValid(c *gin.Context) bool {
 	upgradeHeader := c.GetHeader("Upgrade")
-	return upgradeHeader == "websocket"
+	connectionHeader := c.GetHeader("Connection")
+	secWebSocketVersionHeader := c.GetHeader("Sec-WebSocket-Version")
+	secWebSocketKeyHeader := c.GetHeader("Sec-WebSocket-Key")
+
+	return upgradeHeader == "websocket" &&
+		connectionHeader == "upgrade" &&
+		secWebSocketVersionHeader == "13" &&
+		secWebSocketKeyHeader != ""
 }
 
 func ParseEnterRoomRequest(c *gin.Context) (models.RoomRequest, error) {

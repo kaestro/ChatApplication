@@ -32,10 +32,16 @@ func ParseAndAuthenticateRequest(c *gin.Context) (models.RoomRequest, error) {
 	return req, nil
 }
 
+func EnterChat(c *gin.Context, req models.LoginInfo) error {
+	cm := chat.GetChatManager()
+	err := cm.ProvideClientToUser(c.Writer, c.Request, req.LoginSessionID)
+
+	return err
+}
+
 func EnterChatRoom(c *gin.Context, req models.RoomRequest) error {
 	cm := chat.GetChatManager()
-	cm.ProvideClientToUser(c.Writer, c.Request, req.LoginSessionID)
-	cm.ClientEnterRoom(req.RoomName, req.LoginSessionID)
+	err := cm.ClientEnterRoom(req.RoomName, req.LoginSessionID)
 
-	return nil
+	return err
 }

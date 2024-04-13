@@ -7,3 +7,12 @@ type RoomRequest struct {
 	EmailAddress   string `json:"emailAddress"`
 	Password       string `json:"password"`
 }
+
+func NewRoomRequest(roomName, loginSessionID, emailAddress, password string) RoomRequest {
+	return RoomRequest{
+		RoomName:       roomName,
+		LoginSessionID: loginSessionID,
+		EmailAddress:   emailAddress,
+		Password:       password,
+	}
+}

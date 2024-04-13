@@ -2,6 +2,8 @@
 package chatService
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"myapp/api/models"
 	"myapp/api/service/userService"
 	"myapp/internal/chat"
@@ -11,7 +13,6 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
 
 func TestValidateUpgradeHeader(t *testing.T) {
@@ -19,6 +20,9 @@ func TestValidateUpgradeHeader(t *testing.T) {
 	c, _ := gin.CreateTestContext(w)
 	c.Request, _ = http.NewRequest("GET", "/", nil)
 	c.Request.Header.Set("Upgrade", "websocket")
+	c.Request.Header.Set("Connection", "upgrade")
+	c.Request.Header.Set("Sec-WebSocket-Version", "13")
+	c.Request.Header.Set("Sec-WebSocket-Key", "test")
 
 	err := ValidateUpgradeHeader(c)
 
@@ -59,41 +63,68 @@ func TestParseAndAuthenticateRequest(t *testing.T) {
 }
 
 func TestEnterChatRoom(t *testing.T) {
-	// 웹소켓 서버를 시작합니다.
-	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cm := chat.GetChatManager()
-		err := cm.ProvideClientToUser(w, r, "testECRSession")
+	sessionKey := "testECRSession"
+	roomName := "testECRRoom"
+	password := "testECRPassword"
+	emailAddress := "testECR@example.com"
+	roomRequest := models.NewRoomRequest(roomName, sessionKey, emailAddress, password)
+	loginInfo := models.NewLoginInfo(emailAddress, password)
+	loginInfo.LoginSessionID = sessionKey
+
+	// gin.Engine을 생성합니다.
+	router := gin.Default()
+
+	router.GET("/", func(context *gin.Context) {
+		err := EnterChat(context, loginInfo)
 		if err != nil {
-			t.Errorf("Failed to upgrade to websocket: %v", err)
+			t.Errorf("Failed to enter chat: %v", err)
 			return
 		}
-	}))
-	defer s.Close()
 
-	// 웹소켓 클라이언트를 생성합니다.
-	u := "ws" + strings.TrimPrefix(s.URL, "http")
-	ws, _, err := websocket.DefaultDialer.Dial(u, nil)
+		err = EnterChatRoom(context, roomRequest)
+		if err != nil {
+			t.Errorf("Failed to enter chat room: %v", err)
+			return
+		}
+
+		t.Logf("Passed test for EnterChatRoom with valid websocket connection")
+	})
+
+	// httptest.Server를 생성합니다.
+	server := httptest.NewServer(router)
+
+	// 16바이트 길이의 랜덤한 바이트를 생성합니다.
+	randomBytes := make([]byte, 16)
+	_, err := rand.Read(randomBytes)
 	if err != nil {
-		t.Errorf("Failed to open websocket connection: %v", err)
-		return
+		t.Fatal(err)
 	}
-	defer ws.Close()
 
-	// 채팅방을 생성하고, 클라이언트를 채팅방에 입장시킵니다.
+	// 채팅방을 생성합니다.
 	cm := chat.GetChatManager()
-	err = cm.CreateRoom("testECRRoom")
+	err = cm.CreateRoom(roomName)
 	if err != nil {
 		t.Errorf("Failed to create room: %v", err)
 		return
 	}
 
-	err = cm.ClientEnterRoom("testECRRoom", "testECRSession")
+	// 웹소켓 핸드셰이크를 위한 헤더를 추가합니다.
+	req, err := http.NewRequest("GET", server.URL, nil)
 	if err != nil {
-		t.Errorf("Failed to enter room: %v", err)
-		return
+		t.Fatal(err)
+	}
+	req.Header.Add("Connection", "upgrade")
+	req.Header.Add("Upgrade", "websocket")
+	req.Header.Add("Sec-WebSocket-Version", "13")
+	req.Header.Add("Sec-WebSocket-Key", base64.StdEncoding.EncodeToString(randomBytes))
+
+	// Make a new HTTP request to the server
+	client := &http.Client{}
+	_, err = client.Do(req)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	ws.WriteMessage(websocket.TextMessage, []byte("testECRMessage"))
+	defer server.Close()
 
-	t.Logf("Passed test for EnterChatRoom with valid websocket connection")
 }
