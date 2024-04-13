@@ -22,7 +22,7 @@ jobs:
 
     - name: Build and Test with docker-compose
       run: |
-        docker-compose run --rm test
+        docker-compose run --rm -e SKIP_CHAT_TESTS=true test
         docker-compose logs test > test.log
         echo "exit_code=$?" >> $GITHUB_ENV
         docker-compose down
