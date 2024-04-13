@@ -4,6 +4,7 @@ package chatService
 import (
 	"encoding/base64"
 	"myapp/api/models"
+	"myapp/api/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -35,8 +36,8 @@ func ParseEnterRoomRequest(c *gin.Context) (models.RoomRequest, error) {
 }
 
 func ParseEnterChatRequest(c *gin.Context) (models.LoginInfo, error) {
-	var loginInfo models.LoginInfo
-	if err := c.ShouldBindJSON(&loginInfo); err != nil {
+	loginInfo, err := service.ParseLoginInfo(c)
+	if err != nil {
 		return models.LoginInfo{}, err
 	}
 	return loginInfo, nil

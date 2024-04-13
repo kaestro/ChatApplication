@@ -35,7 +35,7 @@ func NewUserServiceUtil() *UserServiceUtil {
 }
 
 func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.User, error) {
-	_, isLoggedIn := usu.checkUserLoggedIn(userSessionKey, loginInfo)
+	_, isLoggedIn := usu.CheckUserLoggedIn(userSessionKey, loginInfo)
 
 	var user models.User
 	err := usu.dbManager.Read(&user, dbColumnUserIdentifier, loginInfo.EmailAddress)
@@ -67,7 +67,7 @@ func (usu *UserServiceUtil) GenerateSessionKey(user models.User) (string, error)
 	return sessionKey, nil
 }
 
-func (usu *UserServiceUtil) checkUserLoggedIn(userSessionKey string, loginInfo models.LoginInfo) (string, bool) {
+func (usu *UserServiceUtil) CheckUserLoggedIn(userSessionKey string, loginInfo models.LoginInfo) (string, bool) {
 	if usu.sessionManager.IsSessionValid(userSessionKey, loginInfo.EmailAddress) {
 		fmt.Println("User is already logged in")
 
