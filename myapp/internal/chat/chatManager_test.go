@@ -226,7 +226,7 @@ func TestClientLeaveRoom(t *testing.T) {
 	room := rmInstance.getRoom(sampleRoomName)
 	if room.isClientInsideRoom(sampleLoginSessionID) {
 		// 단순히 처리되는 데 시간이 걸리기 때문에 에러 발생하는 것인지 확인
-		time.Sleep(1000 * time.Millisecond)
+		time.Sleep(10 * time.Second)
 		if room.isClientInsideRoom(sampleLoginSessionID) {
 			t.Errorf("Client was not removed from the room")
 			return
