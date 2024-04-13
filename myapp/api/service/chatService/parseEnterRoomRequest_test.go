@@ -45,7 +45,7 @@ func TestParseEnterRoomRequest(t *testing.T) {
 	t.Run("returns RoomRequest and no error when JSON is valid", func(t *testing.T) {
 		w := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(w)
-		c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"roomName": "123"}`))
+		c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"roomName": "123", "loginSessionID": "456", "emailAddress": "test@example.com"}`))
 		c.Request.Header.Set("Content-Type", "application/json")
 
 		req, err := ParseEnterRoomRequest(c)
@@ -55,8 +55,8 @@ func TestParseEnterRoomRequest(t *testing.T) {
 			return
 		}
 
-		if req.RoomName != "123" {
-			t.Errorf("Expected RoomRequest with RoomName 123, but got %v", req)
+		if req.RoomName != "123" || req.LoginSessionID != "456" || req.EmailAddress != "test@example.com" {
+			t.Errorf("Expected RoomRequest with RoomName 123, LoginSessionID 456, and EmailAddress test@example.com, but got %v", req)
 			return
 		}
 

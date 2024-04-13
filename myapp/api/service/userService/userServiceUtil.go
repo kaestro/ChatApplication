@@ -42,11 +42,11 @@ func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSes
 	if err != nil {
 		return models.User{}, ErrUserNotFound
 	} else if isLoggedIn {
-		return user, ErrAlreadyLoggedIn
+		return user, nil
 	}
 
 	if !password.CheckPasswordHash(loginInfo.Password, user.Password) {
-		return user, ErrInvalidPassword
+		return models.User{}, ErrInvalidPassword
 	}
 
 	return user, nil
