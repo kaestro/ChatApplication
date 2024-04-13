@@ -146,7 +146,7 @@ func TestGetClient(t *testing.T) {
 	cm := GetChatManager()
 	cm.registerNewClient(sampleLoginSessionID, &mockConn{})
 
-	client, err := cm.getClient(sampleLoginSessionID)
+	client, err := cm.GetClient(sampleLoginSessionID)
 	if err != nil {
 		t.Errorf("Failed to get client: %v", err)
 		return
