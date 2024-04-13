@@ -11,6 +11,8 @@ import (
 )
 
 // LogIn 함수는 사용자가 제공한 이메일 주소와 비밀번호를 검증하여 로그인합니다.
+// Headers: Session-Key
+// Body: LoginInfo { EmailAddress, Password }
 func LogIn(ginContext *gin.Context) {
 	loginInfo, err := getLoginInfo(ginContext)
 	if err != nil {

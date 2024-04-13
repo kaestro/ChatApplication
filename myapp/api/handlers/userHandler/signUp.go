@@ -11,6 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Headers: None
+// Body: User { EmailAddress, Password }
 func SignUp(ginContext *gin.Context) {
 	var user models.User
 
