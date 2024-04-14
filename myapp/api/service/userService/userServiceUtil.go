@@ -35,7 +35,7 @@ func NewUserServiceUtil() *UserServiceUtil {
 }
 
 // 이미 로그인 된 경우 loginInfo의 세션 키를 userSessionKey로 설정하고,
-// 아닐 경우 세션 키를 빈 값으로 설정합니다.
+// 아닐 경우 세션 키를 생성해서 지급한 loginInfo를 반환합니다.
 func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.LoginInfo, error) {
 	_, isLoggedIn := usu.CheckUserLoggedIn(userSessionKey, loginInfo)
 
