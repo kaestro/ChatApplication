@@ -27,6 +27,10 @@ func main() {
 	r.POST("/deleteAccount", userHandler.SignOut)
 
 	r.GET("/enterChat", chatHandler.EnterChat)
+	r.POST("/enterRoom", chatHandler.EnterRoom)
+	r.POST("/createRoom", chatHandler.CreateRoom)
+	r.GET("/getRoomList", chatHandler.GetRoomList)
+	r.POST("/sendMessage", chatHandler.SendMessage)
 
 	r.Run()
 
