@@ -35,34 +35,66 @@ func NewUserServiceUtil() *UserServiceUtil {
 }
 
 // 이미 로그인 된 경우 loginInfo의 세션 키를 userSessionKey로 설정하고,
-// 아닐 경우 세션 키를 생성해서 지급한 loginInfo를 반환합니다.
+// 로그인이 안 돼있지만, 가능한 경우 세션 키를 생성해서 지급한 loginInfo를 반환합니다.
+// 로그인이 불가능한 경우 빈 loginInfo와 오류를 반환합니다.
 func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.LoginInfo, error) {
-	_, isLoggedIn := usu.CheckUserLoggedIn(userSessionKey, loginInfo)
-
-	var user models.User
-	err := usu.dbManager.Read(&user, dbColumnUserIdentifier, loginInfo.EmailAddress)
+	// Step 1: Check if user is already logged in
+	isLoggedIn, err := usu.isUserLoggedIn(userSessionKey, loginInfo)
 	if err != nil {
-		return models.LoginInfo{}, ErrUserNotFound
+		return models.LoginInfo{}, err
 	} else if isLoggedIn {
 		loginInfo.LoginSessionID = userSessionKey
 		return loginInfo, nil
 	}
 
-	if !password.CheckPasswordHash(loginInfo.Password, user.Password) {
-		return models.LoginInfo{}, ErrInvalidPassword
+	// Step 2: Validate user credentials
+	err = usu.validateUserCredentials(loginInfo)
+	if err != nil {
+		return models.LoginInfo{}, err
 	}
 
+	// Step 3: Create new session for user
+	loginInfo, err = usu.createNewUserSession(loginInfo)
+	if err != nil {
+		return models.LoginInfo{}, err
+	}
+
+	return loginInfo, nil
+}
+
+func (usu *UserServiceUtil) isUserLoggedIn(userSessionKey string, loginInfo models.LoginInfo) (bool, error) {
+	_, isLoggedIn := usu.CheckUserLoggedIn(userSessionKey, loginInfo)
+	return isLoggedIn, nil
+}
+
+func (usu *UserServiceUtil) validateUserCredentials(loginInfo models.LoginInfo) error {
+	var user models.User
+	err := usu.dbManager.Read(&user, dbColumnUserIdentifier, loginInfo.EmailAddress)
+	if err != nil {
+		return ErrUserNotFound
+	}
+
+	if !password.CheckPasswordHash(loginInfo.Password, user.Password) {
+		return ErrInvalidPassword
+	}
+
+	return nil
+}
+
+func (usu *UserServiceUtil) createNewUserSession(loginInfo models.LoginInfo) (models.LoginInfo, error) {
 	loginSession := session.GetLoginSessionManager()
+
 	sessionKey, err := session.GenerateRandomSessionKey()
 	if err != nil {
 		return models.LoginInfo{}, ErrFailedToGenerateSessionKey
 	}
-	loginInfo.LoginSessionID = sessionKey
+
 	err = loginSession.SetSession(sessionKey, loginInfo.EmailAddress)
 	if err != nil {
 		return models.LoginInfo{}, ErrFailedToSaveSessionKey
 	}
 
+	loginInfo.LoginSessionID = sessionKey
 	return loginInfo, nil
 }
 
