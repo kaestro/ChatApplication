@@ -4,6 +4,7 @@ package chat
 import (
 	"errors"
 	"fmt"
+	"myapp/types"
 	"net/http"
 	"sync"
 
@@ -157,4 +158,18 @@ func (cm *ChatManager) SendMessageToRoom(loginSessionID string, message ChatMess
 
 	room.receiveMessageFromClient(loginSessionID, messageBytes)
 	return nil
+}
+
+func (cm *ChatManager) GetAllRoomNames() []string {
+	rmInstance := getRoomManager()
+	return rmInstance.getAllRoomNames()
+}
+
+func (cm *ChatManager) IsClientInsideRoom(roomName string, loginSessionID types.LoginSessionID) bool {
+	room, err := cm.getRoom(roomName)
+	if err != nil {
+		return false
+	}
+
+	return room.isClientInsideRoom(string(loginSessionID))
 }

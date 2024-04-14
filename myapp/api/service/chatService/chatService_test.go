@@ -84,7 +84,7 @@ func TestEnterChatRoom(t *testing.T) {
 			return
 		}
 
-		err = EnterChatRoom(context, roomRequest)
+		err = EnterChatRoom(context, *roomRequest)
 		if err != nil {
 			t.Errorf("Failed to enter chat room: %v", err)
 			return

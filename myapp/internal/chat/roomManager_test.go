@@ -57,7 +57,7 @@ func TestRoomManagerGetRoomIDs(t *testing.T) {
 	}
 
 	// Test GetRoomIDs
-	roomIDs := rm.getRoomNames()
+	roomIDs := rm.getAllRoomNames()
 	if len(roomIDs) != maxRooms {
 		t.Errorf("GetRoomIDs failed, expected %d roomIDs, got %d", maxRooms, len(roomIDs))
 		return
