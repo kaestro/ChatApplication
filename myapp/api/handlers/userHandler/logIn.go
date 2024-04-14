@@ -2,7 +2,7 @@
 package userHandler
 
 import (
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 	"myapp/api/service/userService"
 	"net/http"
 
@@ -13,13 +13,13 @@ import (
 // Headers: Session-Key
 // Body: LoginInfo { emailAddress, password }
 func LogIn(ginContext *gin.Context) {
-	loginInfo, err := service.GetLoginInfoFromBody(ginContext)
+	loginInfo, err := generalService.GetLoginInfoFromBody(ginContext)
 	if err != nil {
 		ginContext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userSessionKey := service.GetSessionKeyFromHeader(ginContext)
+	userSessionKey := generalService.GetSessionKeyFromHeader(ginContext)
 	userServiceUtil := userService.NewUserServiceUtil()
 	_, isLoggedIn := userServiceUtil.CheckUserLoggedIn(userSessionKey, loginInfo)
 	if isLoggedIn {

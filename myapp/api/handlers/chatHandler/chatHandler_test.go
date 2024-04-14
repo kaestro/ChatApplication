@@ -15,8 +15,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TODO: 딴놈 새로 계정 만들어서 enter room 한번 더 테스트
-// 현재는 동일한 놈이 두번 접근중
 func TestChatHandler(t *testing.T) {
 	emailAddress := "tec@example.com"
 	password := "password"
@@ -53,17 +51,42 @@ func TestChatHandler(t *testing.T) {
 	// Give the server a second to start
 	time.Sleep(time.Second * 3)
 
+	// Test enter chat
 	resp := GetEnterChat(loginInfo)
+	if !assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode) {
+		t.Logf("Failed to reponse on Request to enter chat: %v", resp)
+		return
+	}
 
-	assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode)
-
+	// Test create room
 	resp = PostCreateRoom(roomName, loginSessionID, emailAddress, password)
+	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
+		t.Logf("Failed to reponse on Request to create room: %v", resp)
+		return
+	}
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	// Test enter room
+	secondUserName := "tch2User"
+	secondEmailAddress := "tch2@example.com"
+	secondPassword := "password"
+	secondUser := models.NewUser(secondUserName, secondEmailAddress, secondPassword)
+	secondLoginInfo := models.NewLoginInfo(secondEmailAddress, secondPassword, loginSessionID)
 
-	resp = PostEnterRoom(roomName, loginSessionID, emailAddress, password)
+	userService.CreateUser(secondUser)
+	secondLoginInfo, err = userServiceUtil.AuthenticateUser(secondLoginInfo, loginSessionID)
+	if err != nil {
+		t.Fatalf("Failed to authenticate user: %v", err)
+	}
 
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	secondLoginSessionID := secondLoginInfo.LoginSessionID
+
+	GetEnterChat(secondLoginInfo)
+
+	resp = PostEnterRoom(roomName, secondLoginSessionID, secondEmailAddress, secondPassword)
+	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
+		t.Logf("Failed to reponse on Request to enter room: %v", resp)
+		return
+	}
 
 	userService.DeleteUserByEmailAddress(emailAddress)
 }
