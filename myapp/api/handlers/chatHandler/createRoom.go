@@ -3,7 +3,7 @@ package chatHandler
 
 import (
 	"myapp/api/models"
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 	"myapp/internal/chat"
 	"net/http"
 
@@ -14,7 +14,7 @@ import (
 // Headers: Session-Key
 // Body: RoomRequest { roomName, emailAddress, password }
 func CreateRoom(ginContext *gin.Context) {
-	roomRequest, err := service.ParseRoomRequest(ginContext)
+	roomRequest, err := generalService.ParseRoomRequest(ginContext)
 	if err != nil {
 		ginContext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

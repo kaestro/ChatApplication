@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +23,7 @@ func TestIsUpgradeHeaderValid(t *testing.T) {
 		c.Request.Header.Set("Sec-WebSocket-Version", "13")
 		c.Request.Header.Set("Sec-WebSocket-Key", socketKey)
 
-		isValid := IsUpgradeHeaderValid(c)
+		isValid := IsHandshakeAndKeyHeadersValid(c)
 
 		if !isValid {
 			t.Error("Expected true but got false")
@@ -41,7 +41,7 @@ func TestIsUpgradeHeaderValid(t *testing.T) {
 		c.Request.Header.Set("Sec-WebSocket-Version", "not-13")
 		c.Request.Header.Set("Sec-WebSocket-Key", "")
 
-		isValid := IsUpgradeHeaderValid(c)
+		isValid := IsHandshakeAndKeyHeadersValid(c)
 
 		if isValid {
 			t.Errorf("Expected false but got %v", isValid)
@@ -58,7 +58,7 @@ func TestParseEnterRoomRequest(t *testing.T) {
 		c.Request.Header.Set("Content-Type", "application/json")
 		c.Request.Header.Set("Session-Key", "456")
 
-		req, err := service.ParseRoomRequest(c)
+		req, err := generalService.ParseRoomRequest(c)
 
 		if err != nil {
 			t.Errorf("Expected no error, but got %v", err)
@@ -79,7 +79,7 @@ func TestParseEnterRoomRequest(t *testing.T) {
 		c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"invalid": "json"`))
 		c.Request.Header.Set("Content-Type", "application/json")
 
-		_, err := service.ParseRoomRequest(c)
+		_, err := generalService.ParseRoomRequest(c)
 
 		if err == nil {
 			t.Error("Expected error, but got nil")

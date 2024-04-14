@@ -3,7 +3,7 @@ package userHandler
 
 import (
 	"fmt"
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 	"myapp/api/service/userService"
 	"net/http"
 
@@ -15,7 +15,7 @@ import (
 // Body: None
 func SignOut(ginContext *gin.Context) {
 	// 세션 키를 요청 헤더에서 읽어옵니다.
-	userSessionKey := service.GetSessionKeyFromHeader(ginContext)
+	userSessionKey := generalService.GetSessionKeyFromHeader(ginContext)
 
 	err := userService.DeleteUserBySessionKey(userSessionKey, ginContext)
 	if err != nil {

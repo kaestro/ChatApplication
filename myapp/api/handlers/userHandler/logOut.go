@@ -2,7 +2,7 @@
 package userHandler
 
 import (
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 	"myapp/api/service/userService"
 	"net/http"
 
@@ -13,7 +13,7 @@ import (
 // Headers: Session-Key
 // Body: None
 func LogOut(ginContext *gin.Context) {
-	userSessionKey := service.GetSessionKeyFromHeader(ginContext)
+	userSessionKey := generalService.GetSessionKeyFromHeader(ginContext)
 
 	err := userService.DeauthenticateUser(userSessionKey)
 	if err != nil {

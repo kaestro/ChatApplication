@@ -1,5 +1,5 @@
 // myapp/api/service/generalService.go
-package service
+package generalService
 
 import (
 	"encoding/json"

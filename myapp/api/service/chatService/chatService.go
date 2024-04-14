@@ -13,7 +13,7 @@ import (
 )
 
 func ValidateUpgradeHeader(c *gin.Context) error {
-	if !IsUpgradeHeaderValid(c) {
+	if !IsHandshakeAndKeyHeadersValid(c) {
 		return errors.New("invalid Upgrade header")
 	}
 	return nil
