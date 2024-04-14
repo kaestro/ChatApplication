@@ -29,6 +29,7 @@ func main() {
 	r.GET("/enterChat", chatHandler.EnterChat)
 	r.POST("/enterRoom", chatHandler.EnterRoom)
 	r.POST("/createRoom", chatHandler.CreateRoom)
+	r.GET("/getRoomList", chatHandler.GetRoomList)
 
 	r.Run()
 
