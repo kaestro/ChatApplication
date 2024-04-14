@@ -23,7 +23,7 @@ func TestIsUpgradeHeaderValid(t *testing.T) {
 		c.Request.Header.Set("Sec-WebSocket-Version", "13")
 		c.Request.Header.Set("Sec-WebSocket-Key", socketKey)
 
-		isValid := IsUpgradeHeaderValid(c)
+		isValid := IsHandshakeAndKeyHeadersValid(c)
 
 		if !isValid {
 			t.Error("Expected true but got false")
@@ -41,7 +41,7 @@ func TestIsUpgradeHeaderValid(t *testing.T) {
 		c.Request.Header.Set("Sec-WebSocket-Version", "not-13")
 		c.Request.Header.Set("Sec-WebSocket-Key", "")
 
-		isValid := IsUpgradeHeaderValid(c)
+		isValid := IsHandshakeAndKeyHeadersValid(c)
 
 		if isValid {
 			t.Errorf("Expected false but got %v", isValid)

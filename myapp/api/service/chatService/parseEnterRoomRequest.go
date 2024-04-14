@@ -10,22 +10,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsUpgradeHeaderValid(c *gin.Context) bool {
-	upgradeHeader := c.GetHeader("Upgrade")
-	connectionHeader := c.GetHeader("Connection")
-	secWebSocketVersionHeader := c.GetHeader("Sec-WebSocket-Version")
-	secWebSocketKeyHeader := c.GetHeader("Sec-WebSocket-Key")
+func IsHandshakeAndKeyHeadersValid(c *gin.Context) bool {
+	return IsHandshakeHeadersValid(c) && IsSecWebsocketKeyValid(c)
+}
 
-	isSecWebSocketKeyValid := false
+func IsSecWebsocketKeyValid(c *gin.Context) bool {
+	secWebSocketKeyHeader := c.GetHeader("Sec-WebSocket-Key")
 	decodedKey, err := base64.StdEncoding.DecodeString(secWebSocketKeyHeader)
-	if err == nil && len(decodedKey) == 16 {
-		isSecWebSocketKeyValid = true
+
+	result := (err == nil && len(decodedKey) == 16)
+	return result
+}
+
+func IsHandshakeHeadersValid(c *gin.Context) bool {
+	headers := map[string]string{
+		"Upgrade":               "websocket",
+		"Connection":            "upgrade",
+		"Sec-WebSocket-Version": "13",
 	}
 
-	return strings.EqualFold(upgradeHeader, "websocket") &&
-		strings.EqualFold(connectionHeader, "upgrade") &&
-		strings.EqualFold(secWebSocketVersionHeader, "13") &&
-		isSecWebSocketKeyValid
+	for header, expectedValue := range headers {
+		if !strings.EqualFold(c.GetHeader(header), expectedValue) {
+			return false
+		}
+	}
+	return true
 }
 
 func ParseEnterChatRequest(c *gin.Context) (models.LoginInfo, error) {
