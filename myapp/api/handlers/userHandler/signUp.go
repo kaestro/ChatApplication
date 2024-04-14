@@ -4,7 +4,7 @@ package userHandler
 
 import (
 	"myapp/api/models"
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 	"myapp/api/service/userService"
 	"net/http"
 
@@ -17,7 +17,7 @@ import (
 func SignUp(ginContext *gin.Context) {
 	var user models.User
 
-	err := service.DecodeUserFromBody(ginContext, &user)
+	err := generalService.DecodeUserFromBody(ginContext, &user)
 	if err != nil {
 		ginContext.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -4,7 +4,7 @@ package chatService
 import (
 	"encoding/base64"
 	"myapp/api/models"
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +38,7 @@ func IsHandshakeHeadersValid(c *gin.Context) bool {
 }
 
 func ParseEnterChatRequest(c *gin.Context) (models.LoginInfo, error) {
-	loginInfo, err := service.ParseLoginInfo(c)
+	loginInfo, err := generalService.ParseLoginInfo(c)
 	if err != nil {
 		return models.LoginInfo{}, err
 	}

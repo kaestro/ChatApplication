@@ -2,7 +2,7 @@ package chatHandler
 
 import (
 	"myapp/api/models"
-	"myapp/api/service"
+	"myapp/api/service/generalService"
 	"myapp/api/service/userService"
 	"myapp/internal/chat"
 	"net/http"
@@ -14,7 +14,7 @@ import (
 // Headers: Session-Key
 // Body: RoomRequest { roomName, emailAddress, password }
 func EnterRoom(c *gin.Context) {
-	roomRequest, err := service.ParseRoomRequest(c)
+	roomRequest, err := generalService.ParseRoomRequest(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -37,7 +37,7 @@ func EnterRoom(c *gin.Context) {
 
 func handleUserSession(c *gin.Context, roomRequest *models.RoomRequest) (string, error) {
 	loginInfo := roomRequest.GetLoginInfo()
-	userSessionKey := service.GetSessionKeyFromHeader(c)
+	userSessionKey := generalService.GetSessionKeyFromHeader(c)
 	userServiceUtil := userService.NewUserServiceUtil()
 
 	userSessionKey, isLoggedIn := userServiceUtil.CheckUserLoggedIn(userSessionKey, loginInfo)
