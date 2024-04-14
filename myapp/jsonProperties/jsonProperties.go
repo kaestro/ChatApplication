@@ -10,4 +10,6 @@ const (
 	EmailAddress   = "emailAddress"
 	Password       = "password"
 	LoginSessionID = "loginSessionID"
+
+	SessionKey = "Session-Key"
 )

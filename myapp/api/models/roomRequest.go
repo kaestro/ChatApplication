@@ -8,8 +8,8 @@ type RoomRequest struct {
 	Password       string `json:"password"`
 }
 
-func NewRoomRequest(roomName, loginSessionID, emailAddress, password string) RoomRequest {
-	return RoomRequest{
+func NewRoomRequest(roomName, loginSessionID, emailAddress, password string) *RoomRequest {
+	return &RoomRequest{
 		RoomName:       roomName,
 		LoginSessionID: loginSessionID,
 		EmailAddress:   emailAddress,

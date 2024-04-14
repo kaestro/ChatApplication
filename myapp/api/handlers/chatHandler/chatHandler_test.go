@@ -8,6 +8,9 @@ import (
 	"myapp/api/models"
 	"myapp/api/service/chatService"
 	"myapp/api/service/userService"
+	"myapp/internal/chat"
+	"myapp/jsonProperties"
+	"myapp/types"
 	"net/http"
 	"testing"
 	"time"
@@ -30,6 +33,8 @@ var (
 	secondPassword     = "password"
 
 	jsonResponseRoomNamesKey = "roomNames"
+
+	firstChatMessageContent = "Hello, World"
 )
 
 func TestChatHandler(t *testing.T) {
@@ -38,6 +43,7 @@ func TestChatHandler(t *testing.T) {
 	router.POST("/createRoom", CreateRoom)
 	router.POST("/enterRoom", EnterRoom)
 	router.GET("/getRoomList", GetRoomList)
+	router.POST("/sendMessage", SendMessage)
 
 	firstLoginInfo := models.NewLoginInfo(firstUserEmailAddress, firstUserPassword, firstUserSessionID)
 	firstUser := models.NewUser(firstUserName, firstUserEmailAddress, firstUserPassword)
@@ -64,14 +70,14 @@ func TestChatHandler(t *testing.T) {
 	time.Sleep(time.Second * 3)
 
 	// Test enter chat
-	resp := GetEnterChat(firstLoginInfo)
+	resp := GETEnterChat(firstLoginInfo)
 	if !assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to enter chat: %v", resp)
 		return
 	}
 
 	// Test create room
-	resp = PostCreateRoom(firstRoomName, firstUserSessionID, firstUserEmailAddress, firstUserPassword)
+	resp = POSTCreateRoom(firstRoomName, firstUserSessionID, firstUserEmailAddress, firstUserPassword)
 	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to create room: %v", resp)
 		return
@@ -89,9 +95,9 @@ func TestChatHandler(t *testing.T) {
 
 	secondLoginSessionID := secondLoginInfo.LoginSessionID
 
-	GetEnterChat(secondLoginInfo)
+	GETEnterChat(secondLoginInfo)
 
-	resp = PostEnterRoom(firstRoomName, secondLoginSessionID, secondEmailAddress, secondPassword)
+	resp = POSTEnterRoom(firstRoomName, secondLoginSessionID, secondEmailAddress, secondPassword)
 	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to enter room: %v", resp)
 		return
@@ -99,10 +105,10 @@ func TestChatHandler(t *testing.T) {
 
 	// Test get room list
 	for _, roomName := range roomNames {
-		PostCreateRoom(roomName, firstUserSessionID, firstUserEmailAddress, firstUserPassword)
+		POSTCreateRoom(roomName, firstUserSessionID, firstUserEmailAddress, firstUserPassword)
 	}
 
-	resp = GetGetRoomList(firstUserSessionID, firstUserEmailAddress, firstUserPassword)
+	resp = GETGetRoomList(firstUserSessionID, firstUserEmailAddress, firstUserPassword)
 
 	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to get room list: %v", resp)
@@ -122,11 +128,21 @@ func TestChatHandler(t *testing.T) {
 		return
 	}
 
+	// Test send message
+	roomRequest := models.NewRoomRequest(firstRoomName, "", firstUserEmailAddress, firstUserPassword)
+	chatMessage := chat.NewChatMessage(firstRoomName, firstUserName, firstChatMessageContent)
+	resp = POSTSendMessage(chatMessage, roomRequest, types.LoginSessionID(firstUserSessionID))
+
+	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
+		t.Logf("Failed to reponse on Request to send message: %v", resp)
+		return
+	}
+
 	finish()
 	t.Logf("ChatHandler test passed")
 }
 
-func GetEnterChat(loginInfo models.LoginInfo) *http.Response {
+func GETEnterChat(loginInfo models.LoginInfo) *http.Response {
 	socketKey, _ := chatService.GenerateRandomSocketKey()
 
 	loginInfoBytes, _ := json.Marshal(loginInfo)
@@ -143,7 +159,7 @@ func GetEnterChat(loginInfo models.LoginInfo) *http.Response {
 	return resp
 }
 
-func PostCreateRoom(roomName string, loginSessionID string, emailAddress string, password string) *http.Response {
+func POSTCreateRoom(roomName string, loginSessionID string, emailAddress string, password string) *http.Response {
 	createRoomRequest := models.NewRoomRequest(roomName, loginSessionID, emailAddress, password)
 	roomRequestBytes, _ := json.Marshal(createRoomRequest)
 
@@ -156,7 +172,7 @@ func PostCreateRoom(roomName string, loginSessionID string, emailAddress string,
 	return resp
 }
 
-func PostEnterRoom(roomName string, loginSessionID string, emailAddress string, password string) *http.Response {
+func POSTEnterRoom(roomName string, loginSessionID string, emailAddress string, password string) *http.Response {
 	enterRoomRequest := models.NewRoomRequest(roomName, loginSessionID, emailAddress, password)
 	roomRequestBytes, _ := json.Marshal(enterRoomRequest)
 
@@ -169,13 +185,27 @@ func PostEnterRoom(roomName string, loginSessionID string, emailAddress string, 
 	return resp
 }
 
-func GetGetRoomList(loginSessionID string, emailAddress string, password string) *http.Response {
+func GETGetRoomList(loginSessionID string, emailAddress string, password string) *http.Response {
 	loginInfo := models.NewLoginInfo(emailAddress, password, "")
 	loginInfoBytes, _ := json.Marshal(loginInfo)
 
 	req, _ := http.NewRequest("GET", "http://localhost:8085/getRoomList", bytes.NewBuffer(loginInfoBytes))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Session-Key", loginSessionID)
+
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+
+	return resp
+}
+
+func POSTSendMessage(chatMessage *chat.ChatMessage, roomRequest *models.RoomRequest, loginSessionID types.LoginSessionID) *http.Response {
+	chatMessageRequest := models.NewChatMessageRequest(roomRequest, chatMessage)
+	chatMessageRequestBytes, _ := json.Marshal(chatMessageRequest)
+
+	req, _ := http.NewRequest("POST", "http://localhost:8085/sendMessage", bytes.NewBuffer(chatMessageRequestBytes))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(jsonProperties.SessionKey, string(loginSessionID))
 
 	client := &http.Client{}
 	resp, _ := client.Do(req)

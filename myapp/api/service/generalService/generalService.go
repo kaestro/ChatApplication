@@ -2,15 +2,25 @@
 package generalService
 
 import (
+	"bytes"
 	"encoding/json"
+	"io"
 	"myapp/api/models"
+	"myapp/internal/chat"
 
 	"github.com/gin-gonic/gin"
 )
 
+func readAndRestoreBody(c *gin.Context) []byte {
+	bodyBytes, _ := io.ReadAll(c.Request.Body)
+	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+	return bodyBytes
+}
+
 func ParseLoginInfo(c *gin.Context) (models.LoginInfo, error) {
 	var loginInfo models.LoginInfo
-	if err := c.ShouldBindJSON(&loginInfo); err != nil {
+	bodyBytes := readAndRestoreBody(c)
+	if err := json.Unmarshal(bodyBytes, &loginInfo); err != nil {
 		return models.LoginInfo{}, err
 	}
 
@@ -36,13 +46,26 @@ func GetLoginInfoFromBody(ginContext *gin.Context) (models.LoginInfo, error) {
 	return loginInfo, err
 }
 
+// RequestBody에서 RoomRequest를 파싱하고, Header에서 Session-Key를 가져와서 RoomRequest에 넣어준다.
 func ParseRoomRequest(c *gin.Context) (models.RoomRequest, error) {
+	bodyBytes := readAndRestoreBody(c)
 	var req models.RoomRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := json.Unmarshal(bodyBytes, &req); err != nil {
 		return models.RoomRequest{}, err
 	}
+
 	loginSessionID := GetSessionKeyFromHeader(c)
 	req.LoginSessionID = loginSessionID
 
 	return req, nil
+}
+
+func ParseChatMessage(c *gin.Context) (chat.ChatMessage, error) {
+	bodyBytes := readAndRestoreBody(c)
+	var chatMessage chat.ChatMessage
+	if err := json.Unmarshal(bodyBytes, &chatMessage); err != nil {
+		return chat.ChatMessage{}, err
+	}
+
+	return chatMessage, nil
 }
