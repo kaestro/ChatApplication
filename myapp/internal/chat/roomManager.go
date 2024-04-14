@@ -63,7 +63,7 @@ func (rm *roomManager) removeRoomByName(roomName string) error {
 }
 
 // Question: wouldn't it be better to just return room pointers?
-func (rm *roomManager) getRoomNames() []string {
+func (rm *roomManager) getAllRoomNames() []string {
 	roomNames := make([]string, 0, len(rm.rooms))
 	for roomName := range rm.rooms {
 		roomNames = append(roomNames, roomName)

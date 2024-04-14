@@ -4,6 +4,7 @@ package chatHandler
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"myapp/api/models"
 	"myapp/api/service/chatService"
 	"myapp/api/service/userService"
@@ -15,34 +16,45 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestChatHandler(t *testing.T) {
-	emailAddress := "tec@example.com"
-	password := "password"
-	loginSessionID := "testSessionID"
-	roomName := "tecRoom"
-	userName := "tecUser"
+var (
+	roomNames = []string{"room1", "room2", "room3"}
 
+	firstUserEmailAddress = "tec@example.com"
+	firstUserPassword     = "password"
+	firstUserSessionID    = "tecSessionID"
+	firstRoomName         = "tecRoom"
+	firstUserName         = "tecUser"
+
+	secondUserName     = "tch2User"
+	secondEmailAddress = "tch2@example.com"
+	secondPassword     = "password"
+
+	jsonResponseRoomNamesKey = "roomNames"
+)
+
+func TestChatHandler(t *testing.T) {
 	router := gin.Default()
 	router.GET("/enterChat", EnterChat)
 	router.POST("/createRoom", CreateRoom)
 	router.POST("/enterRoom", EnterRoom)
+	router.GET("/getRoomList", GetRoomList)
 
-	loginInfo := models.NewLoginInfo(emailAddress, password, loginSessionID)
-	user := models.NewUser(userName, emailAddress, password)
+	firstLoginInfo := models.NewLoginInfo(firstUserEmailAddress, firstUserPassword, firstUserSessionID)
+	firstUser := models.NewUser(firstUserName, firstUserEmailAddress, firstUserPassword)
 
-	userService.CreateUser(user)
+	userService.CreateUser(firstUser)
 	userServiceUtil := userService.NewUserServiceUtil()
-	loginInfo, err := userServiceUtil.AuthenticateUser(loginInfo, loginSessionID)
+	firstLoginInfo, err := userServiceUtil.AuthenticateUser(firstLoginInfo, firstUserSessionID)
 	if err != nil {
 		t.Fatalf("Failed to authenticate user: %v", err)
 	}
 
 	userServiceUtil = userService.NewUserServiceUtil()
-	loginInfo, err = userServiceUtil.AuthenticateUser(loginInfo, loginSessionID)
+	firstLoginInfo, err = userServiceUtil.AuthenticateUser(firstLoginInfo, firstUserSessionID)
 	if err != nil {
 		t.Fatalf("Failed to authenticate user: %v", err)
 	}
-	loginSessionID = loginInfo.LoginSessionID
+	firstUserSessionID = firstLoginInfo.LoginSessionID
 
 	go func() {
 		router.Run(":8085")
@@ -52,28 +64,25 @@ func TestChatHandler(t *testing.T) {
 	time.Sleep(time.Second * 3)
 
 	// Test enter chat
-	resp := GetEnterChat(loginInfo)
+	resp := GetEnterChat(firstLoginInfo)
 	if !assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to enter chat: %v", resp)
 		return
 	}
 
 	// Test create room
-	resp = PostCreateRoom(roomName, loginSessionID, emailAddress, password)
+	resp = PostCreateRoom(firstRoomName, firstUserSessionID, firstUserEmailAddress, firstUserPassword)
 	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to create room: %v", resp)
 		return
 	}
 
 	// Test enter room
-	secondUserName := "tch2User"
-	secondEmailAddress := "tch2@example.com"
-	secondPassword := "password"
 	secondUser := models.NewUser(secondUserName, secondEmailAddress, secondPassword)
-	secondLoginInfo := models.NewLoginInfo(secondEmailAddress, secondPassword, loginSessionID)
+	secondLoginInfo := models.NewLoginInfo(secondEmailAddress, secondPassword, firstUserSessionID)
 
 	userService.CreateUser(secondUser)
-	secondLoginInfo, err = userServiceUtil.AuthenticateUser(secondLoginInfo, loginSessionID)
+	secondLoginInfo, err = userServiceUtil.AuthenticateUser(secondLoginInfo, firstUserSessionID)
 	if err != nil {
 		t.Fatalf("Failed to authenticate user: %v", err)
 	}
@@ -82,13 +91,39 @@ func TestChatHandler(t *testing.T) {
 
 	GetEnterChat(secondLoginInfo)
 
-	resp = PostEnterRoom(roomName, secondLoginSessionID, secondEmailAddress, secondPassword)
+	resp = PostEnterRoom(firstRoomName, secondLoginSessionID, secondEmailAddress, secondPassword)
 	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to enter room: %v", resp)
 		return
 	}
 
-	userService.DeleteUserByEmailAddress(emailAddress)
+	// Test get room list
+	for _, roomName := range roomNames {
+		PostCreateRoom(roomName, firstUserSessionID, firstUserEmailAddress, firstUserPassword)
+	}
+
+	resp = GetGetRoomList(firstUserSessionID, firstUserEmailAddress, firstUserPassword)
+
+	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
+		t.Logf("Failed to reponse on Request to get room list: %v", resp)
+		return
+	}
+
+	// Read the response body
+	body, _ := io.ReadAll(resp.Body)
+	var returnedRoomNames map[string][]string
+	json.Unmarshal(body, &returnedRoomNames)
+
+	roomNamesToCheck := append(roomNames, firstRoomName)
+
+	// Compare the returned room names with the expected room names
+	if !assert.ElementsMatch(t, roomNamesToCheck, returnedRoomNames[jsonResponseRoomNamesKey]) {
+		t.Logf("Returned room names do not match the expected room names")
+		return
+	}
+
+	finish()
+	t.Logf("ChatHandler test passed")
 }
 
 func GetEnterChat(loginInfo models.LoginInfo) *http.Response {
@@ -132,4 +167,23 @@ func PostEnterRoom(roomName string, loginSessionID string, emailAddress string, 
 	client := &http.Client{}
 	resp, _ := client.Do(req)
 	return resp
+}
+
+func GetGetRoomList(loginSessionID string, emailAddress string, password string) *http.Response {
+	loginInfo := models.NewLoginInfo(emailAddress, password, "")
+	loginInfoBytes, _ := json.Marshal(loginInfo)
+
+	req, _ := http.NewRequest("GET", "http://localhost:8085/getRoomList", bytes.NewBuffer(loginInfoBytes))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Session-Key", loginSessionID)
+
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+
+	return resp
+}
+
+func finish() {
+	userService.DeleteUserByEmailAddress(firstUserEmailAddress)
+	userService.DeleteUserByEmailAddress(secondEmailAddress)
 }

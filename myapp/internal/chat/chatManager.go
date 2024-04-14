@@ -158,3 +158,8 @@ func (cm *ChatManager) SendMessageToRoom(loginSessionID string, message ChatMess
 	room.receiveMessageFromClient(loginSessionID, messageBytes)
 	return nil
 }
+
+func (cm *ChatManager) GetAllRoomNames() []string {
+	rmInstance := getRoomManager()
+	return rmInstance.getAllRoomNames()
+}
