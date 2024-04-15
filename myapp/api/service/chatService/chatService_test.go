@@ -7,9 +7,9 @@ import (
 	"myapp/api/models"
 	"myapp/api/service/userService"
 	"myapp/internal/chat"
+	"myapp/types"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -42,23 +42,27 @@ func TestParseChatRequestAndAuthenticateUser(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Request, _ = http.NewRequest("POST", "/", strings.NewReader(`{"roomName": "123", "emailAddress": "tpar@gmail.com", "password": "password"}`))
+	c.Request, _ = http.NewRequest("GET", "/", nil)
 	c.Request.Header.Set("Content-Type", "application/json")
 	c.Request.Header.Set("Session-Key", tparLoginSessionID)
+	c.Request.Header.Set("emailAddress", tparEmailAddress)
 
 	user := models.NewUser(tparEmailAddress, tparEmailAddress, tparPassword)
 	userService.CreateUser(user)
-	loginInfo, err := ParseEnterChatAndAuthenticateUser(c)
+	loginSessionInfo, err := ParseEnterLoginSessionInfo(c)
 
 	if err != nil {
 		t.Errorf("Expected no error, but got %v", err)
 		return
 	}
 
-	newLoginSessionID := loginInfo.LoginSessionID
+	if loginSessionInfo.EmailAddress != tparEmailAddress {
+		t.Errorf("Expected %v, but got %v", tparEmailAddress, loginSessionInfo.EmailAddress)
+		return
+	}
 
-	if loginInfo.LoginSessionID != newLoginSessionID || loginInfo.EmailAddress != tparEmailAddress {
-		t.Errorf("Expected RoomRequest with RoomName 123, LoginSessionID 456, and EmailAddress test@example.com, but got %v", loginInfo)
+	if loginSessionInfo.LoginSessionID != tparLoginSessionID {
+		t.Errorf("Expected %v, but got %v", tparLoginSessionID, loginSessionInfo.LoginSessionID)
 		return
 	}
 
@@ -67,18 +71,18 @@ func TestParseChatRequestAndAuthenticateUser(t *testing.T) {
 }
 
 func TestEnterChatRoom(t *testing.T) {
-	sessionKey := "testECRSession"
+	sessionID := "testECRSession"
 	roomName := "testECRRoom"
 	password := "testECRPassword"
 	emailAddress := "testECR@example.com"
-	roomRequest := models.NewRoomRequest(roomName, sessionKey, emailAddress, password)
-	loginInfo := models.NewLoginInfo(emailAddress, password, sessionKey)
+	roomRequest := models.NewRoomRequest(roomName, sessionID, emailAddress, password)
+	loginSessionInfo := models.NewLoginSessionInfo(emailAddress, types.LoginSessionID(sessionID))
 
 	// gin.Engine을 생성합니다.
 	router := gin.Default()
 
 	router.GET("/", func(context *gin.Context) {
-		err := EnterChat(context, loginInfo)
+		err := EnterChat(context, loginSessionInfo)
 		if err != nil {
 			t.Errorf("Failed to enter chat: %v", err)
 			return

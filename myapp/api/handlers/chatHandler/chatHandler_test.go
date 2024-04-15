@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"io"
 	"myapp/api/models"
-	"myapp/api/service/chatService"
 	"myapp/api/service/userService"
 	"myapp/internal/chat"
 	"myapp/jsonProperties"
@@ -16,21 +15,23 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 )
 
 var (
-	roomNames = []string{"room1", "room2", "room3"}
+	firstRoomName = "tecRoom"
+	roomNames     = []string{"room1", "room2", "room3"}
 
 	firstUserEmailAddress = "tec@example.com"
 	firstUserPassword     = "password"
 	firstUserSessionID    = "tecSessionID"
-	firstRoomName         = "tecRoom"
 	firstUserName         = "tecUser"
 
-	secondUserName     = "tch2User"
-	secondEmailAddress = "tch2@example.com"
-	secondPassword     = "password"
+	secondUserName      = "tch2User"
+	secondEmailAddress  = "tch2@example.com"
+	secondPassword      = "password"
+	secondUserSessionID = "tch2SessionID"
 
 	jsonResponseRoomNamesKey = "roomNames"
 
@@ -50,13 +51,13 @@ func TestChatHandler(t *testing.T) {
 
 	userService.CreateUser(firstUser)
 	userServiceUtil := userService.NewUserServiceUtil()
-	firstLoginInfo, err := userServiceUtil.AuthenticateUser(firstLoginInfo, firstUserSessionID)
+	firstLoginInfo, err := userServiceUtil.AuthenticateUserByLoginInfo(firstLoginInfo, firstUserSessionID)
 	if err != nil {
 		t.Fatalf("Failed to authenticate user: %v", err)
 	}
 
 	userServiceUtil = userService.NewUserServiceUtil()
-	firstLoginInfo, err = userServiceUtil.AuthenticateUser(firstLoginInfo, firstUserSessionID)
+	firstLoginInfo, err = userServiceUtil.AuthenticateUserByLoginInfo(firstLoginInfo, firstUserSessionID)
 	if err != nil {
 		t.Fatalf("Failed to authenticate user: %v", err)
 	}
@@ -70,11 +71,18 @@ func TestChatHandler(t *testing.T) {
 	time.Sleep(time.Second * 3)
 
 	// Test enter chat
-	resp := GETEnterChat(firstLoginInfo)
+	firstUserConn, resp, err := GETEnterChat(firstLoginInfo)
+
+	if err != nil {
+		t.Fatalf("Failed to enter chat: %v", err)
+	}
+
 	if !assert.Equal(t, http.StatusSwitchingProtocols, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to enter chat: %v", resp)
 		return
 	}
+
+	defer firstUserConn.Close()
 
 	// Test create room
 	resp = POSTCreateRoom(firstRoomName, firstUserSessionID, firstUserEmailAddress, firstUserPassword)
@@ -88,16 +96,22 @@ func TestChatHandler(t *testing.T) {
 	secondLoginInfo := models.NewLoginInfo(secondEmailAddress, secondPassword, firstUserSessionID)
 
 	userService.CreateUser(secondUser)
-	secondLoginInfo, err = userServiceUtil.AuthenticateUser(secondLoginInfo, firstUserSessionID)
+	secondLoginInfo, err = userServiceUtil.AuthenticateUserByLoginInfo(secondLoginInfo, firstUserSessionID)
 	if err != nil {
 		t.Fatalf("Failed to authenticate user: %v", err)
 	}
 
-	secondLoginSessionID := secondLoginInfo.LoginSessionID
+	secondUserSessionID = secondLoginInfo.LoginSessionID
 
-	GETEnterChat(secondLoginInfo)
+	secondUserConn, _, err := GETEnterChat(secondLoginInfo)
 
-	resp = POSTEnterRoom(firstRoomName, secondLoginSessionID, secondEmailAddress, secondPassword)
+	if err != nil {
+		t.Fatalf("Failed to enter chat: %v", err)
+	}
+
+	defer secondUserConn.Close()
+
+	resp = POSTEnterRoom(firstRoomName, secondUserSessionID, secondEmailAddress, secondPassword)
 	if !assert.Equal(t, http.StatusOK, resp.StatusCode) {
 		t.Logf("Failed to reponse on Request to enter room: %v", resp)
 		return
@@ -138,25 +152,52 @@ func TestChatHandler(t *testing.T) {
 		return
 	}
 
+	// Test receive message
+	secondUserConn.SetReadDeadline(time.Now().Add(time.Second * 2)) // Timeout after 2 seconds
+	_, message, err := secondUserConn.ReadMessage()
+	if err != nil {
+		t.Fatalf("Failed to read message from WebSocket: %v", err)
+	}
+
+	readChatMessage, err := chat.NewChatMessageFromBytes(message)
+	if err != nil {
+		t.Fatalf("Failed to unmarshal chat message: %v", err)
+	}
+
+	if !assert.Equal(t, firstRoomName, readChatMessage.RoomName) {
+		t.Logf("Failed to receive the correct room name")
+		return
+	}
+
+	if !assert.Equal(t, firstUserName, readChatMessage.UserName) {
+		t.Logf("Failed to receive the correct user name")
+		return
+	}
+
+	if !assert.Equal(t, firstChatMessageContent, readChatMessage.Content) {
+		t.Logf("Failed to receive the correct message")
+		return
+	}
+
 	finish()
 	t.Logf("ChatHandler test passed")
 }
 
-func GETEnterChat(loginInfo models.LoginInfo) *http.Response {
-	socketKey, _ := chatService.GenerateRandomSocketKey()
+func GETEnterChat(loginInfo models.LoginInfo) (*websocket.Conn, *http.Response, error) {
+	// socketKey, _ := chatService.GenerateRandomSocketKey()
 
 	loginInfoBytes, _ := json.Marshal(loginInfo)
-	req, _ := http.NewRequest("GET", "http://localhost:8085/enterChat", bytes.NewBuffer(loginInfoBytes))
+	req, _ := http.NewRequest("GET", "ws://localhost:8085/enterChat", bytes.NewBuffer(loginInfoBytes))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Upgrade", "websocket")
-	req.Header.Set("Connection", "Upgrade")
-	req.Header.Set("Sec-WebSocket-Key", socketKey)
-	req.Header.Set("Sec-WebSocket-Version", "13")
-	req.Header.Set("Session-Key", loginInfo.LoginSessionID)
 
-	client := &http.Client{}
-	resp, _ := client.Do(req)
-	return resp
+	// handshake header는 dialer가 해결해준다.
+	req.Header.Set("Session-Key", loginInfo.LoginSessionID)
+	req.Header.Set(jsonProperties.EmailAddress, loginInfo.EmailAddress)
+
+	dialer := &websocket.Dialer{}
+	conn, resp, err := dialer.Dial(req.URL.String(), req.Header)
+
+	return conn, resp, err
 }
 
 func POSTCreateRoom(roomName string, loginSessionID string, emailAddress string, password string) *http.Response {

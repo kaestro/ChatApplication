@@ -37,7 +37,7 @@ func NewUserServiceUtil() *UserServiceUtil {
 // 이미 로그인 된 경우 loginInfo의 세션 키를 userSessionKey로 설정하고,
 // 로그인이 안 돼있지만, 가능한 경우 세션 키를 생성해서 지급한 loginInfo를 반환합니다.
 // 로그인이 불가능한 경우 빈 loginInfo와 오류를 반환합니다.
-func (usu *UserServiceUtil) AuthenticateUser(loginInfo models.LoginInfo, userSessionKey string) (models.LoginInfo, error) {
+func (usu *UserServiceUtil) AuthenticateUserByLoginInfo(loginInfo models.LoginInfo, userSessionKey string) (models.LoginInfo, error) {
 	// Step 1: Check if user is already logged in
 	isLoggedIn, err := usu.isUserLoggedIn(userSessionKey, loginInfo)
 	if err != nil {
@@ -125,6 +125,14 @@ func (usu *UserServiceUtil) CheckUserLoggedIn(userSessionKey string, loginInfo m
 		return userSessionKey, true
 	}
 	return "", false
+}
+
+func (usu *UserServiceUtil) AuthenticateUserByLoginSessionInfo(loginSessionInfo models.LoginSessionInfo) error {
+	if !usu.sessionManager.IsSessionValid(loginSessionInfo.LoginSessionID, loginSessionInfo.EmailAddress) {
+		return errors.New("user is not logged in")
+	}
+	return nil
+
 }
 
 // handleLoginError 함수는 로그인 과정에서 발생한 오류를 처리합니다.
