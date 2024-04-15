@@ -27,7 +27,7 @@ func LogIn(ginContext *gin.Context) {
 		return
 	}
 
-	loginInfo, err = userServiceUtil.AuthenticateUser(loginInfo, userSessionKey)
+	loginInfo, err = userServiceUtil.AuthenticateUserByLoginInfo(loginInfo, userSessionKey)
 	if err != nil {
 		userServiceUtil.HandleLoginError(ginContext, err)
 		return

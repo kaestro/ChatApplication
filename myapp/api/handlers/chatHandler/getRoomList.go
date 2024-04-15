@@ -22,7 +22,7 @@ func GetRoomList(ginContext *gin.Context) {
 	userSessionKey := generalService.GetSessionKeyFromHeader(ginContext)
 
 	userServiceUtil := userService.NewUserServiceUtil()
-	_, err = userServiceUtil.AuthenticateUser(loginInfo, userSessionKey)
+	_, err = userServiceUtil.AuthenticateUserByLoginInfo(loginInfo, userSessionKey)
 	if err != nil {
 		ginContext.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return

@@ -42,7 +42,7 @@ func handleUserSession(c *gin.Context, roomRequest *models.RoomRequest) (string,
 
 	userSessionKey, isLoggedIn := userServiceUtil.CheckUserLoggedIn(userSessionKey, loginInfo)
 	if !isLoggedIn {
-		user, err := userServiceUtil.AuthenticateUser(loginInfo, userSessionKey)
+		user, err := userServiceUtil.AuthenticateUserByLoginInfo(loginInfo, userSessionKey)
 		if err != nil {
 			return "", err
 		}
