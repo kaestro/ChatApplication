@@ -3,8 +3,10 @@ package chatService
 
 import (
 	"encoding/base64"
+	"errors"
 	"myapp/api/models"
-	"myapp/api/service/generalService"
+	"myapp/jsonProperties"
+	"myapp/types"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -37,10 +39,15 @@ func IsHandshakeHeadersValid(c *gin.Context) bool {
 	return true
 }
 
-func ParseEnterChatRequest(c *gin.Context) (models.LoginInfo, error) {
-	loginInfo, err := generalService.ParseLoginInfo(c)
-	if err != nil {
-		return models.LoginInfo{}, err
+func ParseEnterChatRequest(c *gin.Context) (models.LoginSessionInfo, error) {
+	sessionID := c.GetHeader(jsonProperties.SessionKey)
+	emailAddress := c.GetHeader(jsonProperties.EmailAddress)
+
+	if sessionID == "" || emailAddress == "" {
+		return models.LoginSessionInfo{}, errors.New("invalid request")
 	}
-	return loginInfo, nil
+
+	loginSessionInfo := models.NewLoginSessionInfo(emailAddress, types.LoginSessionID(sessionID))
+
+	return loginSessionInfo, nil
 }

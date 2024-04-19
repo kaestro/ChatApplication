@@ -36,6 +36,6 @@ func GetLoginSessionManager() *LoginSessionManager {
 	return manager
 }
 
-func (manager *LoginSessionManager) IsSessionValid(key string, emailAddress string) bool {
-	return manager.store.IsSessionValid(key, emailAddress)
+func (manager *LoginSessionManager) IsSessionValid(sessionID string, emailAddress string) bool {
+	return manager.store.IsSessionValid(sessionID, emailAddress)
 }
