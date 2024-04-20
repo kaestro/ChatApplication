@@ -1,37 +1,25 @@
-// main.go
-
 package main
 
 import (
-	"fmt"
-
-	"myapp/api/handlers/chatHandler"
-	"myapp/api/handlers/userHandler"
+	"flag"
+	"myapp/api/routes"
+	"myapp/internal/logging"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	fmt.Println("Hello, World!")
+	mode := flag.String("mode", "debug", "mode in which the server should run")
+	flag.Parse()
 
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	if *mode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
-	r.POST("/signup", userHandler.SignUp)
-	r.POST("/login", userHandler.LogIn)
-	r.POST("/logout", userHandler.LogOut)
-	r.POST("/deleteAccount", userHandler.SignOut)
+	logFileName := logging.SetupLogging()
 
-	r.GET("/enterChat", chatHandler.EnterChat)
-	r.POST("/enterRoom", chatHandler.EnterRoom)
-	r.POST("/createRoom", chatHandler.CreateRoom)
-	r.GET("/getRoomList", chatHandler.GetRoomList)
-	r.POST("/sendMessage", chatHandler.SendMessage)
+	r := logging.InitializeGinWithLogger(logFileName)
+	routes.SetupRoutes(r)
 
-	r.Run()
-
+	r.Run(":8080")
 }
