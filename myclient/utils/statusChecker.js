@@ -1,5 +1,5 @@
 import check from 'k6';
-import { HTTP_SUCCESS } from './config.js';
+import { HTTP_SUCCESS } from './constants.js';
 
 export class StatusChecker {
     constructor(response, method, endpoint) {

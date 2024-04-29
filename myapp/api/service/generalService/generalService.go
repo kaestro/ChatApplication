@@ -8,6 +8,8 @@ import (
 	"myapp/api/models"
 	"myapp/internal/chat"
 
+	jsonProperties "myapp/jsonproperties"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,7 +33,7 @@ func ParseLoginInfo(c *gin.Context) (models.LoginInfo, error) {
 }
 
 func GetSessionKeyFromHeader(c *gin.Context) string {
-	userSessionKey := c.GetHeader("Session-Key")
+	userSessionKey := c.GetHeader(jsonProperties.SessionKey)
 	return userSessionKey
 }
 
