@@ -8,7 +8,7 @@ import (
 	"myapp/api/models"
 	"myapp/internal/chat"
 
-	jsonProperties "myapp/jsonproperties"
+	jsonProperties "myapp/jsonProperties"
 
 	"github.com/gin-gonic/gin"
 )
