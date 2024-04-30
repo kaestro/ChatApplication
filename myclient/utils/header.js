@@ -1,4 +1,4 @@
-import { SESSION_KEY } from "./config";
+import { KEYS } from "./constants.js";
 
 export class Header {
     constructor(headers) {
@@ -6,7 +6,7 @@ export class Header {
     }
 
     addSessionKey(sessionKey) {
-        this.addHeader(SESSION_KEY, sessionKey);
+        this.addHeader(KEYS.SESSION_KEY, sessionKey);
     }
 
     setContentTypeToJSON() {
@@ -24,4 +24,11 @@ export class Header {
     getHeaderData() {
         return this.headers;
     }
+
+}
+
+export function createJsonTypeHeader() {
+    let jsonHeader = new Header();
+    jsonHeader.setContentTypeToJSON();
+    return jsonHeader;
 }
