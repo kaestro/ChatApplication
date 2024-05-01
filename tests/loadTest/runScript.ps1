@@ -19,5 +19,5 @@ if (!(Test-Path -Path $resultsDirectory)) {
 docker run --rm `
     -v "${projectRoot}:/chatApplication" `
     grafana/k6 run `
-    "/chatApplication/tests/loadTest/${scriptNameWithoutExtension}.js" `
+    "/chatApplication/tests/loadTest/${scriptName}" `
     --out json="/chatApplication/tests/loadTest/results/${scriptNameWithoutExtension}_results.json"

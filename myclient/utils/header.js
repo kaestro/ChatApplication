@@ -18,7 +18,7 @@ export class Header {
     }
 
     setHeaders(newHeaders) {
-        this.headers = { ...this.headers, ...newHeaders };
+        this.headers = Object.assign({}, this.headers, newHeaders);
     }
 
     getHeaderData() {
