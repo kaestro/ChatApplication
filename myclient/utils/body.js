@@ -4,7 +4,7 @@ export class Body {
         if (bodyData && typeof bodyData !== 'object') {
             throw new Error('Body data must be an object');
         }
-        this.bodyData = bodyData ? { ...bodyData } : {};
+        this.bodyData = bodyData ? Object.assign({}, bodyData) : {};
     }
 
     /**
