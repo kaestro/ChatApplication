@@ -1,23 +1,20 @@
-param (
-    [Parameter(Mandatory=$true)]
-    [string]$scriptPath
-)
+$containerName = "k6_container"
+$projectRoot = Resolve-Path "..\.."
+$scriptNameWithoutExtension = [System.IO.Path]::GetFileNameWithoutExtension($args[0])
 
-$unixStylePath = (Get-Location -PSProvider FileSystem).ProviderPath
-$unixStyleScriptPath = $scriptPath.Replace('\', '/').Replace('./', '')
-$scriptName = Split-Path -Leaf $unixStyleScriptPath -Resolve
-$scriptNameWithoutExtension = [IO.Path]::GetFileNameWithoutExtension($scriptName)
+# Check if the container already exists
+$containerExists = (docker ps -a -f "name=$containerName" --format "{{.Names}}") -eq $containerName
+Write-Host "Container exists: $containerExists"
 
-$projectRoot = Resolve-Path "${unixStylePath}/../.."
-
-# Ensure the results directory exists
-$resultsDirectory = "${projectRoot}/tests/loadTest/results"
-if (!(Test-Path -Path $resultsDirectory)) {
-    New-Item -ItemType Directory -Force -Path $resultsDirectory
+if ($containerExists) {
+    # Remove the existing container
+    docker rm $containerName
 }
 
-docker run --rm `
+# Run the script inside the container
+docker run `
+    --name $containerName `
     -v "${projectRoot}:/chatApplication" `
     grafana/k6 run `
-    "/chatApplication/tests/loadTest/${scriptName}" `
+    "/chatApplication/tests/loadTest/${scriptNameWithoutExtension}.js" `
     --out json="/chatApplication/tests/loadTest/results/${scriptNameWithoutExtension}_results.json"
