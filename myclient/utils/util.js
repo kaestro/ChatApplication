@@ -1,6 +1,6 @@
-import { HttpResponse } from './httpResponse';
-import { StatusChecker } from './statusChecker';
- 
+import { HttpResponse } from './httpResponse.js';
+import { StatusChecker } from './statusChecker.js';
+
 export function sendRequest(endpoint, method = 'get', headerData, bodyData = null) {
     let response = new HttpResponse(endpoint, method, headerData, bodyData);
     return response.getResponse();

@@ -10,10 +10,15 @@ repos:
     rev: v0.5.0
     hooks:
       - id: go-fmt
+        files: myapp/.*\.go$
       - id: go-imports
+        files: myapp/.*\.go$
       - id: no-go-testing
+        files: myapp/.*\.go$
       - id: golangci-lint
+        files: myapp/.*\.go$
       - id: go-unit-tests
+        files: myapp/.*\.go$
       # - id: validate-toml
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v8.0.0
