@@ -1,8 +1,8 @@
-import { ChatConnection } from "../httpRequests/chatConnection.js";
 import { Body } from '../utils/body.js';
-import { Key } from '../utils/constants.js';
+import { KEYS } from '../utils/constants.js';
 import { createJsonTypeHeader } from '../utils/header.js';
 import { sendRequest } from '../utils/util.js';
+import { ChatConnection } from "./httpRequests/chatRequests.js";
 
 export function requestEnterChat(emailAddress, sessionKey) {
     return new ChatConnection(emailAddress, sessionKey);
@@ -13,9 +13,9 @@ export function requestEnterRoom(roomName, emailAddress, password, sessionKey) {
     header.addSessionKey(sessionKey);
 
     let body = new Body();
-    body.addBodyData(Key.roomName, roomName);
-    body.addBodyData(Key.emailAddress, emailAddress);
-    body.addBodyData(Key.password, password);
+    body.addBodyData(KEYS.roomName, roomName);
+    body.addBodyData(KEYS.emailAddress, emailAddress);
+    body.addBodyData(KEYS.password, password);
 
     const headerData = header.getHeaderData();
     const bodyData = body.getBodyData();
@@ -28,9 +28,9 @@ export function createRoom(roomName, emailAddress, password, sessionKey) {
     header.addSessionKey(sessionKey);
 
     let body = new Body();
-    body.addBodyData(Key.roomName, roomName);
-    body.addBodyData(Key.emailAddress, emailAddress);
-    body.addBodyData(Key.password, password);
+    body.addBodyData(KEYS.roomName, roomName);
+    body.addBodyData(KEYS.emailAddress, emailAddress);
+    body.addBodyData(KEYS.password, password);
 
     const headerData = header.getHeaderData();
     const bodyData = body.getBodyData();

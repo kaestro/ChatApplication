@@ -1,5 +1,6 @@
-import { requestSignup } from '../../myclient/httpRequests/userRequests.js';
-import { setBody, setHeaders } from '../../myclient/utils/util.js';
+import { requestSignup } from '../httpRequests/userRequests.js';
+import { setHeaders } from '../utils/header.js';
+import { setBody } from '../utils/util.js';
 
 export default function sampleTest() {
     const sampleHeaders = setHeaders({ 'Authorization': 'Bearer token', 'Custom-Header': 'Custom value' });

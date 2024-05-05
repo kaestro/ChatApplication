@@ -1,0 +1,13 @@
+{
+    "name": "ChatApplication",
+    "dockerFile": "Dockerfile",
+    "context": "..",
+    "runArgs": ["--rm"],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash"
+            }
+        }
+    }
+}

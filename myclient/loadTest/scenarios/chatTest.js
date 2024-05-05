@@ -1,6 +1,6 @@
 // chatTest.js
-import { requestEnterChat } from '../../../myclient/httpRequests/chatRequests.js';
-import { requestDeleteAccount, requestLogin, requestLogout, requestSignup } from '../../../myclient/httpRequests/userRequests.js';
+import { requestEnterChat } from '../../httpRequests/chatRequests.js';
+import { requestDeleteAccount, requestLogin, requestLogout, requestSignup } from '../../httpRequests/userRequests.js';
 
 describe('Chat test', () => {
     const users = [
