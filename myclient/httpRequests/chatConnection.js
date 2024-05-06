@@ -1,23 +1,35 @@
 // chatConnection.js
-import WebSocket from 'ws';
+import { WebSocket } from 'k6/ws';
 
 export class ChatConnection {
     constructor(emailAddress, sessionKey) {
-        this.ws = new WebSocket('ws://localhost:8080');
+        this.ws = new WebSocket('ws://localhost:9000');
         this.messages = [];
         this.lastReadMessageIndex = -1;
 
-        this.ws.on('open', () => {
-            this.ws.send(JSON.stringify({
-                type: 'enterChat',
-                sessionKey: sessionKey,
-                emailAddress: emailAddress
-            }));
-        });
+        this.ws.on('open', () => this.handleOpen(emailAddress, sessionKey));
+        this.ws.on('message', (data) => this.handleMessage(data));
+        this.ws.on('close', () => this.handleClose(emailAddress, sessionKey));
+    }
 
-        this.ws.on('message', (data) => {
-            this.messages.push(data);
-        });
+    handleOpen(emailAddress, sessionKey) {
+        this.ws.send(JSON.stringify({
+            type: 'enterChat',
+            sessionKey: sessionKey,
+            emailAddress: emailAddress
+        }));
+    }
+
+    handleMessage(data) {
+        this.messages.push(data);
+    }
+
+    handleClose(emailAddress, sessionKey) {
+        this.ws.send(JSON.stringify({
+            type: 'exitChat',
+            sessionKey: sessionKey,
+            emailAddress: emailAddress
+        }));
     }
 
     sendMessage(roomName, message, emailAddress) {

@@ -1,42 +1,39 @@
 // chatTest.js
+import { check } from 'k6';
 import { requestEnterChat } from '../../httpRequests/chatRequests.js';
-import { requestDeleteAccount, requestLogin, requestLogout, requestSignup } from '../../httpRequests/userRequests.js';
+import { requestDeleteAccount, requestLogin, requestSignup } from '../../httpRequests/userRequests.js';
 
-describe('Chat test', () => {
-    const users = [
-        { userName: 'user1', password: 'password1', emailAddress: 'user1@example.com', sessionKey: null, chatConnection: null },
-        { userName: 'user2', password: 'password2', emailAddress: 'user2@example.com', sessionKey: null, chatConnection: null },
-        { userName: 'user3', password: 'password3', emailAddress: 'user3@example.com', sessionKey: null, chatConnection: null }
-    ];
-    const message = 'Hello, World!';
+const message = 'Hello, World!';
+const iterations = __ENV.ITERATIONS || 100;  // Default to 100 if not provided
+const userCount = __ENV.USERS || 3;  // Default to 3 if not provided
 
-    beforeAll(async () => {
+let users = [];
+for (let i = 0; i < userCount; i++) {
+    users.push({ userName: `user${i+1}`, password: `password${i+1}`, emailAddress: `user${i+1}@example.com`, sessionKey: null, chatConnection: null });
+}
+
+export default function() {
+    for (const user of users) {
+        requestSignup(user.userName, user.password, user.emailAddress);
+        const loginResponse = requestLogin(user.emailAddress, user.password);
+        user.sessionKey = JSON.parse(loginResponse).sessionKey;
+        console.log("User session key: " + user.sessionKey);
+        user.chatConnection = requestEnterChat(user.emailAddress, user.sessionKey);
+    }
+
+    for (let i = 0; i < iterations; i++) {
         for (const user of users) {
-            await requestSignup(user.userName, user.password, user.emailAddress);
-            const loginResponse = await requestLogin(user.emailAddress, user.password);
-            user.sessionKey = loginResponse.sessionKey;
-            user.chatConnection = requestEnterChat(user.emailAddress, user.sessionKey);
+            user.chatConnection.sendMessage('roomName', message, user.emailAddress);
         }
-    });
+    }
 
-    it('should send and receive 100 messages', async () => {
-        for (let i = 0; i < 100; i++) {
-            for (const user of users) {
-                user.chatConnection.sendMessage('roomName', message, user.emailAddress);
-            }
-        }
+    for (const user of users) {
+        const messages = user.chatConnection.receiveMessage();
+        check(messages.length, { 'received messages': (val) => val === users.length * iterations });
+        check(messages.every(msg => msg === message), { 'all messages are correct': (val) => val === true });
+    }
 
-        for (const user of users) {
-            const messages = user.chatConnection.receiveMessage();
-            expect(messages.length).toBe(users.length * 100);
-            expect(messages.every(msg => msg === message)).toBe(true);
-        }
-    });
-
-    afterAll(async () => {
-        for (const user of users) {
-            await requestLogout(user.sessionKey);
-            await requestDeleteAccount(user.sessionKey);
-        }
-    });
-});
+    for (const user of users) {
+        requestDeleteAccount(user.sessionKey);
+    }
+}

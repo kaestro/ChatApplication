@@ -14,7 +14,9 @@ export function requestSignup(userName, password, emailAddress) {
 
     const headerData = header.getHeaderData();
     const bodyData = body.getBodyData();
-    responseBody = sendRequest('/signup', 'post', headerData, bodyData);
+    let responseBody = sendRequest('/signup', 'post', headerData, bodyData);
+
+    return responseBody;
 }
 
 export function requestLogin(emailAddress, password, sessionKey=null) {
@@ -27,7 +29,12 @@ export function requestLogin(emailAddress, password, sessionKey=null) {
 
     const headerData = header.getHeaderData();
     const bodyData = body.getBodyData();
-    responseBody = sendRequest('/login', 'post', headerData, bodyData);
+    let responseBody = sendRequest('/login', 'post', headerData, bodyData);
+    let responseString = JSON.stringify(responseBody);
+
+    console.log(responseString);
+
+    return responseString;
 }
 
 export function requestLogout(sessionKey) {
@@ -35,7 +42,9 @@ export function requestLogout(sessionKey) {
     header.addSessionKey(sessionKey);
 
     const headerData = header.getHeaderData();
-    responseBody = sendRequest('/logout', 'post', headerData);
+    let responseBody = sendRequest('/logout', 'post', headerData);
+
+    return responseBody;
 }
 
 export function requestDeleteAccount(sessionKey) {
@@ -43,5 +52,7 @@ export function requestDeleteAccount(sessionKey) {
     header.addSessionKey(sessionKey);
 
     const headerData = header.getHeaderData();
-    responseBody = sendRequest('/deleteAccount', 'post', headerData);
+    let responseBody = sendRequest('/deleteAccount', 'post', headerData);
+
+    return responseBody;
 }
