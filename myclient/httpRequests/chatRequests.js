@@ -2,9 +2,12 @@ import { Body } from '../utils/body.js';
 import { KEYS } from '../utils/constants.js';
 import { createJsonTypeHeader } from '../utils/header.js';
 import { sendRequest } from '../utils/util.js';
-import { ChatConnection } from "./httpRequests/chatRequests.js";
+import { ChatConnection } from "./chatConnection.js";
 
 export function requestEnterChat(emailAddress, sessionKey) {
+    if (typeof emailAddress !== 'string' || typeof sessionKey !== 'string') {
+        throw new Error('Invalid arguments: emailAddress and sessionKey must be strings');
+    }
     return new ChatConnection(emailAddress, sessionKey);
 }
 
