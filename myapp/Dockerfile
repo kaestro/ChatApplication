@@ -25,6 +25,9 @@ WORKDIR /myapp
 # 필요한 파일들을 실행 환경으로 복사
 COPY --from=builder /myapp/main /myapp/main
 
+# 로그 디렉토리 생성 및 권한 변경
+RUN mkdir /myapp/logs && chmod 777 /myapp/logs
+
 # 환경 변수 설정
 ENV REDIS_ADDR=redis:6379
 

@@ -1,2 +1,2 @@
-/myapp/logs/*
+**/*.log
 *_results.json
