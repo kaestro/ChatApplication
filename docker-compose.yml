@@ -23,7 +23,7 @@ services:
     command: redis-server --requirepass redisPassword
     ports:
       - "6379:6379"
-  
+
   chatroom_list:
     image: redis:latest
     command: redis-server --requirepass redisPassword
@@ -36,7 +36,7 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
-  
+
   main_server:
     build: ./myapp
     ports:
@@ -49,10 +49,12 @@ services:
       - REDIS_ADDR=redis:6379
       - REDIS_PASSWORD=redisPassword
       - DB_URL=postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable
-      - MONGO_URL=mongodb://mongodb:27017  
+      - MONGO_URL=mongodb://mongodb:27017
+    volumes:
+      - ./myapp/logs:/myapp/logs
 
   test:
-    build: 
+    build:
       context: ./myapp
       dockerfile: Dockerfile.test
     depends_on:
