@@ -1,22 +1,61 @@
 // chatConnection.js
-import { WebSocket } from 'k6/ws';
+import ws from 'k6/ws';
 
 export class ChatConnection {
     constructor(emailAddress, sessionKey) {
-        this.ws = new WebSocket('ws://localhost:9000');
         this.messages = [];
         this.lastReadMessageIndex = -1;
+        this.emailAddress = emailAddress;
+        this.sessionKey = sessionKey;
 
-        this.ws.on('open', () => this.handleOpen(emailAddress, sessionKey));
-        this.ws.on('message', (data) => this.handleMessage(data));
-        this.ws.on('close', () => this.handleClose(emailAddress, sessionKey));
+        this.connectionPromise = this.connect();
     }
 
-    handleOpen(emailAddress, sessionKey) {
-        this.ws.send(JSON.stringify({
+    async connect() {
+        const url = 'ws://localhost:9000';
+        const params = { tags: { my_tag: 'hello' } };
+
+        return new Promise((resolve, reject) => {
+            ws.connect(url, params, (socket) => {
+                this.socket = socket;
+                socket.on('open', () => {
+                    if (socket.readyState === WebSocket.OPEN) {
+                        this.handleOpen();
+                        resolve();
+                    } else {
+                        reject(new Error('WebSocket connection failed'));
+                    }
+                });
+                socket.on('message', (data) => this.handleMessage(data));
+                socket.on('close', () => this.handleClose());
+            });
+        });
+    }
+
+    handleOpen() {
+        this.send(JSON.stringify({
             type: 'enterChat',
-            sessionKey: sessionKey,
-            emailAddress: emailAddress
+            sessionKey: this.sessionKey,
+            emailAddress: this.emailAddress
+        }));
+    }
+
+    handleCreateRoom(roomName, password) {
+        this.send(JSON.stringify({
+            type: 'createRoom',
+            sessionKey: this.sessionKey,
+            emailAddress: this.emailAddress,
+            roomName: roomName,
+            password: password
+        }));
+    }
+
+    handleEnterRoom(roomName) {
+        this.send(JSON.stringify({
+            type: 'enterRoom',
+            sessionKey: this.sessionKey,
+            emailAddress: this.emailAddress,
+            roomName: roomName
         }));
     }
 
@@ -24,28 +63,41 @@ export class ChatConnection {
         this.messages.push(data);
     }
 
-    handleClose(emailAddress, sessionKey) {
-        this.ws.send(JSON.stringify({
+    handleClose() {
+        this.send(JSON.stringify({
             type: 'exitChat',
-            sessionKey: sessionKey,
-            emailAddress: emailAddress
+            sessionKey: this.sessionKey,
+            emailAddress: this.emailAddress
         }));
     }
 
-    sendMessage(roomName, message, emailAddress) {
-        if (this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({
-                type: 'message',
-                roomName: roomName,
-                message: message,
-                emailAddress: emailAddress
-            }));
-        }
+    async sendMessage(roomName, message) {
+        await this.connectionPromise;
+        this.send(JSON.stringify({
+            type: 'message',
+            roomName: roomName,
+            message: message,
+            emailAddress: this.emailAddress
+        }));
     }
 
     receiveMessage() {
         const newMessages = this.messages.slice(this.lastReadMessageIndex + 1);
         this.lastReadMessageIndex = this.messages.length - 1;
         return newMessages;
+    }
+
+    toString() {
+        return `ChatConnection: { emailAddress: ${this.emailAddress},
+            sessionKey: ${this.sessionKey}, messages: ${JSON.stringify(this.messages)} }`;
+    }
+
+    async send(message) {
+        await this.connectionPromise;
+        if (this.socket) {
+            this.socket.send(message);
+        } else {
+            console.error('WebSocket connection is not established');
+        }
     }
 }

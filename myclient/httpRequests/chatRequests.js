@@ -8,7 +8,8 @@ export function requestEnterChat(emailAddress, sessionKey) {
     if (typeof emailAddress !== 'string' || typeof sessionKey !== 'string') {
         throw new Error('Invalid arguments: emailAddress and sessionKey must be strings');
     }
-    return new ChatConnection(emailAddress, sessionKey);
+    let connection = new ChatConnection(emailAddress, sessionKey);
+    return connection
 }
 
 export function requestEnterRoom(roomName, emailAddress, password, sessionKey) {
