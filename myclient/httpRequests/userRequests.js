@@ -30,11 +30,8 @@ export function requestLogin(emailAddress, password, sessionKey=null) {
     const headerData = header.getHeaderData();
     const bodyData = body.getBodyData();
     let responseBody = sendRequest('/login', 'post', headerData, bodyData);
-    let responseString = JSON.stringify(responseBody);
 
-    console.log(responseString);
-
-    return responseString;
+    return responseBody;
 }
 
 export function requestLogout(sessionKey) {
