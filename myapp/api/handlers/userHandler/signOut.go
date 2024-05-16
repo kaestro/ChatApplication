@@ -2,7 +2,6 @@
 package userHandler
 
 import (
-	"fmt"
 	"myapp/api/service/generalService"
 	"myapp/api/service/userService"
 	"net/http"
@@ -19,7 +18,7 @@ func SignOut(ginContext *gin.Context) {
 
 	err := userService.DeleteUserBySessionKey(userSessionKey, ginContext)
 	if err != nil {
-		fmt.Println(err)
+		ginContext.Error(err)
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}

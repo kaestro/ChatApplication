@@ -2,10 +2,10 @@
 package userService
 
 import (
+	"errors"
 	"myapp/api/models"
 	"myapp/internal/db"
 	"myapp/internal/session"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +14,9 @@ func DeleteUserBySessionKey(userSessionKey string, ginContext *gin.Context) erro
 	sessionManager := session.GetLoginSessionManager()
 	emailAddress, err := sessionManager.GetSession(userSessionKey)
 	if err != nil {
-		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session key"})
-		return nil
+		ginContext.Error(errors.New("user sessionKey = " + userSessionKey + " not found"))
+		ginContext.Error(err)
+		return err
 	}
 
 	err = DeleteUserByEmailAddress(emailAddress)

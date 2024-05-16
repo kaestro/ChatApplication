@@ -13,6 +13,7 @@ services:
 
   db_init:
     build: ./db_init
+    image: db_init_image
     environment:
       - POSTGRES_PASSWORD=rootpassword
     depends_on:
@@ -39,6 +40,7 @@ services:
 
   main_server:
     build: ./myapp
+    image: myapp_server
     ports:
       - "8080:8080"
     depends_on:
@@ -57,6 +59,7 @@ services:
     build:
       context: ./myapp
       dockerfile: Dockerfile.test
+    image: test_image
     depends_on:
       - main_server
       - postgresql
@@ -68,7 +71,6 @@ services:
       - REDIS_PASSWORD=redisPassword
       - DB_URL=postgres://postgres:rootpassword@postgresql:5432/postgres?sslmode=disable
       - MONGO_URL=mongodb://mongodb:27017
-
 
 volumes:
   postgresql_data:

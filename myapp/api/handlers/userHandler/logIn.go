@@ -26,7 +26,7 @@ func LogIn(ginContext *gin.Context) {
 
 	if err = isLoggedIn(userServiceUtil, userSessionKey, loginInfo); err != nil {
 		ginContext.JSON(http.StatusOK, gin.H{"message": "Already logged in"})
-		log.Print("User is already logged in")
+		ginContext.Error(err)
 		return
 	}
 
@@ -41,6 +41,7 @@ func LogIn(ginContext *gin.Context) {
 		return
 	}
 
+	log.Println("Session key: ", sessionKey, " generated for user: ", loginInfo.EmailAddress)
 	ginContext.JSON(http.StatusOK, gin.H{"sessionKey": sessionKey})
 }
 
@@ -67,6 +68,7 @@ func authenticateUser(userServiceUtil *userService.UserServiceUtil, ginContext *
 	_, err = userServiceUtil.AuthenticateUserByLoginInfo(loginInfo, userSessionKey)
 	if err != nil {
 		userServiceUtil.HandleLoginError(ginContext, err)
+		ginContext.Error(err)
 		ginContext.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
 	return err
