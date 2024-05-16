@@ -18,7 +18,6 @@ export default async function() {
         const loginResponse = await requestLogin(user.emailAddress, user.password);
         user.sessionKey = JSON.parse(loginResponse.body).sessionKey;
         user.chatConnection = await requestEnterChat(user.emailAddress, user.sessionKey);
-        console.log("connection data: " + user.chatConnection)
     }
 
     users[0].chatConnection.handleCreateRoom('roomName', 'password');

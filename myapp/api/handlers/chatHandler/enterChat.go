@@ -15,17 +15,20 @@ import (
 func EnterChat(c *gin.Context) {
 	loginSessionInfo, err := chatService.ParseEnterLoginSessionInfo(c)
 	if err != nil {
+		c.Error(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	userServiceUtil := userService.NewUserServiceUtil()
 	if err = userServiceUtil.AuthenticateUserByLoginSessionInfo(loginSessionInfo); err != nil {
+		c.Error(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	if err := chatService.EnterChat(c, loginSessionInfo); err != nil {
+		c.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
