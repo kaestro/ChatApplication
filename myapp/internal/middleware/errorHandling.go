@@ -14,8 +14,8 @@ func ErrorHandlingMiddleware() gin.HandlerFunc {
 
 		// Check for any errors that occurred in the request
 		if len(c.Errors) > 0 {
-			for _, e := range c.Errors.Errors() {
-				log.Println(e) // log error
+			for _, e := range c.Errors {
+				log.Println(e.Err.Error()) // log error details
 			}
 
 			// Return a 500 status code and the errors
