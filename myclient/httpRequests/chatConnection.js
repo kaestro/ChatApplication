@@ -8,36 +8,67 @@ export class ChatConnection {
         this.emailAddress = emailAddress;
         this.sessionKey = sessionKey;
 
+        this.socket = null;
         this.connectionPromise = this.connect();
     }
 
     async connect() {
-        const url = 'ws://localhost:9000';
-        const params = { tags: { my_tag: 'hello' } };
-
-        return new Promise((resolve, reject) => {
-            ws.connect(url, params, (socket) => {
-                this.socket = socket;
-                socket.on('open', () => {
-                    if (socket.readyState === WebSocket.OPEN) {
-                        this.handleOpen();
-                        resolve();
-                    } else {
-                        reject(new Error('WebSocket connection failed'));
-                    }
-                });
-                socket.on('message', (data) => this.handleMessage(data));
-                socket.on('close', () => this.handleClose());
-            });
+        return new Promise(async (resolve, reject) => {
+            try {
+                await this.handleOpen();
+                if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+                    console.log('WebSocket connection established');
+                    resolve();
+                } else {
+                    throw new Error('Failed to establish WebSocket connection');
+                }
+            } catch (error) {
+                reject(error);
+            }
         });
     }
 
-    handleOpen() {
-        this.send(JSON.stringify({
-            type: 'enterChat',
-            sessionKey: this.sessionKey,
-            emailAddress: this.emailAddress
-        }));
+    async handleOpen() {
+        try {
+            console.log("connecting to websocket server...");
+            const response = await this.enterChat();
+            if (response.status === 200 && response.data.message === 'entered room successfully') {
+                this.socket = new websocket('ws://localhost:9000');
+                this.socket.onopen = () => console.log('websocket connection established');
+                this.socket.onmessage = (event) => this.handlemessage(event.data);
+                this.socket.onclose = () => this.handleclose();
+            } else {
+                console.error('failed to enter chat room. response:', response);
+                throw new error('failed to enter chat room');
+            }
+        } catch (error) {
+            console.error('error during enterchat:', error);
+            throw error;
+        }
+    }
+
+    async enterChat() {
+        const url = `ws://localhost:8080/enterChat`;  // 수정된 부분
+
+        try {
+            const response = ws.connect(url, {  // 수정된 부분
+                headers: {
+                    'Session-Key': this.sessionKey,
+                    'emailAddress': this.emailAddress
+                }
+            }, function(socket) {
+                socket.on('open', () => console.log('Connection opened!'));
+                socket.on('message', (data) => console.log('Message received: ', data));
+                socket.on('close', () => console.log('Connection closed!'));
+                socket.on('error', (error) => console.log('Error: ', error));
+            });
+
+            // Handle response here
+            return response;
+        } catch (error) {
+            console.error('Error during enterChat:', error.message);
+            console.error('Error stack:', error.stack);
+        }
     }
 
     handleCreateRoom(roomName, password) {
@@ -100,4 +131,5 @@ export class ChatConnection {
             console.error('WebSocket connection is not established');
         }
     }
+
 }
