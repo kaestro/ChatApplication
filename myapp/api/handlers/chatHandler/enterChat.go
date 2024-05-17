@@ -2,6 +2,7 @@
 package chatHandler
 
 import (
+	"errors"
 	"myapp/api/service/chatService"
 	"myapp/api/service/userService"
 	"net/http"
@@ -23,15 +24,25 @@ func EnterChat(c *gin.Context) {
 	userServiceUtil := userService.NewUserServiceUtil()
 	if err = userServiceUtil.AuthenticateUserByLoginSessionInfo(loginSessionInfo); err != nil {
 		c.Error(err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnauthorized, gin.H{"authentication error": err.Error()})
 		return
 	}
 
+	hijacker, ok := c.Writer.(http.Hijacker)
+	if !ok {
+		c.Error(errors.New("the response writer does not support the Hijacker interface"))
+		return
+	}
+
+	_, _, err = hijacker.Hijack()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	// Handle the WebSocket connection
 	if err := chatService.EnterChat(c, loginSessionInfo); err != nil {
 		c.Error(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Entered room successfully"})
 }

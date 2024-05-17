@@ -72,13 +72,18 @@ export class ChatConnection {
     }
 
     handleCreateRoom(roomName, password) {
-        this.send(JSON.stringify({
-            type: 'createRoom',
+        const url = `http://localhost:8080/createRoom`;
+
+        const payload = JSON.stringify({
             sessionKey: this.sessionKey,
             emailAddress: this.emailAddress,
             roomName: roomName,
             password: password
-        }));
+        });
+
+        const params =  { headers: { 'Content-Type': 'application/json' } };
+
+        http.post(url, payload, params);
     }
 
     handleEnterRoom(roomName) {
